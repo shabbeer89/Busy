@@ -109,3 +109,29 @@ export const verifyUser = mutation({
     });
   },
 });
+
+// Get users by type (creators or investors)
+export const getUsersByType = query({
+  args: { userType: v.union(v.literal("creator"), v.literal("investor")) },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_userType", (q) => q.eq("userType", args.userType))
+      .collect();
+  },
+});
+
+// Search users by name or email
+export const searchUsers = query({
+  args: { query: v.string() },
+  handler: async (ctx, args) => {
+    const users = await ctx.db.query("users").collect();
+
+    const filteredUsers = users.filter(user =>
+      user.name.toLowerCase().includes(args.query.toLowerCase()) ||
+      user.email.toLowerCase().includes(args.query.toLowerCase())
+    );
+
+    return filteredUsers;
+  },
+});

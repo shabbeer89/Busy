@@ -279,6 +279,82 @@ export default function ProfilePage() {
                   </div>
                 </div>
               )}
+
+              {/* Activity Summary */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity Summary</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {user.userType === "creator" ? "3" : "7"}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {user.userType === "creator" ? "Ideas Submitted" : "Offers Created"}
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {user.userType === "creator" ? "5" : "12"}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {user.userType === "creator" ? "Active Matches" : "Active Matches"}
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {user.userType === "creator" ? "2" : "1"}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {user.userType === "creator" ? "Successful Deals" : "Investments Made"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">New match found</p>
+                      <p className="text-xs text-gray-600">AI Assistant matched with Tech Ventures (92% compatibility)</p>
+                    </div>
+                    <span className="text-xs text-gray-500">2h ago</span>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Profile completed</p>
+                      <p className="text-xs text-gray-600">Your profile is now 100% complete</p>
+                    </div>
+                    <span className="text-xs text-gray-500">1d ago</span>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Investment offer created</p>
+                      <p className="text-xs text-gray-600">Created "Tech-Focused Growth Capital" offer</p>
+                    </div>
+                    <span className="text-xs text-gray-500">3d ago</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
