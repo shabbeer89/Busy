@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { Heart, Trash2 } from "lucide-react";
+import { SidebarLayout } from "@/components/navigation/sidebar";
 
 interface FavoriteOffer {
   id: string;
@@ -148,6 +149,8 @@ export default function FavoritesPage() {
   };
 
   return (
+          <SidebarLayout>
+    
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -350,5 +353,6 @@ export default function FavoritesPage() {
         )}
       </div>
     </div>
+          </SidebarLayout>
   );
 }

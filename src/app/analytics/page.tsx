@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SidebarLayout } from "@/components/navigation/sidebar";
 
 interface PlatformStats {
   totalUsers: number;
@@ -116,6 +117,8 @@ export default function AnalyticsPage() {
   };
 
   return (
+          <SidebarLayout>
+    
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -414,5 +417,6 @@ export default function AnalyticsPage() {
         </Card>
       </div>
     </div>
+    </SidebarLayout>
   );
 }

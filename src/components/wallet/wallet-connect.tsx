@@ -43,13 +43,15 @@ export function WalletConnect({ onWalletConnected, onWalletDisconnected, classNa
     }
   };
 
-  const connectWallet = async (provider: string = "metamask") => {
+  const connectWallet = async (providerParam?: string) => {
     setIsConnecting(true);
     setError(null);
 
     try {
-      if (!provider) {
-        throw new Error("No wallet provider available");
+      const provider = providerParam || "metamask";
+
+      if (!provider || provider === "") {
+        throw new Error("No wallet provider specified");
       }
 
       let accounts: string[] = [];
@@ -58,6 +60,8 @@ export function WalletConnect({ onWalletConnected, onWalletDisconnected, classNa
         accounts = await (window as any).ethereum.request({
           method: "eth_requestAccounts"
         });
+      } else if (provider === "metamask") {
+        throw new Error("MetaMask not detected. Please install MetaMask to continue.");
       } else {
         throw new Error(`Unsupported wallet provider: ${provider}`);
       }
@@ -80,7 +84,7 @@ export function WalletConnect({ onWalletConnected, onWalletDisconnected, classNa
         address: accounts[0],
         chainId: parseInt(chainId, 16),
         balance: balanceInEth.toFixed(4),
-        provider
+        provider: provider
       };
 
       setWallet(walletInfo);
@@ -138,7 +142,7 @@ export function WalletConnect({ onWalletConnected, onWalletDisconnected, classNa
 
           <div className="space-y-3">
             <Button
-              onClick={() => connectWallet("metamask")}
+              onClick={() => connectWallet()}
               disabled={isConnecting}
               className="w-full"
               size="lg"
@@ -235,7 +239,7 @@ export function useWallet() {
   const [wallet, setWallet] = useState<WalletInfo | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  const connect = async (provider: string = "metamask") => {
+  const connect = async (providerParam?: string) => {
     if (typeof window !== "undefined" && (window as any).ethereum) {
       try {
         const accounts = await (window as any).ethereum.request({

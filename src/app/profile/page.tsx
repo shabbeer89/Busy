@@ -6,6 +6,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { Button } from "@/components/ui/button";
 import { UpdateUserData } from "@/types";
+import { SidebarLayout } from "@/components/navigation/sidebar";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -42,6 +43,8 @@ export default function ProfilePage() {
   };
 
   return (
+          <SidebarLayout>
+
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -360,5 +363,6 @@ export default function ProfilePage() {
         )}
       </div>
     </div>
+          </SidebarLayout>
   );
 }

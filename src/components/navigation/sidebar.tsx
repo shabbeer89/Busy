@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
-  Home,
+  LayoutDashboard,
   Briefcase,
   Lightbulb,
   Users,
@@ -36,10 +36,10 @@ export function Sidebar({ className }: SidebarProps) {
 
   const navigationItems = [
     {
-      name: "Home",
-      href: "/",
-      icon: Home,
-      current: pathname === "/",
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+      current: pathname.startsWith("/dashboard"),
     },
     {
       name: "Offers",

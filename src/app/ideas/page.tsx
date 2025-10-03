@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { BusinessIdea } from "@/types";
+import { SidebarLayout } from "@/components/navigation/sidebar";
 
 export default function IdeasPage() {
   const { user } = useAuth();
@@ -101,16 +102,21 @@ export default function IdeasPage() {
 
   if (isLoading) {
     return (
+            <SidebarLayout>
+
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading business ideas...</p>
         </div>
       </div>
+      </SidebarLayout>
     );
   }
 
   return (
+          <SidebarLayout>
+
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -244,5 +250,6 @@ export default function IdeasPage() {
         )}
       </div>
     </div>
+    </SidebarLayout>
   );
 }

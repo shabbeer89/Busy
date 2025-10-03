@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { SidebarLayout } from "@/components/navigation/sidebar";
 
 interface Message {
   id: string;
@@ -225,6 +226,8 @@ export default function MessagesPage() {
   }
 
   return (
+          <SidebarLayout>
+    
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -376,5 +379,6 @@ export default function MessagesPage() {
         </div>
       </div>
     </div>
+    </SidebarLayout>
   );
 }
