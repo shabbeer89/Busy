@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { convex } from "@/lib/convex";
-import { ThemeProvider } from "@/contexts/theme-context";
-import { Toaster } from "@/components/toast-provider";
 import "./globals.css";
+import { Providers } from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,12 +35,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* <ConvexProvider client={convex}> */}
-          <ThemeProvider defaultTheme="system" storageKey="businessmatch-ui-theme">
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        {/* </ConvexProvider> */}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

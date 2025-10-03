@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { OfferCardSkeleton } from "@/components/ui/skeleton";
 import { animations } from "@/lib/animations";
+import { SidebarLayout } from "@/components/navigation/sidebar";
 
 // Mock data for demonstration - in real app this would come from Convex
 const mockOffers = [
@@ -119,26 +120,28 @@ export default function OffersPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">Please sign in to view investment offers.</p>
-          <Link href="/auth/login">
-            <Button>Sign In</Button>
-          </Link>
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+            <p className="text-gray-600 mb-4">Please sign in to view investment offers.</p>
+            <Link href="/auth/login">
+              <Button>Sign In</Button>
+            </Link>
+          </div>
         </div>
-      </div>
+      </SidebarLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <SidebarLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Investment Offers</h1>
-              <p className="text-gray-600 mt-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Investment Offers</h1>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">
                 Discover investment opportunities that match your business ideas
               </p>
             </div>
@@ -147,127 +150,6 @@ export default function OffersPage() {
                 <Button>Create Investment Offer</Button>
               </Link>
             )}
-          </div>
-        </div>
-
-        {/* Advanced Filters */}
-        <div className="mb-8 bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Filter Investment Offers</h2>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery("");
-                setIndustryFilter("all");
-                setStageFilter("all");
-              }}
-            >
-              Clear All Filters
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Search
-              </label>
-              <Input
-                placeholder="Search offers..."
-                value={searchQuery}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Industry
-              </label>
-              <select
-                value={industryFilter}
-                onChange={(e) => setIndustryFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Industries</option>
-                {industries.map((industry) => (
-                  <option key={industry} value={industry.toLowerCase()}>
-                    {industry}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Stage
-              </label>
-              <select
-                value={stageFilter}
-                onChange={(e) => setStageFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Stages</option>
-                <option value="concept">Concept</option>
-                <option value="mvp">MVP</option>
-                <option value="early">Early Stage</option>
-                <option value="growth">Growth</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Min Amount ($)
-              </label>
-              <Input
-                type="number"
-                placeholder="10000"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const value = e.target.value;
-                  // This would set a minAmount filter state
-                  console.log("Min amount filter:", value);
-                }}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Max Amount ($)
-              </label>
-              <Input
-                type="number"
-                placeholder="1000000"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const value = e.target.value;
-                  // This would set a maxAmount filter state
-                  console.log("Max amount filter:", value);
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Additional Filter Options */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="flex flex-wrap gap-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="mr-2"
-                  // This would control active offers filter
-                />
-                <span className="text-sm text-gray-700">Active Offers Only</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="mr-2"
-                  // This would control sorting options
-                />
-                <span className="text-sm text-gray-700">Recently Updated</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="mr-2"
-                  // This would control equity range filter
-                />
-                <span className="text-sm text-gray-700">Equity &lt; 20%</span>
-              </label>
-            </div>
           </div>
         </div>
 
@@ -287,75 +169,76 @@ export default function OffersPage() {
               </div>
             ) : (
               filteredOffers.map((offer) => (
-              <Card key={offer.id} className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover}`}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-xl">{offer.title}</CardTitle>
-                      <CardDescription className="mt-2">
-                        {offer.description}
-                      </CardDescription>
+                <Card key={offer.id} className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-xl">{offer.title}</CardTitle>
+                        <CardDescription className="mt-2">
+                          {offer.description}
+                        </CardDescription>
+                      </div>
+                      <Badge variant={offer.isActive ? "default" : "secondary"}>
+                        {offer.isActive ? "Active" : "Inactive"}
+                      </Badge>
                     </div>
-                    <Badge variant={offer.isActive ? "default" : "secondary"}>
-                      {offer.isActive ? "Active" : "Inactive"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Investment Range</p>
-                      <p className="text-lg font-semibold">
-                        {formatCurrency(offer.amountRange.min)} - {formatCurrency(offer.amountRange.max)}
-                      </p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Investment Range</p>
+                        <p className="text-lg font-semibold">
+                          {formatCurrency(offer.amountRange.min)} - {formatCurrency(offer.amountRange.max)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Equity Range</p>
+                        <p className="text-lg font-semibold">
+                          {offer.preferredEquity.min}% - {offer.preferredEquity.max}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Investment Type</p>
+                        <p className="text-lg font-semibold capitalize">{offer.investmentType}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Posted</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{formatTimeAgo(offer.createdAt)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Equity Range</p>
-                      <p className="text-lg font-semibold">
-                        {offer.preferredEquity.min}% - {offer.preferredEquity.max}%
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Investment Type</p>
-                      <p className="text-lg font-semibold capitalize">{offer.investmentType}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Posted</p>
-                      <p className="text-sm text-gray-600">{formatTimeAgo(offer.createdAt)}</p>
-                    </div>
-                  </div>
 
-                  <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Preferred Industries</p>
-                    <div className="flex flex-wrap gap-2">
-                      {offer.preferredIndustries.map((industry) => (
-                        <Badge key={industry} variant="outline">
-                          {industry}
-                        </Badge>
-                      ))}
+                    <div className="mb-4">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preferred Industries</p>
+                      <div className="flex flex-wrap gap-2">
+                        {offer.preferredIndustries.map((industry) => (
+                          <Badge key={industry} variant="outline">
+                            {industry}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Preferred Stages</p>
-                    <div className="flex flex-wrap gap-2">
-                      {offer.preferredStages.map((stage) => (
-                        <Badge key={stage} variant="outline" className="capitalize">
-                          {stage}
-                        </Badge>
-                      ))}
+                    <div className="mb-4">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preferred Stages</p>
+                      <div className="flex flex-wrap gap-2">
+                        {offer.preferredStages.map((stage) => (
+                          <Badge key={stage} variant="outline" className="capitalize">
+                            {stage}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex justify-end">
-                    <Button>View Details</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                    <div className="flex justify-end">
+                      <Button>View Details</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
       </div>
-    </div>
+    </SidebarLayout>
   );
 }

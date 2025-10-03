@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { IdeaForm } from "@/components/ideas/idea-form";
 import { CreateBusinessIdeaData } from "@/types";
 import { useMutation } from "convex/react";
-import { api } from "@/lib/convex";
+import { api } from "../../../../convex/_generated/api";
 
 export default function CreateIdeaPage() {
   const [isLoading, setIsLoading] = useState(false);
