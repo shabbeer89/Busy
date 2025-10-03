@@ -235,7 +235,7 @@ export default function MatchesPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <div>
                       <p className="text-sm font-medium text-gray-700">Amount Compatibility</p>
                       <p className="text-lg font-semibold">{match.matchingFactors.amountCompatibility}%</p>
@@ -296,7 +296,7 @@ export default function MatchesPage() {
 
         {/* Summary Stats */}
         {filteredMatches.length > 0 && (
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4">
             <Card>
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-blue-600">

@@ -5,6 +5,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Briefcase, User, TrendingUp, Clock } from "lucide-react";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 
@@ -30,8 +31,8 @@ export default function DashboardPage() {
 
   return (
     <SidebarLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="space-y-6">
           <h1 className="text-3xl font-bold text-foreground">
             Welcome to your Dashboard, {user.name}!
           </h1>
@@ -58,7 +59,7 @@ export default function DashboardPage() {
 
           {/* Recent Activity */}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {/* Quick Actions */}
           <Card>
             <CardHeader>
@@ -92,35 +93,53 @@ export default function DashboardPage() {
                 </>
               )}
             </div>
-          </CardContent>
-              </Card>
-          </div>
-
+            </CardContent>
+          </Card>
+        </div>
           {/* Profile Summary */}
           <Card>
             <CardHeader>
               <CardTitle>Profile Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <p className="text-muted-foreground">
-                  <span className="font-medium text-foreground">Email:</span> {user.email}
-                </p>
-                <p className="text-muted-foreground">
-                  <span className="font-medium text-foreground">Account Type:</span> {user.userType}
-                </p>
-                <p className="text-muted-foreground">
-                  <span className="font-medium text-foreground">Status:</span>{" "}
-                  {user.isVerified ? "Verified" : "Pending Verification"}
-                </p>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-400/20 flex items-center justify-center">
+                      <User className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <span className="text-sm text-muted-foreground">Email</span>
+                  </div>
+                  <span className="text-sm font-medium text-foreground">{user.email}</span>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-400/20 flex items-center justify-center">
+                      <Briefcase className="w-4 h-4 text-green-400" />
+                    </div>
+                    <span className="text-sm text-muted-foreground">Account Type</span>
+                  </div>
+                  <span className="text-sm font-medium text-foreground capitalize">{user.userType}</span>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${user.isVerified ? 'bg-green-400/20' : 'bg-amber-400/20'}`}>
+                      <Clock className={`w-4 h-4 ${user.isVerified ? 'text-green-400' : 'text-amber-400'}`} />
+                    </div>
+                    <span className="text-sm text-muted-foreground">Status</span>
+                  </div>
+                  <span className={`text-sm font-medium ${user.isVerified ? 'text-green-400' : 'text-amber-400'}`}>
+                    {user.isVerified ? "Verified" : "Pending Verification"}
+                  </span>
+                </div>
               <Link href="/profile">
                 <Button variant="outline" className="w-full mt-4">
                   {user.bio || user.location ? "Edit Profile" : "Complete Profile"}
                 </Button>
               </Link>
-              </div>
-              </CardContent>
-                </Card>
+            </div>
+            </CardContent>
+          </Card>
           
 
           {/* Platform Stats */}
@@ -129,18 +148,27 @@ export default function DashboardPage() {
               <CardTitle>Platform Overview</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total Ideas:</span>
-                  <span className="font-medium text-foreground">1,234</span>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-4 h-4 text-blue-400" />
+                    <span className="text-sm text-muted-foreground">Total Ideas</span>
+                  </div>
+                  <span className="text-lg font-semibold text-foreground">1,234</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Active Investors:</span>
-                  <span className="font-medium text-foreground">567</span>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-green-400" />
+                    <span className="text-sm text-muted-foreground">Active Investors</span>
+                  </div>
+                  <span className="text-lg font-semibold text-foreground">567</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Matches Today:</span>
-                  <span className="font-medium text-foreground">89</span>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-purple-400" />
+                    <span className="text-sm text-muted-foreground">Matches Today</span>
+                  </div>
+                  <span className="text-lg font-semibold text-foreground">89</span>
                 </div>
               <Link href="/matches">
                 <Button variant="outline" className="w-full mt-4">
@@ -152,19 +180,24 @@ export default function DashboardPage() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="mt-8">
+        <Card className="mt-8 border-dashed">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-            <p>No recent activity to display.</p>
-            <p className="text-sm mt-2">
-              {user.userType === "creator"
-                ? "Submit your first business idea to get started!"
-                : "Create your first investment offer to begin matching with ideas!"
-              }
-            </p>
+          <CardContent className="text-center">
+            <div className="py-12">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-foreground mb-2">No Recent Activity</h3>
+              <p className="text-muted-foreground">
+                {user.userType === "creator"
+                  ? "Submit your first business idea to get started!"
+                  : "Create your first investment offer to begin matching with ideas!"
+                }
+              </p>
             </div>
           </CardContent>
         </Card>
