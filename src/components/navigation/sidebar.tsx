@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/theme-toggle";
 import {
   LayoutDashboard,
   Briefcase,
@@ -88,13 +87,13 @@ export function Sidebar({ className }: SidebarProps) {
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Logo/Brand */}
-      <div className="flex h-16 items-center border-b px-4">
-        <Link href="/" className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+      <div className="flex h-16 items-center border-b px-4 border-slate-700">
+        <Link href="/dashboard" className="flex items-center space-x-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-white">
             <span className="text-sm font-bold">BM</span>
           </div>
           {isExpanded && (
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
+            <span className="text-xl font-bold text-white">
               BusinessMatch
             </span>
           )}
@@ -114,8 +113,8 @@ export function Sidebar({ className }: SidebarProps) {
               className={cn(
                 "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-white",
+                  ? "bg-slate-700 text-blue-300"
+                  : "text-gray-300 hover:bg-slate-700 hover:text-white",
                 isExpanded ? "justify-start" : "justify-center"
               )}
             >
@@ -124,7 +123,7 @@ export function Sidebar({ className }: SidebarProps) {
                 <span className="truncate">{item.name}</span>
               )}
               {!isExpanded && (
-                <div className="absolute left-full ml-6 hidden rounded-md bg-gray-900 px-2 py-1 text-xs text-white group-hover:block dark:bg-gray-700">
+                <div className="absolute left-full ml-6 hidden rounded-md bg-slate-800 px-2 py-1 text-xs text-white group-hover:block">
                   {item.name}
                 </div>
               )}
@@ -135,19 +134,19 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* User Section */}
       {isAuthenticated && user && (
-        <div className="border-t p-4">
+        <div className="border-t border-slate-700 p-4">
           <div className="flex items-center space-x-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-600">
+              <span className="text-sm font-medium text-gray-300">
                 {user.name.charAt(0).toUpperCase()}
               </span>
             </div>
             {isExpanded && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <p className="text-sm font-medium text-white truncate">
                   {user.name}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                <p className="text-xs text-gray-400 capitalize">
                   {user.userType}
                 </p>
               </div>
@@ -156,17 +155,6 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
       )}
 
-      {/* Theme Toggle */}
-      <div className="border-t p-4">
-        <div className={cn("flex items-center", isExpanded ? "justify-start" : "justify-center")}>
-          <ThemeToggle />
-          {isExpanded && (
-            <span className="ml-3 text-sm text-gray-600 dark:text-gray-400">
-              Theme
-            </span>
-          )}
-        </div>
-      </div>
     </div>
   );
 
@@ -199,7 +187,7 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-20 bg-white shadow-lg transition-all duration-300 dark:bg-slate-900 dark:border-r dark:border-slate-700",
+          "fixed inset-y-0 left-0 z-20 bg-slate-900 shadow-lg transition-all duration-300 border-r border-slate-700",
           isExpanded ? "w-64" : "w-16",
           "hidden lg:block"
         )}
@@ -214,7 +202,7 @@ export function Sidebar({ className }: SidebarProps) {
             className="fixed inset-0 z-10 bg-black bg-opacity-50 lg:hidden"
             onClick={() => setIsMobileOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 z-20 w-64 bg-white shadow-xl dark:bg-slate-900 lg:hidden">
+          <div className="fixed inset-y-0 left-0 z-20 w-64 bg-slate-900 shadow-xl lg:hidden">
             <SidebarContent />
           </div>
         </>
@@ -234,7 +222,7 @@ export function Sidebar({ className }: SidebarProps) {
 // Layout wrapper component that includes the sidebar
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-900">
       <Sidebar />
       <div className="lg:pl-20">
         {children}
