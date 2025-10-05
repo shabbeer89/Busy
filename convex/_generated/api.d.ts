@@ -14,8 +14,11 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as businessIdeas from "../businessIdeas.js";
+import type * as favorites from "../favorites.js";
 import type * as investmentOffers from "../investmentOffers.js";
 import type * as matches from "../matches.js";
+import type * as sampleData from "../sampleData.js";
+import type * as seedData from "../seedData.js";
 import type * as transactions from "../transactions.js";
 import type * as users from "../users.js";
 
@@ -29,8 +32,11 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   businessIdeas: typeof businessIdeas;
+  favorites: typeof favorites;
   investmentOffers: typeof investmentOffers;
   matches: typeof matches;
+  sampleData: typeof sampleData;
+  seedData: typeof seedData;
   transactions: typeof transactions;
   users: typeof users;
 }>;

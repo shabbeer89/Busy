@@ -10,6 +10,8 @@ import Link from "next/link";
 import { BusinessIdea } from "@/types";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
+import { useQuery } from "convex/react";
+import { api } from "@/lib/convex";
 
 export default function IdeasPage() {
   const { user } = useAuth();
@@ -19,68 +21,98 @@ export default function IdeasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data for demo purposes
-  useEffect(() => {
-    const mockIdeas: BusinessIdea[] = [
-      {
-        id: "1",
-        creatorId: "creator-1",
-        title: "AI-Powered Personal Finance Assistant",
-        description: "An intelligent mobile app that uses machine learning to provide personalized financial advice, budgeting tools, and investment recommendations tailored to individual financial goals and risk tolerance.",
-        category: "Technology",
-        tags: ["AI", "Fintech", "Mobile App", "Personal Finance"],
-        fundingGoal: 500000,
-        currentFunding: 0,
-        equityOffered: 15,
-        valuation: 3000000,
-        stage: "mvp",
-        timeline: "12 months to launch, 24 months to profitability",
-        teamSize: 5,
-        status: "published",
-        createdAt: Date.now() - 86400000, // 1 day ago
-        updatedAt: Date.now() - 86400000,
-      },
-      {
-        id: "2",
-        creatorId: "creator-2",
-        title: "Sustainable Urban Farming Solutions",
-        description: "Vertical farming technology for urban environments, enabling restaurants and households to grow fresh produce year-round using 90% less water and space than traditional farming.",
-        category: "Agriculture",
-        tags: ["Sustainability", "Urban Farming", "AgriTech", "Green Technology"],
-        fundingGoal: 750000,
-        currentFunding: 150000,
-        equityOffered: 20,
-        stage: "early",
-        timeline: "6 months to market expansion",
-        teamSize: 8,
-        status: "published",
-        createdAt: Date.now() - 172800000, // 2 days ago
-        updatedAt: Date.now() - 172800000,
-      },
-      {
-        id: "3",
-        creatorId: "creator-3",
-        title: "Telemedicine Platform for Mental Health",
-        description: "A comprehensive telemedicine platform specifically designed for mental health services, connecting patients with licensed therapists and providing evidence-based digital therapeutics.",
-        category: "Healthcare",
-        tags: ["Telemedicine", "Mental Health", "Healthcare", "Digital Health"],
-        fundingGoal: 1000000,
-        currentFunding: 300000,
-        equityOffered: 12,
-        valuation: 8000000,
-        stage: "growth",
-        timeline: "Already profitable, expanding to new markets",
-        teamSize: 15,
-        status: "published",
-        createdAt: Date.now() - 259200000, // 3 days ago
-        updatedAt: Date.now() - 259200000,
-      },
-    ];
+  // Use Convex query to get published business ideas (with fallback)
+  const businessIdeas = useQuery(api.businessIdeas?.getPublishedIdeas) || [];
 
-    setIdeas(mockIdeas);
-    setFilteredIdeas(mockIdeas);
-    setIsLoading(false);
-  }, []);
+  useEffect(() => {
+    // Check if Convex query is available and has data
+    if (businessIdeas && businessIdeas.length > 0 && businessIdeas[0]._id) {
+      // Convert Convex data format to BusinessIdea format
+      const convertedIdeas = businessIdeas.map((idea: any) => ({
+        id: idea._id,
+        creatorId: idea.creatorId,
+        title: idea.title,
+        description: idea.description,
+        category: idea.category,
+        tags: idea.tags || [],
+        fundingGoal: idea.fundingGoal,
+        currentFunding: idea.currentFunding,
+        equityOffered: idea.equityOffered,
+        valuation: idea.valuation,
+        stage: idea.stage,
+        timeline: idea.timeline,
+        teamSize: idea.teamSize,
+        status: idea.status,
+        createdAt: idea.createdAt || Date.now(),
+        updatedAt: idea.updatedAt || Date.now(),
+      })) as BusinessIdea[];
+
+      setIdeas(convertedIdeas);
+      setFilteredIdeas(convertedIdeas);
+      setIsLoading(false);
+    } else {
+      // Fallback: Use sample data if Convex query fails or returns empty
+      const fallbackIdeas: BusinessIdea[] = [
+        {
+          id: "1",
+          creatorId: "creator-1",
+          title: "AI-Powered Personal Finance Assistant",
+          description: "An intelligent mobile app that uses machine learning to provide personalized financial advice, budgeting tools, and investment recommendations tailored to individual financial goals and risk tolerance.",
+          category: "Technology",
+          tags: ["AI", "Fintech", "Mobile App", "Personal Finance"],
+          fundingGoal: 500000,
+          currentFunding: 0,
+          equityOffered: 15,
+          valuation: 3000000,
+          stage: "mvp",
+          timeline: "12 months to launch, 24 months to profitability",
+          teamSize: 5,
+          status: "published",
+          createdAt: Date.now() - 86400000,
+          updatedAt: Date.now() - 86400000,
+        },
+        {
+          id: "2",
+          creatorId: "creator-2",
+          title: "Sustainable Urban Farming Solutions",
+          description: "Vertical farming technology for urban environments, enabling restaurants and households to grow fresh produce year-round using 90% less water and space than traditional farming.",
+          category: "Agriculture",
+          tags: ["Sustainability", "Urban Farming", "AgriTech", "Green Technology"],
+          fundingGoal: 750000,
+          currentFunding: 150000,
+          equityOffered: 20,
+          stage: "early",
+          timeline: "6 months to market expansion",
+          teamSize: 8,
+          status: "published",
+          createdAt: Date.now() - 172800000,
+          updatedAt: Date.now() - 172800000,
+        },
+        {
+          id: "3",
+          creatorId: "creator-3",
+          title: "Telemedicine Platform for Mental Health",
+          description: "A comprehensive telemedicine platform specifically designed for mental health services, connecting patients with licensed therapists and providing evidence-based digital therapeutics.",
+          category: "Healthcare",
+          tags: ["Telemedicine", "Mental Health", "Healthcare", "Digital Health"],
+          fundingGoal: 1000000,
+          currentFunding: 300000,
+          equityOffered: 12,
+          valuation: 8000000,
+          stage: "growth",
+          timeline: "Already profitable, expanding to new markets",
+          teamSize: 15,
+          status: "published",
+          createdAt: Date.now() - 259200000,
+          updatedAt: Date.now() - 259200000,
+        },
+      ];
+
+      setIdeas(fallbackIdeas);
+      setFilteredIdeas(fallbackIdeas);
+      setIsLoading(false);
+    }
+  }, [businessIdeas]);
 
   useEffect(() => {
     let filtered = ideas;

@@ -10,55 +10,73 @@ import { Input } from "@/components/ui/input";
 import { OfferCardSkeleton } from "@/components/ui/skeleton";
 import { animations } from "@/lib/animations";
 import { SidebarLayout } from "@/components/navigation/sidebar";
+import { useQuery } from "convex/react";
+import { api } from "@/lib/convex";
 
-// Mock data for demonstration - in real app this would come from Convex
-const mockOffers = [
-  {
-    id: "1",
-    title: "Tech Startup Investment",
-    description: "Looking to invest in early-stage technology companies with strong growth potential.",
-    amountRange: { min: 50000, max: 200000 },
-    preferredEquity: { min: 10, max: 25 },
-    preferredStages: ["mvp", "early"],
-    preferredIndustries: ["Technology", "SaaS", "AI"],
-    investmentType: "equity",
-    isActive: true,
-    createdAt: Date.now() - 86400000, // 1 day ago
-  },
-  {
-    id: "2",
-    title: "Healthcare Innovation Fund",
-    description: "Seeking innovative healthcare solutions and medical technology startups.",
-    amountRange: { min: 100000, max: 500000 },
-    preferredEquity: { min: 15, max: 30 },
-    preferredStages: ["concept", "mvp", "early"],
-    preferredIndustries: ["Healthcare", "Biotech", "Medical Devices"],
-    investmentType: "equity",
-    isActive: true,
-    createdAt: Date.now() - 172800000, // 2 days ago
-  },
-  {
-    id: "3",
-    title: "Sustainable Energy Investment",
-    description: "Investing in clean energy solutions and sustainable technology companies.",
-    amountRange: { min: 75000, max: 300000 },
-    preferredEquity: { min: 10, max: 20 },
-    preferredStages: ["early", "growth"],
-    preferredIndustries: ["Clean Energy", "Sustainability", "Environmental"],
-    investmentType: "convertible",
-    isActive: true,
-    createdAt: Date.now() - 259200000, // 3 days ago
-  },
-];
-
+// Use Convex query to get active investment offers
 export default function OffersPage() {
   const { user } = useAuth();
-  const [offers, setOffers] = useState(mockOffers);
-  const [filteredOffers, setFilteredOffers] = useState(mockOffers);
+  const investmentOffers = useQuery(api.investmentOffers.getActiveOffers) || [];
+  const [offers, setOffers] = useState<any[]>([]);
+  const [filteredOffers, setFilteredOffers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [industryFilter, setIndustryFilter] = useState("all");
   const [stageFilter, setStageFilter] = useState("all");
-  const [isLoadingOffers, setIsLoadingOffers] = useState(false);
+  const [isLoadingOffers, setIsLoadingOffers] = useState(true);
+
+  // Convert Convex data format to component format (with fallback)
+  useEffect(() => {
+    if (investmentOffers && investmentOffers.length > 0 && investmentOffers[0]._id) {
+      const convertedOffers = investmentOffers.map((offer: any) => ({
+        id: offer._id,
+        title: offer.title,
+        description: offer.description,
+        amountRange: offer.amountRange,
+        preferredEquity: offer.preferredEquity,
+        preferredStages: offer.preferredStages,
+        preferredIndustries: offer.preferredIndustries,
+        investmentType: offer.investmentType,
+        isActive: offer.isActive,
+        createdAt: offer.createdAt,
+      }));
+
+      setOffers(convertedOffers);
+      setFilteredOffers(convertedOffers);
+      setIsLoadingOffers(false);
+    } else {
+      // Fallback: Use sample data if Convex query fails or returns empty
+      const fallbackOffers = [
+        {
+          id: "1",
+          title: "Tech Startup Investment",
+          description: "Looking to invest in early-stage technology companies with strong growth potential.",
+          amountRange: { min: 50000, max: 200000 },
+          preferredEquity: { min: 10, max: 25 },
+          preferredStages: ["mvp", "early"],
+          preferredIndustries: ["Technology", "SaaS", "AI"],
+          investmentType: "equity",
+          isActive: true,
+          createdAt: Date.now() - 86400000,
+        },
+        {
+          id: "2",
+          title: "Healthcare Innovation Fund",
+          description: "Seeking innovative healthcare solutions and medical technology startups.",
+          amountRange: { min: 100000, max: 500000 },
+          preferredEquity: { min: 15, max: 30 },
+          preferredStages: ["concept", "mvp", "early"],
+          preferredIndustries: ["Healthcare", "Biotech", "Medical Devices"],
+          investmentType: "equity",
+          isActive: true,
+          createdAt: Date.now() - 172800000,
+        },
+      ];
+
+      setOffers(fallbackOffers);
+      setFilteredOffers(fallbackOffers);
+      setIsLoadingOffers(false);
+    }
+  }, [investmentOffers]);
 
   // Filter offers based on search and filters
   useEffect(() => {
@@ -69,7 +87,7 @@ export default function OffersPage() {
       filtered = filtered.filter(offer =>
         offer.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         offer.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        offer.preferredIndustries.some(industry =>
+        offer.preferredIndustries.some((industry: string) =>
           industry.toLowerCase().includes(searchQuery.toLowerCase())
         )
       );
@@ -78,7 +96,7 @@ export default function OffersPage() {
     // Industry filter
     if (industryFilter !== "all") {
       filtered = filtered.filter(offer =>
-        offer.preferredIndustries.some(industry =>
+        offer.preferredIndustries.some((industry: string) =>
           industry.toLowerCase() === industryFilter.toLowerCase()
         )
       );
@@ -210,7 +228,7 @@ export default function OffersPage() {
                     <div className="mb-4">
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preferred Industries</p>
                       <div className="flex flex-wrap gap-2">
-                        {offer.preferredIndustries.map((industry) => (
+                        {offer.preferredIndustries.map((industry: string) => (
                           <Badge key={industry} variant="outline">
                             {industry}
                           </Badge>
@@ -221,7 +239,7 @@ export default function OffersPage() {
                     <div className="mb-4">
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preferred Stages</p>
                       <div className="flex flex-wrap gap-2">
-                        {offer.preferredStages.map((stage) => (
+                        {offer.preferredStages.map((stage: string) => (
                           <Badge key={stage} variant="outline" className="capitalize">
                             {stage}
                           </Badge>

@@ -6,97 +6,71 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { Match } from "@/types";
 import { SidebarLayout } from "@/components/navigation/sidebar";
+import { useQuery } from "convex/react";
+import { api } from "@/lib/convex";
+import { Id } from "../../../convex/_generated/dataModel";
 
 export default function MatchesPage() {
   const { user } = useAuth();
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [filteredMatches, setFilteredMatches] = useState<Match[]>([]);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [filteredMatches, setFilteredMatches] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
 
+  // Get matches based on user type
+  const creatorMatches = useQuery(
+    api.matches.getMatchesByCreator,
+    user?.userType === "creator" ? { creatorId: user.id as Id<"users"> } : "skip"
+  );
+
+  const investorMatches = useQuery(
+    api.matches.getMatchesByInvestor,
+    user?.userType === "investor" ? { investorId: user.id as Id<"users"> } : "skip"
+  );
+
+  // Add onClick handlers for action buttons
+  const handleAcceptMatch = (matchId: string) => {
+    // TODO: Implement accept match functionality
+    console.log("Accept match:", matchId);
+  };
+
+  const handleRejectMatch = (matchId: string) => {
+    // TODO: Implement reject match functionality
+    console.log("Reject match:", matchId);
+  };
+
+  const handleStartConversation = (matchId: string) => {
+    // TODO: Implement start conversation functionality
+    console.log("Start conversation:", matchId);
+  };
+
+  const handleContinueDiscussion = (matchId: string) => {
+    // TODO: Implement continue discussion functionality
+    console.log("Continue discussion:", matchId);
+  };
+
+  // Convert Convex matches to component format
   useEffect(() => {
-    // Mock data - in real app this would come from Convex queries
-    const fetchMatches = async () => {
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    const matchesData = user?.userType === "creator" ? creatorMatches : investorMatches;
 
-        // Mock matches data
-        const mockMatches: Match[] = [
-          {
-            id: "1",
-            ideaId: "idea1",
-            investorId: "investor1",
-            creatorId: "creator1",
-            offerId: "offer1",
-            matchScore: 87,
-            matchingFactors: {
-              amountCompatibility: 90,
-              industryAlignment: 95,
-              stagePreference: 80,
-              riskAlignment: 85,
-            },
-            status: "suggested",
-            createdAt: Date.now() - 86400000 * 2, // 2 days ago
-            updatedAt: Date.now() - 86400000 * 1, // 1 day ago
-          },
-          {
-            id: "2",
-            ideaId: "idea2",
-            investorId: "investor2",
-            creatorId: "creator1",
-            offerId: "offer2",
-            matchScore: 92,
-            matchingFactors: {
-              amountCompatibility: 95,
-              industryAlignment: 90,
-              stagePreference: 95,
-              riskAlignment: 90,
-            },
-            status: "viewed",
-            createdAt: Date.now() - 86400000 * 5, // 5 days ago
-            updatedAt: Date.now() - 86400000 * 3, // 3 days ago
-          },
-          {
-            id: "3",
-            ideaId: "idea3",
-            investorId: "investor3",
-            creatorId: "creator1",
-            offerId: "offer3",
-            matchScore: 78,
-            matchingFactors: {
-              amountCompatibility: 85,
-              industryAlignment: 70,
-              stagePreference: 85,
-              riskAlignment: 75,
-            },
-            status: "contacted",
-            createdAt: Date.now() - 86400000 * 7, // 7 days ago
-            updatedAt: Date.now() - 86400000 * 4, // 4 days ago
-          },
-        ];
-
-        setMatches(mockMatches);
-        setFilteredMatches(mockMatches);
-      } catch (error) {
-        console.error("Failed to fetch matches:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchMatches();
+    if (matchesData && matchesData.length > 0 && matchesData[0]?._id) {
+      setMatches(matchesData);
+      setFilteredMatches(matchesData);
+      setIsLoading(false);
+    } else if (matchesData !== undefined) {
+      // No matches found
+      setMatches([]);
+      setFilteredMatches([]);
+      setIsLoading(false);
     }
-  }, [user]);
+  }, [creatorMatches, investorMatches, user]);
 
   useEffect(() => {
     if (statusFilter === "all") {
       setFilteredMatches(matches);
     } else {
-      setFilteredMatches(matches.filter(match => match.status === statusFilter));
+      setFilteredMatches(matches.filter((match: any) => match.status === statusFilter));
     }
   }, [matches, statusFilter]);
 
@@ -190,13 +164,13 @@ export default function MatchesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredMatches.map((match) => (
-              <Card key={match.id} className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 dark:bg-slate-800 dark:border-slate-700`}>
+            {filteredMatches.map((match: any) => (
+              <Card key={match._id} className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 dark:bg-slate-800 dark:border-slate-700`}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <CardTitle className="text-xl text-gray-900 dark:text-white">
-                        Match #{match.id.slice(-6)}
+                        Match #{match._id?.slice(-6) || 'Unknown'}
                       </CardTitle>
                       <CardDescription className="mt-2 text-gray-600 dark:text-gray-300">
                         Created on {formatDate(match.createdAt)} • Last updated {formatDate(match.updatedAt)}
@@ -254,15 +228,15 @@ export default function MatchesPage() {
                     <div className="flex gap-2">
                       {match.status === "suggested" && (
                         <>
-                          <Button size="sm">Accept Match</Button>
-                          <Button variant="outline" size="sm">Reject</Button>
+                          <Button size="sm" onClick={() => handleAcceptMatch(match._id)}>Accept Match</Button>
+                          <Button variant="outline" size="sm" onClick={() => handleRejectMatch(match._id)}>Reject</Button>
                         </>
                       )}
                       {match.status === "viewed" && (
-                        <Button size="sm">Start Conversation</Button>
+                        <Button size="sm" onClick={() => handleStartConversation(match._id)}>Start Conversation</Button>
                       )}
                       {(match.status === "contacted" || match.status === "negotiating") && (
-                        <Button size="sm">Continue Discussion</Button>
+                        <Button size="sm" onClick={() => handleContinueDiscussion(match._id)}>Continue Discussion</Button>
                       )}
                       {match.status === "invested" && (
                         <Badge className="bg-green-900/20 text-green-400">Investment Made</Badge>
@@ -281,7 +255,7 @@ export default function MatchesPage() {
             <Card className="dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-blue-400">
-                  {matches.filter(m => m.status === "suggested").length}
+                  {matches.filter((m: any) => m.status === "suggested").length}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Suggested</div>
               </CardContent>
@@ -289,7 +263,7 @@ export default function MatchesPage() {
             <Card className="dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-green-400">
-                  {matches.filter(m => m.status === "contacted" || m.status === "negotiating").length}
+                  {matches.filter((m: any) => m.status === "contacted" || m.status === "negotiating").length}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Active</div>
               </CardContent>
@@ -297,7 +271,7 @@ export default function MatchesPage() {
             <Card className="dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-purple-400">
-                  {matches.filter(m => m.status === "invested").length}
+                  {matches.filter((m: any) => m.status === "invested").length}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Invested</div>
               </CardContent>
@@ -305,7 +279,7 @@ export default function MatchesPage() {
             <Card className="dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-gray-400">
-                  {Math.round(matches.reduce((acc, m) => acc + m.matchScore, 0) / matches.length)}%
+                  {matches.length > 0 ? Math.round(matches.reduce((acc: number, m: any) => acc + m.matchScore, 0) / matches.length) : 0}%
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Avg Score</div>
               </CardContent>

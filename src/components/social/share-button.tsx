@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,12 +55,16 @@ export function ShareButton({
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        document.execCommand("copy");
+        try {
+          document.execCommand("copy");
+          showSuccess("Link copied to clipboard!");
+        } catch (fallbackError) {
+          console.error("Failed to copy text: ", fallbackError);
+        }
         document.body.removeChild(textArea);
-        showSuccess("Link copied to clipboard!");
       }
     } else if (platform === "native") {
-      if (navigator.share) {
+      if (typeof navigator !== 'undefined' && 'share' in navigator && typeof navigator.share === 'function') {
         try {
           await navigator.share({
             title,
@@ -69,14 +72,22 @@ export function ShareButton({
             url: shareUrl,
           });
         } catch (error) {
-          // User cancelled or error occurred
-          window.open(link, "_blank", "noopener,noreferrer");
+          // User cancelled or error occurred, fallback to twitter share if link exists
+          if (link) {
+            window.open(link, "_blank", "noopener,noreferrer");
+          }
         }
       } else {
-        window.open(link, "_blank", "noopener,noreferrer");
+        // Fallback to twitter share if link exists
+        if (link) {
+          window.open(link, "_blank", "noopener,noreferrer");
+        }
       }
     } else {
-      window.open(link, "_blank", "noopener,noreferrer");
+      // For other platforms, ensure link exists before opening
+      if (link) {
+        window.open(link, "_blank", "noopener,noreferrer");
+      }
     }
 
     setIsOpen(false);
@@ -111,7 +122,7 @@ export function ShareButton({
             <Link className="mr-2 h-4 w-4" />
             Copy Link
           </DropdownMenuItem>
-          {navigator.share && (
+          {typeof navigator !== 'undefined' && 'share' in navigator && typeof navigator.share === 'function' && (
             <DropdownMenuItem onClick={() => handleShare("native")}>
               <Share2 className="mr-2 h-4 w-4" />
               More Options

@@ -169,4 +169,15 @@ export default defineSchema({
     .index("by_investor", ["investorId"])
     .index("by_creator", ["creatorId"])
     .index("by_status", ["status"]),
+
+  // User favorites for offers and ideas
+  favorites: defineTable({
+    userId: v.id("users"),
+    itemId: v.string(), // ID of the offer or idea being favorited
+    itemType: v.union(v.literal("offer"), v.literal("idea")),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_item", ["itemId", "itemType"])
+    .index("by_user_item", ["userId", "itemId", "itemType"]),
 });

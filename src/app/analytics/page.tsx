@@ -185,7 +185,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="">
+          <AnimatedCard className="">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -257,7 +257,7 @@ export default function AnalyticsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </AnimatedCard>
 
           {/* Top Industries */}
           <Card className="">

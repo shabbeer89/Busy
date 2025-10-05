@@ -160,7 +160,7 @@ export default function WalletPage() {
             <WalletConnect />
 
             {isConnected && wallet && (
-              <Card className={`mt-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+              <AnimatedCard className={`mt-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
                 <CardHeader>
                   <CardTitle>Wallet Balance</CardTitle>
                 </CardHeader>
@@ -310,7 +310,7 @@ export default function WalletPage() {
                       </div>
                     )}
                   </CardContent>
-                </Card>
+                </AnimatedCard>
               </TabsContent>
 
               <TabsContent value="investments" className="space-y-6">

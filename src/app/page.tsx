@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, AnimatedCard } from "@/components/ui/card";
 
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -155,7 +155,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             <Link href="/matches" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+              <AnimatedCard className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,7 +174,7 @@ export default function Home() {
             </Link>
 
             <Link href="/messages" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+              <AnimatedCard className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,7 +193,7 @@ export default function Home() {
             </Link>
 
             <Link href="/profile" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+              <AnimatedCard className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -212,7 +212,7 @@ export default function Home() {
             </Link>
 
             <Link href="/analytics" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+              <AnimatedCard className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,7 +231,7 @@ export default function Home() {
             </Link>
 
             <Link href="#pricing" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+              <AnimatedCard className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,7 +250,7 @@ export default function Home() {
             </Link>
 
             <Link href="/wallet" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+              <AnimatedCard className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,7 +285,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Plan */}
-            <Card className="relative hover:shadow-lg transition-all duration-300 dark:bg-slate-800 dark:border-slate-700">
+            <AnimatedCard className="relative hover:shadow-lg transition-all duration-300 dark:bg-slate-800 dark:border-slate-700">
               <CardHeader className="text-center pb-8">
                 <div className="w-16 h-16 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -332,7 +332,7 @@ export default function Home() {
             </AnimatedCard>
 
             {/* Premium Plan */}
-            <Card className="relative hover:shadow-lg transition-all duration-300 border-2 border-blue-500 dark:bg-slate-800 dark:border-blue-500">
+            <AnimatedCard className="relative hover:shadow-lg transition-all duration-300 border-2 border-blue-500 dark:bg-slate-800 dark:border-blue-500">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium">
                   Most Popular
