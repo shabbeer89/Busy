@@ -108,8 +108,8 @@ export default function IdeasPage() {
 
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading business ideas...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Loading business ideas...</p>
         </div>
       </div>
       </SidebarLayout>
@@ -124,8 +124,8 @@ export default function IdeasPage() {
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Business Ideas</h1>
-              <p className="text-muted-foreground mt-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Business Ideas</h1>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">
                 Discover innovative business opportunities from entrepreneurs worldwide
               </p>
             </div>
@@ -142,7 +142,7 @@ export default function IdeasPage() {
           <CardContent className="pt-6">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="search" className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="search" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                   Search Ideas
                 </label>
                 <Input
@@ -154,7 +154,7 @@ export default function IdeasPage() {
               </div>
 
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="category" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                   Filter by Category
                 </label>
                 <select
@@ -176,7 +176,7 @@ export default function IdeasPage() {
 
         {/* Results Count */}
         <div className="mb-6">
-          <p className="text-muted-foreground">
+          <p className="text-gray-600 dark:text-gray-300">
             Showing {filteredIdeas.length} of {ideas.length} business ideas
           </p>
         </div>
@@ -184,8 +184,8 @@ export default function IdeasPage() {
         {/* Ideas Grid */}
         {filteredIdeas.length === 0 ? (
           <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-foreground mb-2">No ideas found</h3>
-            <p className="text-muted-foreground">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No ideas found</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               {searchTerm || selectedCategory !== "all"
                 ? "Try adjusting your search criteria"
                 : "Be the first to submit a business idea!"
@@ -199,26 +199,26 @@ export default function IdeasPage() {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
                         {idea.title}
                       </h3>
-                      <p className="text-sm text-muted-foreground capitalize">{idea.category} • {idea.stage} stage</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">{idea.category} • {idea.stage} stage</p>
                     </div>
                   </div>
 
-                  <p className="text-muted-foreground mb-4 line-clamp-3">
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
                     {idea.description}
                   </p>
 
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-1 mb-2">
                       {idea.tags.slice(0, 3).map(tag => (
-                        <span key={tag} className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
+                        <span key={tag} className="px-2 py-1 bg-slate-800 text-gray-600 dark:text-gray-300 rounded-full text-xs border border-slate-700">
                           {tag}
                         </span>
                       ))}
                       {idea.tags.length > 3 && (
-                        <span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
+                        <span className="px-2 py-1 bg-slate-800 text-gray-600 dark:text-gray-300 rounded-full text-xs border border-slate-700">
                           +{idea.tags.length - 3} more
                         </span>
                       )}
@@ -227,13 +227,13 @@ export default function IdeasPage() {
 
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Funding Goal</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Funding Goal</p>
                       <p className="text-lg font-semibold text-green-400">
                         ${idea.fundingGoal.toLocaleString()}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Equity</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Equity</p>
                       <p className="text-lg font-semibold text-blue-400">
                         {idea.equityOffered}%
                       </p>

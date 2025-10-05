@@ -103,12 +103,14 @@ export default function WalletPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">Please sign in to access your wallet.</p>
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Access Denied</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Please sign in to access your wallet.</p>
+          </div>
         </div>
-      </div>
+      </SidebarLayout>
     );
   }
 
@@ -142,11 +144,11 @@ export default function WalletPage() {
   return (
           <SidebarLayout>
     
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Crypto Wallet</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Crypto Wallet</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">
             Manage your cryptocurrency wallet and investment transactions
           </p>
         </div>
@@ -163,10 +165,10 @@ export default function WalletPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-gray-900 mb-2">
+                    <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                       {balance} ETH
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
                       ≈ ${(parseFloat(balance) * 2500).toLocaleString()} USD
                     </div>
                   </div>
@@ -199,7 +201,7 @@ export default function WalletPage() {
                     <Button onClick={validateToken} className="w-full" size="sm">
                       Validate Token
                     </Button>
-                    <div className="text-sm text-gray-600 mt-2">
+                    <div className="text-sm text-gray-600 dark:text-gray-300 mt-2">
                       Status: {validationStatus}
                     </div>
                   </div>
@@ -212,7 +214,7 @@ export default function WalletPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center">
-                    <div className="text-sm text-gray-600 mt-2">
+                    <div className="text-sm text-gray-600 dark:text-gray-300 mt-2">
                       Connect to MetaMask to validate your token.
                     </div>
                   </div>
@@ -253,15 +255,15 @@ export default function WalletPage() {
                       </div>
                     ) : transactions.length === 0 ? (
                       <div className="text-center py-8">
-                        <p className="text-gray-500">No transactions yet</p>
-                        <p className="text-sm text-gray-400 mt-2">
+                        <p className="text-gray-600 dark:text-gray-300">No transactions yet</p>
+                        <p className="text-sm text-gray-500 mt-2">
                           Your crypto transactions will appear here
                         </p>
                       </div>
                     ) : (
                       <div className="space-y-4">
                         {transactions.map((tx) => (
-                          <div key={tx.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                          <div key={tx.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-800 border-slate-700">
                             <div className="flex items-center gap-3">
                               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                                 tx.type === "sent" ? "bg-red-100" :
@@ -285,8 +287,8 @@ export default function WalletPage() {
                                 )}
                               </div>
                               <div>
-                                <div className="font-medium capitalize">{tx.type}</div>
-                                <div className="text-sm text-gray-600">
+                                <div className="font-medium capitalize text-gray-900 dark:text-white">{tx.type}</div>
+                                <div className="text-sm text-gray-600 dark:text-gray-300">
                                   {tx.description || `${tx.type === "sent" ? "To" : "From"} ${formatAddress(tx.type === "sent" ? tx.to : tx.from)}`}
                                 </div>
                                 <div className="text-xs text-gray-500">
@@ -320,8 +322,8 @@ export default function WalletPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-center py-8">
-                      <p className="text-gray-500">No investments yet</p>
-                      <p className="text-sm text-gray-400 mt-2">
+                      <p className="text-gray-600 dark:text-gray-300">No investments yet</p>
+                      <p className="text-sm text-gray-500 mt-2">
                         Your project investments will appear here
                       </p>
                       <Link href="/offers">
@@ -338,9 +340,9 @@ export default function WalletPage() {
                     <CardHeader>
                       <CardTitle>Monthly Volume</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-blue-600 mb-2">2.3 ETH</div>
-                      <div className="text-sm text-gray-600">≈ $5,750 USD</div>
+                    <CardContent className="bg-slate-800 dark:bg-slate-800 border-slate-700">
+                      <div className="text-3xl font-bold text-blue-400 mb-2">2.3 ETH</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300">≈ $5,750 USD</div>
                     </CardContent>
                   </Card>
 
@@ -348,9 +350,9 @@ export default function WalletPage() {
                     <CardHeader>
                       <CardTitle>Success Rate</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-green-600 mb-2">100%</div>
-                      <div className="text-sm text-gray-600">All transactions confirmed</div>
+                    <CardContent className="bg-slate-800 dark:bg-slate-800 border-slate-700">
+                      <div className="text-3xl font-bold text-green-400 mb-2">100%</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300">All transactions confirmed</div>
                     </CardContent>
                   </Card>
 
@@ -358,9 +360,9 @@ export default function WalletPage() {
                     <CardHeader>
                       <CardTitle>Total Invested</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-purple-600 mb-2">0.5 ETH</div>
-                      <div className="text-sm text-gray-600">1 active investment</div>
+                    <CardContent className="bg-slate-800 dark:bg-slate-800 border-slate-700">
+                      <div className="text-3xl font-bold text-purple-400 mb-2">0.5 ETH</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300">1 active investment</div>
                     </CardContent>
                   </Card>
 
@@ -368,9 +370,9 @@ export default function WalletPage() {
                     <CardHeader>
                       <CardTitle>Gas Fees</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-orange-600 mb-2">0.03 ETH</div>
-                      <div className="text-sm text-gray-600">Average per transaction</div>
+                    <CardContent className="bg-slate-800 dark:bg-slate-800 border-slate-700">
+                      <div className="text-3xl font-bold text-orange-400 mb-2">0.03 ETH</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300">Average per transaction</div>
                     </CardContent>
                   </Card>
                 </div>

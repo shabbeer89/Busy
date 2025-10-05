@@ -155,7 +155,7 @@ export default function OffersPage() {
 
         {/* Offers Grid */}
         {isLoadingOffers ? (
-          <div className="grid gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Array.from({ length: 6 }).map((_, index) => (
               <OfferCardSkeleton key={index} />
             ))}

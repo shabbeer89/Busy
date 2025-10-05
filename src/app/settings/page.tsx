@@ -14,8 +14,8 @@ export default function SettingsPage() {
       <SidebarLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground mb-4">Access Denied</h1>
-            <p className="text-muted-foreground mb-4">Please sign in to access your settings.</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Access Denied</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Please sign in to access your settings.</p>
             <Link href="/auth/login">
               <Button>Sign In</Button>
             </Link>
@@ -29,10 +29,10 @@ export default function SettingsPage() {
     <SidebarLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <div className="space-y-6">
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Settings
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-gray-600 dark:text-gray-300 mt-2">
             Manage your account settings and preferences.
           </p>
         </div>

@@ -18,8 +18,8 @@ export default function DashboardPage() {
       <SidebarLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground mb-4">Access Denied</h1>
-            <p className="text-muted-foreground mb-4">Please sign in to access your dashboard.</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Access Denied</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Please sign in to access your dashboard.</p>
             <Link href="/auth/login">
               <Button>Sign In</Button>
             </Link>
@@ -33,19 +33,19 @@ export default function DashboardPage() {
     <SidebarLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <div className="space-y-6">
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Welcome to your Dashboard, {user.name}!
           </h1>
-          <p className="text-muted-foreground mt-2">
-            Account Type: <span className="capitalize font-medium text-foreground">{user.userType}</span>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">
+            Account Type: <span className="capitalize font-medium text-gray-900 dark:text-white">{user.userType}</span>
           </p>
 
           {profileStatus && (
             <Card className="mt-4">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Profile Completion</span>
-                  <span className="text-sm text-muted-foreground">{profileStatus.percentage}%</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Profile Completion</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{profileStatus.percentage}%</span>
                 </div>
                 <Progress value={profileStatus.percentage} className="mb-2" />
                 {!profileStatus.isComplete && (
@@ -103,30 +103,30 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
+                <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 border border-slate-700">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-400/20 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-blue-900/20 flex items-center justify-center">
                       <User className="w-4 h-4 text-blue-400" />
                     </div>
-                    <span className="text-sm text-muted-foreground">Email</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Email</span>
                   </div>
-                  <span className="text-sm font-medium text-foreground">{user.email}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{user.email}</span>
                 </div>
-                <div className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
+                <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 border border-slate-700">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-400/20 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-green-900/20 flex items-center justify-center">
                       <Briefcase className="w-4 h-4 text-green-400" />
                     </div>
-                    <span className="text-sm text-muted-foreground">Account Type</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Account Type</span>
                   </div>
-                  <span className="text-sm font-medium text-foreground capitalize">{user.userType}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">{user.userType}</span>
                 </div>
-                <div className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
+                <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 border border-slate-700">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${user.isVerified ? 'bg-green-400/20' : 'bg-amber-400/20'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${user.isVerified ? 'bg-green-900/20' : 'bg-amber-900/20'}`}>
                       <Clock className={`w-4 h-4 ${user.isVerified ? 'text-green-400' : 'text-amber-400'}`} />
                     </div>
-                    <span className="text-sm text-muted-foreground">Status</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Status</span>
                   </div>
                   <span className={`text-sm font-medium ${user.isVerified ? 'text-green-400' : 'text-amber-400'}`}>
                     {user.isVerified ? "Verified" : "Pending Verification"}
@@ -152,23 +152,23 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <Briefcase className="w-4 h-4 text-blue-400" />
-                    <span className="text-sm text-muted-foreground">Total Ideas</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Total Ideas</span>
                   </div>
-                  <span className="text-lg font-semibold text-foreground">1,234</span>
+                  <span className="text-lg font-semibold text-gray-900 dark:text-white">1,234</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-green-400" />
-                    <span className="text-sm text-muted-foreground">Active Investors</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Active Investors</span>
                   </div>
-                  <span className="text-lg font-semibold text-foreground">567</span>
+                  <span className="text-lg font-semibold text-gray-900 dark:text-white">567</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-purple-400" />
-                    <span className="text-sm text-muted-foreground">Matches Today</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Matches Today</span>
                   </div>
-                  <span className="text-lg font-semibold text-foreground">89</span>
+                  <span className="text-lg font-semibold text-gray-900 dark:text-white">89</span>
                 </div>
               <Link href="/matches">
                 <Button variant="outline" className="w-full mt-4">
@@ -186,13 +186,13 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="text-center">
             <div className="py-12">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
+                <svg className="w-8 h-8 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-foreground mb-2">No Recent Activity</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Recent Activity</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 {user.userType === "creator"
                   ? "Submit your first business idea to get started!"
                   : "Create your first investment offer to begin matching with ideas!"

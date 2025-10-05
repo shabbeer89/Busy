@@ -205,23 +205,27 @@ export default function MessagesPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">Please sign in to view your messages.</p>
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Access Denied</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Please sign in to view your messages.</p>
+          </div>
         </div>
-      </div>
+      </SidebarLayout>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading conversations...</p>
+      <SidebarLayout>
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading conversations...</p>
+          </div>
         </div>
-      </div>
+      </SidebarLayout>
     );
   }
 
@@ -231,8 +235,8 @@ export default function MessagesPage() {
     <div className="min-h-screen bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Messages</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Messages</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">
             Communicate with matched {user.userType === "creator" ? "investors" : "creators"}
           </p>
         </div>
@@ -246,7 +250,7 @@ export default function MessagesPage() {
             <CardContent className="p-0">
               <div className="overflow-y-auto h-full">
               {conversations.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground">
+                <div className="p-8 text-center text-gray-600 dark:text-gray-300">
                   <p>No conversations yet</p>
                   <p className="text-sm mt-2">Start a conversation from your matches</p>
                 </div>
@@ -260,28 +264,28 @@ export default function MessagesPage() {
                     onClick={() => setSelectedConversation(conversation)}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-medium text-muted-foreground">
+                      <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-medium text-gray-300">
                           {conversation.otherUser.name.charAt(0)}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className="font-medium text-foreground truncate">
+                          <p className="font-medium text-gray-900 dark:text-white truncate">
                             {conversation.otherUser.name}
                           </p>
                           <div className="flex items-center gap-2">
                             {conversation.unreadCount > 0 && (
-                              <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs">
+                              <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs bg-blue-900/20 text-blue-400">
                                 {conversation.unreadCount}
                               </Badge>
                             )}
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-gray-600 dark:text-gray-300">
                               {formatTime(conversation.lastMessage.timestamp)}
                             </span>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
                           {conversation.lastMessage.content}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
@@ -311,10 +315,10 @@ export default function MessagesPage() {
                       </span>
                     </div>
                     <div className="flex-1">
-                      <CardTitle className="text-base">
+                      <CardTitle className="text-base text-gray-900 dark:text-white">
                         {selectedConversation.otherUser.name}
                       </CardTitle>
-                      <CardDescription className="capitalize">
+                      <CardDescription className="capitalize text-gray-600 dark:text-gray-300">
                         {selectedConversation.otherUser.userType}
                       </CardDescription>
                     </div>
@@ -337,7 +341,7 @@ export default function MessagesPage() {
                         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                           message.senderId === user!.id
                             ? "bg-blue-600 text-white"
-                            : "bg-slate-700 text-gray-100"
+                            : "bg-slate-700 text-gray-100 border border-slate-600"
                         }`}
                       >
                         <p className="text-sm">{message.content}</p>
@@ -370,10 +374,10 @@ export default function MessagesPage() {
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400">
                 <div className="text-center">
-                  <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-12 h-12 mx-auto mb-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
-                  <p>Select a conversation to start messaging</p>
+                  <p className="text-gray-600 dark:text-gray-300">Select a conversation to start messaging</p>
                 </div>
               </div>
             )}

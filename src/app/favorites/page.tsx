@@ -95,23 +95,27 @@ export default function FavoritesPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">Please sign in to view your favorites.</p>
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Access Denied</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Please sign in to view your favorites.</p>
+          </div>
         </div>
-      </div>
+      </SidebarLayout>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading favorites...</p>
+      <SidebarLayout>
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading favorites...</p>
+          </div>
         </div>
-      </div>
+      </SidebarLayout>
     );
   }
 
@@ -151,14 +155,14 @@ export default function FavoritesPage() {
   return (
           <SidebarLayout>
     
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center gap-3">
             <Heart className="w-8 h-8 text-red-500" />
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Favorites</h1>
-              <p className="text-gray-600 mt-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Favorites</h1>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">
                 Your saved investment offers and business ideas
               </p>
             </div>
@@ -166,11 +170,11 @@ export default function FavoritesPage() {
         </div>
 
         {favorites.length === 0 ? (
-          <Card>
+          <Card className="bg-slate-800 dark:bg-slate-800 border-slate-700">
             <CardContent className="p-12 text-center">
-              <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">No favorites yet</h2>
-              <p className="text-gray-600 mb-6">
+              <Heart className="w-16 h-16 text-gray-600 dark:text-gray-400 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No favorites yet</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Start browsing offers and ideas to save your favorites for later.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -196,9 +200,9 @@ export default function FavoritesPage() {
 
             <TabsContent value="offers" className="space-y-6">
               {favoriteOffers.length === 0 ? (
-                <Card>
+                <Card className="bg-slate-800 dark:bg-slate-800 border-slate-700">
                   <CardContent className="p-8 text-center">
-                    <p className="text-gray-500">No favorited offers yet</p>
+                    <p className="text-gray-600 dark:text-gray-300">No favorited offers yet</p>
                     <Link href="/offers">
                       <Button className="mt-4">Browse Offers</Button>
                     </Link>
@@ -211,11 +215,11 @@ export default function FavoritesPage() {
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <CardTitle className="text-xl flex items-center gap-2">
+                            <CardTitle className="text-xl flex items-center gap-2 text-gray-900 dark:text-white">
                               <Heart className="w-5 h-5 text-red-500 fill-current" />
                               {offer.title}
                             </CardTitle>
-                            <CardDescription className="mt-2">
+                            <CardDescription className="mt-2 text-gray-600 dark:text-gray-300">
                               {offer.description}
                             </CardDescription>
                           </div>
@@ -236,24 +240,24 @@ export default function FavoritesPage() {
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                           <div>
-                            <p className="text-sm font-medium text-gray-700">Investment Range</p>
-                            <p className="text-lg font-semibold">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Investment Range</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
                               {formatCurrency(offer.amountRange.min)} - {formatCurrency(offer.amountRange.max)}
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-700">Equity Range</p>
-                            <p className="text-lg font-semibold">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Equity Range</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
                               {offer.preferredEquity.min}% - {offer.preferredEquity.max}%
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-700">Type</p>
-                            <p className="text-lg font-semibold capitalize">{offer.investmentType}</p>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Type</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white capitalize">{offer.investmentType}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-700">Saved</p>
-                            <p className="text-sm text-gray-600">{formatTimeAgo(Date.now())}</p>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Saved</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">{formatTimeAgo(Date.now())}</p>
                           </div>
                         </div>
 
@@ -273,9 +277,9 @@ export default function FavoritesPage() {
 
             <TabsContent value="ideas" className="space-y-6">
               {favoriteIdeas.length === 0 ? (
-                <Card>
+                <Card className="bg-slate-800 dark:bg-slate-800 border-slate-700">
                   <CardContent className="p-8 text-center">
-                    <p className="text-gray-500">No favorited ideas yet</p>
+                    <p className="text-gray-600 dark:text-gray-300">No favorited ideas yet</p>
                     <Link href="/ideas">
                       <Button className="mt-4">Browse Ideas</Button>
                     </Link>
@@ -288,11 +292,11 @@ export default function FavoritesPage() {
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <CardTitle className="text-xl flex items-center gap-2">
+                            <CardTitle className="text-xl flex items-center gap-2 text-gray-900 dark:text-white">
                               <Heart className="w-5 h-5 text-red-500 fill-current" />
                               {idea.title}
                             </CardTitle>
-                            <CardDescription className="mt-2">
+                            <CardDescription className="mt-2 text-gray-600 dark:text-gray-300">
                               {idea.description}
                             </CardDescription>
                           </div>
@@ -313,24 +317,24 @@ export default function FavoritesPage() {
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                           <div>
-                            <p className="text-sm font-medium text-gray-700">Funding Goal</p>
-                            <p className="text-lg font-semibold">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Funding Goal</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
                               {formatCurrency(idea.fundingGoal)}
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-700">Equity Offered</p>
-                            <p className="text-lg font-semibold">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Equity Offered</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
                               {idea.equityOffered}%
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-700">Category</p>
-                            <p className="text-lg font-semibold">{idea.category}</p>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Category</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">{idea.category}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-700">Status</p>
-                            <Badge variant="outline" className="capitalize">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</p>
+                            <Badge variant="outline" className="capitalize text-gray-600 dark:text-gray-300 border-slate-600">
                               {idea.status}
                             </Badge>
                           </div>
