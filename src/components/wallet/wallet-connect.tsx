@@ -56,12 +56,14 @@ export function WalletConnect({ onWalletConnected, onWalletDisconnected, classNa
 
       let accounts: string[] = [];
 
-      if (provider === "metamask" && (window as any).ethereum) {
+      if (provider === "metamask") {
+        if (!(window as any).ethereum) {
+          setError("MetaMask not detected. Please install MetaMask to continue.");
+          return;
+        }
         accounts = await (window as any).ethereum.request({
           method: "eth_requestAccounts"
         });
-      } else if (provider === "metamask") {
-        throw new Error("MetaMask not detected. Please install MetaMask to continue.");
       } else {
         throw new Error(`Unsupported wallet provider: ${provider}`);
       }
@@ -239,7 +241,7 @@ export function useWallet() {
   const [wallet, setWallet] = useState<WalletInfo | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  const connect = async (providerParam?: string) => {
+  const connect = async (providerParam: string = "metamask") => {
     if (typeof window !== "undefined" && (window as any).ethereum) {
       try {
         const accounts = await (window as any).ethereum.request({
@@ -259,7 +261,7 @@ export function useWallet() {
           address: accounts[0],
           chainId: parseInt(chainId, 16),
           balance: balanceInEth.toFixed(4),
-          provider
+          provider: providerParam
         };
 
         setWallet(walletInfo);

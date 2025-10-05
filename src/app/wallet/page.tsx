@@ -22,13 +22,35 @@ interface Transaction {
   txHash?: string;
   description?: string;
 }
-
 export default function WalletPage() {
   const { user } = useAuth();
   const { wallet, isConnected } = useWallet();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState<string>("0.0000");
   const [isLoading, setIsLoading] = useState(true);
+  const [validationStatus, setValidationStatus] = useState<string>("Not Validated");
+
+  const validateToken = async () => {
+    if (!isConnected) {
+      setValidationStatus("Connect to MetaMask");
+      return;
+    }
+
+    try {
+      // Get user's MetaMask address
+      const accounts = await (window as any).ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const address = accounts[0];
+
+      // Simulate token ownership verification
+      const isValid = Math.random() < 0.5;
+
+      setValidationStatus(isValid ? "Token Validated" : "Invalid Token");
+    } catch (error: any) {
+      setValidationStatus(`Error: ${error.message}`);
+    }
+  };
 
   useEffect(() => {
     // Mock wallet data
@@ -161,6 +183,38 @@ export default function WalletPage() {
                         Make Investment
                       </Button>
                     </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Binance Account Bound Token Validation */}
+            {isConnected && wallet ? (
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Binance Account Bound Token</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <Button onClick={validateToken} className="w-full" size="sm">
+                      Validate Token
+                    </Button>
+                    <div className="text-sm text-gray-600 mt-2">
+                      Status: {validationStatus}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Binance Account Bound Token</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="text-sm text-gray-600 mt-2">
+                      Connect to MetaMask to validate your token.
+                    </div>
                   </div>
                 </CardContent>
               </Card>
