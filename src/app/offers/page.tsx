@@ -161,7 +161,7 @@ export default function OffersPage() {
             ))}
           </div>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredOffers.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">No investment offers found matching your criteria.</p>

@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { BusinessIdea } from "@/types";
 import { SidebarLayout } from "@/components/navigation/sidebar";
+import { animations } from "@/lib/animations";
 
 export default function IdeasPage() {
   const { user } = useAuth();
@@ -138,7 +140,7 @@ export default function IdeasPage() {
         </div>
 
         {/* Filters */}
-        <Card className="mb-8">
+        <Card className="mb-8 dark:bg-slate-800 dark:border-slate-700">
           <CardContent className="pt-6">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -161,7 +163,7 @@ export default function IdeasPage() {
                   id="category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                 >
                   {categories.map(category => (
                     <option key={category} value={category}>
@@ -195,7 +197,7 @@ export default function IdeasPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredIdeas.map((idea) => (
-              <Card key={idea.id} className="hover:shadow-md transition-shadow">
+              <Card key={idea.id} className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -213,14 +215,14 @@ export default function IdeasPage() {
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-1 mb-2">
                       {idea.tags.slice(0, 3).map(tag => (
-                        <span key={tag} className="px-2 py-1 bg-slate-800 text-gray-600 dark:text-gray-300 rounded-full text-xs border border-slate-700">
+                        <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
-                        </span>
+                        </Badge>
                       ))}
                       {idea.tags.length > 3 && (
-                        <span className="px-2 py-1 bg-slate-800 text-gray-600 dark:text-gray-300 rounded-full text-xs border border-slate-700">
+                        <Badge variant="outline" className="text-xs">
                           +{idea.tags.length - 3} more
-                        </span>
+                        </Badge>
                       )}
                     </div>
                   </div>

@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
 import { Match } from "@/types";
 import { SidebarLayout } from "@/components/navigation/sidebar";
@@ -117,7 +116,7 @@ export default function MatchesPage() {
   if (isLoading) {
     return (
       <SidebarLayout>
-        <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
             <p className="text-gray-600 dark:text-gray-300">Loading your matches...</p>
@@ -148,10 +147,9 @@ export default function MatchesPage() {
   };
 
   return (
-          <SidebarLayout>
-    
-    <div className="min-h-screen bg-slate-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <SidebarLayout>
+      <div className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
@@ -164,7 +162,7 @@ export default function MatchesPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
               >
                 <option value="all">All Status</option>
                 <option value="suggested">Suggested</option>
@@ -179,42 +177,21 @@ export default function MatchesPage() {
         </div>
 
         {filteredMatches.length === 0 ? (
-          <div className="bg-slate-800 dark:bg-slate-800 rounded-lg shadow p-12 text-center border border-slate-700">
-            <div className="w-24 h-24 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-            </div>
-
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">
               {statusFilter === "all" ? "No matches yet" : `No ${statusFilter} matches`}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
+            </p>
+            <p className="text-gray-400 mt-2">
               {user.userType === "creator"
                 ? "Complete your profile and submit business ideas to start getting matched with investors."
                 : "Complete your profile and create investment offers to start getting matched with business ideas."
               }
             </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/profile">
-                <Button>Complete Profile</Button>
-              </Link>
-              {user.userType === "creator" ? (
-                <Link href="/ideas/create">
-                  <Button variant="outline">Submit Business Idea</Button>
-                </Link>
-              ) : (
-                <Link href="/offers/create">
-                  <Button variant="outline">Create Investment Offer</Button>
-                </Link>
-              )}
-            </div>
           </div>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredMatches.map((match) => (
-              <Card key={match.id} className="hover:shadow-lg transition-shadow">
+              <Card key={match.id} className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 dark:bg-slate-800 dark:border-slate-700`}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -301,7 +278,7 @@ export default function MatchesPage() {
         {/* Summary Stats */}
         {filteredMatches.length > 0 && (
           <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Card className="bg-slate-800 dark:bg-slate-800 border-slate-700">
+            <Card className="dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-blue-400">
                   {matches.filter(m => m.status === "suggested").length}
@@ -309,7 +286,7 @@ export default function MatchesPage() {
                 <div className="text-sm text-gray-600 dark:text-gray-300">Suggested</div>
               </CardContent>
             </Card>
-            <Card className="bg-slate-800 dark:bg-slate-800 border-slate-700">
+            <Card className="dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-green-400">
                   {matches.filter(m => m.status === "contacted" || m.status === "negotiating").length}
@@ -317,7 +294,7 @@ export default function MatchesPage() {
                 <div className="text-sm text-gray-600 dark:text-gray-300">Active</div>
               </CardContent>
             </Card>
-            <Card className="bg-slate-800 dark:bg-slate-800 border-slate-700">
+            <Card className="dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-purple-400">
                   {matches.filter(m => m.status === "invested").length}
@@ -325,7 +302,7 @@ export default function MatchesPage() {
                 <div className="text-sm text-gray-600 dark:text-gray-300">Invested</div>
               </CardContent>
             </Card>
-            <Card className="bg-slate-800 dark:bg-slate-800 border-slate-700">
+            <Card className="dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-gray-400">
                   {Math.round(matches.reduce((acc, m) => acc + m.matchScore, 0) / matches.length)}%
@@ -335,8 +312,8 @@ export default function MatchesPage() {
             </Card>
           </div>
         )}
+        </div>
       </div>
-    </div>
-    </SidebarLayout>
-  );
+     </SidebarLayout>
+   );
 }

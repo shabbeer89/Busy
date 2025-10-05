@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
+import { animations } from "@/lib/animations";
 
 interface Message {
   id: string;
@@ -243,7 +244,7 @@ export default function MessagesPage() {
 
         <div className="grid lg:grid-cols-3 gap-8 h-[600px]">
           {/* Conversations List */}
-          <Card className="lg:col-span-1">
+          <Card className={`lg:col-span-1 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Conversations</CardTitle>
             </CardHeader>
@@ -303,7 +304,7 @@ export default function MessagesPage() {
           </Card>
 
           {/* Messages Area */}
-          <Card className="lg:col-span-2 flex flex-col">
+          <Card className={`lg:col-span-2 flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
             {selectedConversation ? (
               <>
                 {/* Chat Header */}

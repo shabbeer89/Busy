@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Briefcase, User, TrendingUp, Clock } from "lucide-react";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
+import { animations } from "@/lib/animations";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -41,7 +42,7 @@ export default function DashboardPage() {
           </p>
 
           {profileStatus && (
-            <Card className="mt-4">
+            <Card className="mt-4 dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Profile Completion</span>
@@ -61,7 +62,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {/* Quick Actions */}
-          <Card>
+          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
@@ -97,7 +98,7 @@ export default function DashboardPage() {
           </Card>
         </div>
           {/* Profile Summary */}
-          <Card>
+          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
             <CardHeader>
               <CardTitle>Profile Summary</CardTitle>
             </CardHeader>
@@ -143,7 +144,7 @@ export default function DashboardPage() {
           
 
           {/* Platform Stats */}
-          <Card>
+          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
             <CardHeader>
               <CardTitle>Platform Overview</CardTitle>
             </CardHeader>
@@ -180,7 +181,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="mt-8 border-dashed">
+        <Card className="mt-8 border-dashed dark:bg-slate-800 dark:border-slate-700">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>

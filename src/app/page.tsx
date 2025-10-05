@@ -36,78 +36,106 @@ export default function Home() {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Connect Ideas with Investment
+              Build Strong Business Relationships
             </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-              The premier platform for connecting innovative business ideas with the right investors through intelligent matching algorithms.
+            <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto">
+              Connect with entrepreneurs, investors, and mentors who share your goals and passions. Our intelligent matching algorithm finds the perfect business partners for lasting partnerships.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link href="/auth/register">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
-                  Start as Creator
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8">
+                  Join BusinessMatch
                 </Button>
               </Link>
-              <Link href="/auth/register">
+              <Link href="#features">
                 <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
-                  Start as Investor
+                  Learn More
                 </Button>
               </Link>
+            </div>
+
+            {/* Live indicator */}
+            <div className="flex items-center justify-center gap-2 text-green-300">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-sm">1,247 entrepreneurs online now</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-slate-800">
+      <section id="features" className="py-24 bg-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-               Why Choose BusinessMatch?
+               How BusinessMatch Works
              </h2>
-              <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-               Our intelligent platform makes it easy to find the perfect match between innovative ideas and investment opportunities.
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+               Our intelligent matching algorithm connects you with the right business partners based on compatibility and shared interests.
              </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Smart Matching</h3>
-              <p className="text-gray-300">
-                Our advanced algorithm matches business ideas with investors based on multiple compatibility factors.
+              <h3 className="text-xl font-semibold text-white mb-3">Geo-Location</h3>
+              <p className="text-gray-300 leading-relaxed">
+                Connect with entrepreneurs and investors in your area for easier collaboration and local partnerships.
               </p>
             </div>
 
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">Shared Passions</h3>
+              <p className="text-gray-300 leading-relaxed">
+                Choose from 150+ hobbies and interests to find partners who share your values and work ethic.
+              </p>
+            </div>
+
+            <div className="text-center p-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">Business Interests</h3>
+              <p className="text-gray-300 leading-relaxed">
+                Priority matching with entrepreneurs from your business sector for faster growth through shared knowledge.
+              </p>
+            </div>
+
+            <div className="text-center p-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Secure Payments</h3>
-              <p className="text-gray-300">
-                Integrated crypto payment system ensures secure and transparent transactions between parties.
+              <h3 className="text-xl font-semibold text-white mb-3">Mutual Goals</h3>
+              <p className="text-gray-300 leading-relaxed">
+                Whether you're looking for investors, partnerships, or mentorship - find people with aligned objectives.
               </p>
             </div>
+          </div>
 
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Real-time Updates</h3>
-              <p className="text-gray-300">
-                Get instant notifications when new matches are found or when opportunities arise.
-              </p>
+          {/* Real-time indicator */}
+          <div className="text-center">
+            <div className="inline-flex items-center gap-3 bg-green-900/20 border border-green-500/30 rounded-full px-6 py-3">
+              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-green-300 font-medium">Real-time availability - See who's open to cooperation right now</span>
             </div>
           </div>
         </div>
@@ -118,82 +146,82 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-               Explore Our Platform
+               What You Can Achieve
              </h2>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-               Discover all the powerful features that make BusinessMatch the premier platform for connecting ideas with investment.
+               Join a community of entrepreneurs building meaningful business relationships and discovering new opportunities together.
              </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            <Link href="/offers" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-colors">
-                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                    </svg>
-                  </div>
-                  <CardTitle className="text-xl">Browse Investment Offers</CardTitle>
-                  <CardDescription>
-                    Explore active investment opportunities from verified investors across multiple industries and funding stages.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <Button className="w-full">View All Offers</Button>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/ideas" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition-colors">
-                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                  </div>
-                  <CardTitle className="text-xl">Discover Business Ideas</CardTitle>
-                  <CardDescription>
-                    Browse innovative business ideas from entrepreneurs, each with detailed funding requirements and growth potential.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <Button className="w-full">Explore Ideas</Button>
-                </CardContent>
-              </Card>
-            </Link>
-
             <Link href="/matches" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
                 <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-200 transition-colors">
-                    <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl">View Your Matches</CardTitle>
-                  <CardDescription>
-                    See your personalized matches between business ideas and investment offers, complete with compatibility scores.
+                  <CardTitle className="text-xl text-gray-900 dark:text-white">Find Partners</CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                    Discover entrepreneurs looking for partnerships, investments, or mentorship opportunities in your area.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <Button className="w-full">Check Matches</Button>
+                  <Button className="w-full">Find Matches</Button>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/messages" className="group">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </div>
+                  <CardTitle className="text-xl text-gray-900 dark:text-white">Start Conversations</CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                    Connect instantly with matched entrepreneurs who are currently available for business discussions.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <Button className="w-full">Send Messages</Button>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/profile" className="group">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <CardTitle className="text-xl text-gray-900 dark:text-white">Build Your Profile</CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                    Create a comprehensive profile highlighting your business interests, goals, and what you're looking for in partnerships.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <Button className="w-full">Create Profile</Button>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href="/analytics" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
                 <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition-colors">
-                    <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl">Platform Analytics</CardTitle>
-                  <CardDescription>
-                    Explore detailed analytics about platform activity, user engagement, and market trends.
+                  <CardTitle className="text-xl text-gray-900 dark:text-white">Track Progress</CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                    Monitor your networking success, track connections made, and analyze your business relationship growth.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
@@ -202,43 +230,166 @@ export default function Home() {
               </Card>
             </Link>
 
-            <Link href="/messages" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+            <Link href="#pricing" className="group">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
                 <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-indigo-200 transition-colors">
-                    <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl">Messages</CardTitle>
-                  <CardDescription>
-                    Communicate directly with matched users to discuss opportunities and negotiate deals.
+                  <CardTitle className="text-xl text-gray-900 dark:text-white">Business Events</CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                    Stay updated with local business events, networking meetups, and industry conferences in your area.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <Button className="w-full">Open Messages</Button>
+                  <Button className="w-full">View Events</Button>
                 </CardContent>
               </Card>
             </Link>
 
-            <Link href="/profile" className="group">
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+            <Link href="/wallet" className="group">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
                 <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-pink-200 transition-colors">
-                    <svg className="w-8 h-8 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl">Profile Management</CardTitle>
-                  <CardDescription>
-                    Manage your profile, view activity history, and track your platform engagement.
+                  <CardTitle className="text-xl text-gray-900 dark:text-white">Secure Transactions</CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                    Handle investments and payments securely through our integrated crypto wallet system.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <Button className="w-full">Manage Profile</Button>
+                  <Button className="w-full">Manage Wallet</Button>
                 </CardContent>
               </Card>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-24 bg-white dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+               Choose Your Plan
+             </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+               Start building valuable business relationships today with our flexible pricing options.
+             </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <Card className="relative hover:shadow-lg transition-all duration-300 dark:bg-slate-800 dark:border-slate-700">
+              <CardHeader className="text-center pb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+                <CardTitle className="text-2xl text-gray-900 dark:text-white">Free</CardTitle>
+                <div className="text-4xl font-bold text-gray-900 dark:text-white mt-4">$0</div>
+                <p className="text-gray-600 dark:text-gray-300">Perfect for getting started</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700 dark:text-gray-300">20 daily profile views</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700 dark:text-gray-300">Basic messaging</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700 dark:text-gray-300">Business events calendar</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700 dark:text-gray-300">Location-based matching</span>
+                  </div>
+                </div>
+                <Link href="/auth/register" className="w-full">
+                  <Button className="w-full mt-6" variant="outline">
+                    Get Started Free
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Premium Plan */}
+            <Card className="relative hover:shadow-lg transition-all duration-300 border-2 border-blue-500 dark:bg-slate-800 dark:border-blue-500">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium">
+                  Most Popular
+                </span>
+              </div>
+              <CardHeader className="text-center pb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                </div>
+                <CardTitle className="text-2xl text-gray-900 dark:text-white">Premium</CardTitle>
+                <div className="text-4xl font-bold text-gray-900 dark:text-white mt-4">
+                  $6.99<span className="text-lg text-gray-600 dark:text-gray-400">/week</span>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300">Unlimited access to opportunities</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700 dark:text-gray-300">Unlimited profile views</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700 dark:text-gray-300">Access to 1000+ entrepreneurs</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700 dark:text-gray-300">Advanced matching algorithm</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700 dark:text-gray-300">Social Capital networking tools</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700 dark:text-gray-300">Priority support</span>
+                  </div>
+                </div>
+                <Link href="/auth/register" className="w-full">
+                  <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700">
+                    Start Premium Trial
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -247,17 +398,21 @@ export default function Home() {
       <section className="py-24 bg-slate-800">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-             Ready to Get Started?
+             Ready to Build Strong Business Relationships?
            </h2>
             <p className="text-xl text-gray-300 mb-8">
-             Join our platform today and discover the perfect match for your business idea or investment opportunity.
+             Join BusinessMatch today and connect with entrepreneurs who share your vision and goals.
            </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register">
-              <Button size="lg">Create Account</Button>
+              <Button size="lg" className="bg-white text-slate-800 hover:bg-gray-100">
+                Join Now - It's Free!
+              </Button>
             </Link>
-            <Link href="/offers">
-              <Button size="lg" variant="outline">Browse Offers</Button>
+            <Link href="#features">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-slate-800">
+                Learn More
+              </Button>
             </Link>
           </div>
         </div>
@@ -268,11 +423,17 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h3 className="text-2xl font-bold mb-4">BusinessMatch</h3>
-            <p className="text-gray-400 mb-4">
-              Connecting innovative ideas with smart investment opportunities.
+            <p className="text-gray-400 mb-4 max-w-2xl mx-auto">
+              The intelligent platform for building strong business relationships through shared goals, interests, and mutual growth opportunities.
             </p>
+            <div className="flex flex-wrap justify-center gap-6 mb-6">
+              <Link href="#features" className="text-gray-400 hover:text-white transition-colors">Features</Link>
+              <Link href="#pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</Link>
+              <Link href="/matches" className="text-gray-400 hover:text-white transition-colors">Find Partners</Link>
+              <Link href="/auth/login" className="text-gray-400 hover:text-white transition-colors">Sign In</Link>
+            </div>
             <p className="text-gray-500">
-              © 2024 BusinessMatch. All rights reserved.
+              © 2024 BusinessMatch. Building meaningful business connections.
             </p>
           </div>
         </div>
