@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { animations } from "@/lib/animations";
 
 const Card = React.forwardRef<
   HTMLDivElement,
@@ -63,4 +64,20 @@ const CardFooter = React.forwardRef<
 ));
 CardFooter.displayName = "CardFooter";
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+const AnimatedCard = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <Card
+    ref={ref}
+    className={cn(
+      "hover:shadow-lg transition-all duration-300 hover:-translate-y-1 dark:bg-slate-800 dark:border-slate-700",
+      animations.cardHover,
+      className
+    )}
+    {...props}
+  />
+));
+AnimatedCard.displayName = "AnimatedCard";
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, AnimatedCard };

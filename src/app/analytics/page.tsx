@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, AnimatedCard } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
@@ -153,7 +153,7 @@ export default function AnalyticsPage() {
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+          <Card className="">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+          <Card className="">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -185,7 +185,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+          <Card className="">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -199,9 +199,9 @@ export default function AnalyticsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </AnimatedCard>
 
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+          <AnimatedCard>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -215,12 +215,12 @@ export default function AnalyticsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </AnimatedCard>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* User Distribution */}
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+          <AnimatedCard>
             <CardHeader>
               <CardTitle>User Distribution</CardTitle>
               <CardDescription>Breakdown of creators vs investors</CardDescription>
@@ -260,7 +260,7 @@ export default function AnalyticsPage() {
           </Card>
 
           {/* Top Industries */}
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+          <Card className="">
             <CardHeader>
               <CardTitle>Top Industries</CardTitle>
               <CardDescription>Most popular business categories</CardDescription>
@@ -287,7 +287,7 @@ export default function AnalyticsPage() {
 
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {/* Recent Activity */}
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+          <Card className="">
             <CardHeader>
               <CardTitle>Recent Activity ({timeRange})</CardTitle>
               <CardDescription>Platform activity in the selected time period</CardDescription>
@@ -346,7 +346,7 @@ export default function AnalyticsPage() {
           </Card>
 
           {/* Platform Health */}
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+          <Card className="">
             <CardHeader>
               <CardTitle>Platform Health</CardTitle>
               <CardDescription>Key performance indicators</CardDescription>
@@ -397,7 +397,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Growth Trends */}
-        <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+        <Card className="">
           <CardHeader>
             <CardTitle>Growth Trends</CardTitle>
             <CardDescription>Platform growth over time</CardDescription>

@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { WalletConnect, useWallet } from "@/components/wallet/wallet-connect";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, AnimatedCard } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
@@ -188,12 +188,12 @@ export default function WalletPage() {
                     </Link>
                   </div>
                 </CardContent>
-              </Card>
+              </AnimatedCard>
             )}
 
             {/* Binance Account Bound Token Validation */}
             {isConnected && wallet ? (
-              <Card className={`mt-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+              <AnimatedCard className="mt-6">
                 <CardHeader>
                   <CardTitle>Binance Account Bound Token</CardTitle>
                 </CardHeader>
@@ -207,9 +207,9 @@ export default function WalletPage() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </AnimatedCard>
             ) : (
-              <Card className={`mt-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+              <AnimatedCard className="mt-6">
                 <CardHeader>
                   <CardTitle>Binance Account Bound Token</CardTitle>
                 </CardHeader>
@@ -220,7 +220,7 @@ export default function WalletPage() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </AnimatedCard>
             )}
           </div>
 
@@ -234,7 +234,7 @@ export default function WalletPage() {
               </TabsList>
 
               <TabsContent value="transactions" className="space-y-6">
-                <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+                <AnimatedCard>
                   <CardHeader>
                     <CardTitle>Transaction History</CardTitle>
                     <CardDescription>
@@ -314,7 +314,7 @@ export default function WalletPage() {
               </TabsContent>
 
               <TabsContent value="investments" className="space-y-6">
-                <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+                <Card className="">
                   <CardHeader>
                     <CardTitle>Investment Portfolio</CardTitle>
                     <CardDescription>
@@ -337,7 +337,7 @@ export default function WalletPage() {
 
               <TabsContent value="analytics" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+                  <Card className="">
                     <CardHeader>
                       <CardTitle>Monthly Volume</CardTitle>
                     </CardHeader>
@@ -347,7 +347,7 @@ export default function WalletPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+                  <Card className="">
                     <CardHeader>
                       <CardTitle>Success Rate</CardTitle>
                     </CardHeader>
@@ -357,7 +357,7 @@ export default function WalletPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+                  <Card className="">
                     <CardHeader>
                       <CardTitle>Total Invested</CardTitle>
                     </CardHeader>
@@ -367,7 +367,7 @@ export default function WalletPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+                  <Card className="">
                     <CardHeader>
                       <CardTitle>Gas Fees</CardTitle>
                     </CardHeader>

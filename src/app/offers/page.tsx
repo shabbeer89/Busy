@@ -169,7 +169,7 @@ export default function OffersPage() {
               </div>
             ) : (
               filteredOffers.map((offer) => (
-                <Card key={offer.id} className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+                <Card key={offer.id} className="">
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>

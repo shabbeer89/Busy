@@ -170,7 +170,7 @@ export default function Home() {
                 <CardContent className="text-center">
                   <Button className="w-full">Find Matches</Button>
                 </CardContent>
-              </Card>
+              </AnimatedCard>
             </Link>
 
             <Link href="/messages" className="group">
@@ -189,7 +189,7 @@ export default function Home() {
                 <CardContent className="text-center">
                   <Button className="w-full">Send Messages</Button>
                 </CardContent>
-              </Card>
+              </AnimatedCard>
             </Link>
 
             <Link href="/profile" className="group">
@@ -208,7 +208,7 @@ export default function Home() {
                 <CardContent className="text-center">
                   <Button className="w-full">Create Profile</Button>
                 </CardContent>
-              </Card>
+              </AnimatedCard>
             </Link>
 
             <Link href="/analytics" className="group">
@@ -227,7 +227,7 @@ export default function Home() {
                 <CardContent className="text-center">
                   <Button className="w-full">View Analytics</Button>
                 </CardContent>
-              </Card>
+              </AnimatedCard>
             </Link>
 
             <Link href="#pricing" className="group">
@@ -246,7 +246,7 @@ export default function Home() {
                 <CardContent className="text-center">
                   <Button className="w-full">View Events</Button>
                 </CardContent>
-              </Card>
+              </AnimatedCard>
             </Link>
 
             <Link href="/wallet" className="group">
@@ -265,7 +265,7 @@ export default function Home() {
                 <CardContent className="text-center">
                   <Button className="w-full">Manage Wallet</Button>
                 </CardContent>
-              </Card>
+              </AnimatedCard>
             </Link>
           </div>
         </div>
@@ -329,7 +329,7 @@ export default function Home() {
                   </Button>
                 </Link>
               </CardContent>
-            </Card>
+            </AnimatedCard>
 
             {/* Premium Plan */}
             <Card className="relative hover:shadow-lg transition-all duration-300 border-2 border-blue-500 dark:bg-slate-800 dark:border-blue-500">
@@ -389,7 +389,7 @@ export default function Home() {
                   </Button>
                 </Link>
               </CardContent>
-            </Card>
+            </AnimatedCard>
           </div>
         </div>
       </section>

@@ -1,18 +1,121 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Briefcase, User, TrendingUp, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Briefcase,
+  User,
+  TrendingUp,
+  Clock,
+  Lightbulb,
+  DollarSign,
+  Target,
+  Activity,
+  Users,
+  Star,
+  ArrowUpRight,
+  ArrowDownRight,
+  Plus,
+  CheckCircle,
+  AlertCircle,
+  Zap,
+  Award,
+  Calendar,
+  MessageSquare,
+  Eye
+} from "lucide-react";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
+import { CardSkeleton, ProfileSkeleton } from "@/components/ui/skeleton";
+
+interface DashboardStats {
+  totalMatches: number;
+  activeOffers: number;
+  totalEarnings: number;
+  profileViews: number;
+  responseRate: number;
+  successRate: number;
+  recentActivity: Array<{
+    id: string;
+    type: 'match' | 'view' | 'message' | 'investment';
+    title: string;
+    description: string;
+    timestamp: string;
+    amount?: number;
+  }>;
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { profileStatus } = useProfile();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const mockStats: DashboardStats = {
+          totalMatches: user?.userType === 'creator' ? 12 : 8,
+          activeOffers: user?.userType === 'investor' ? 5 : 0,
+          totalEarnings: user?.userType === 'creator' ? 125000 : 0,
+          profileViews: Math.floor(Math.random() * 50) + 10,
+          responseRate: Math.floor(Math.random() * 20) + 75,
+          successRate: Math.floor(Math.random() * 15) + 80,
+          recentActivity: [
+            {
+              id: '1',
+              type: 'match',
+              title: 'New Match Found',
+              description: user?.userType === 'creator' ? 'AI-Powered Health App matched with investor' : 'Health Tech Startup matches your criteria',
+              timestamp: '2 hours ago',
+              amount: user?.userType === 'creator' ? 50000 : undefined
+            },
+            {
+              id: '2',
+              type: 'view',
+              title: 'Profile Viewed',
+              description: user?.userType === 'creator' ? 'Your business idea was viewed by 3 investors' : 'You viewed 3 new business ideas',
+              timestamp: '5 hours ago'
+            },
+            {
+              id: '3',
+              type: 'message',
+              title: 'New Message',
+              description: 'Investor sent you a message about your FinTech idea',
+              timestamp: '1 day ago'
+            },
+            {
+              id: '4',
+              type: 'investment',
+              title: 'Investment Received',
+              description: 'Congratulations! You received $25,000 investment',
+              timestamp: '2 days ago',
+              amount: 25000
+            }
+          ]
+        };
+
+        setStats(mockStats);
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   if (!user) {
     return (
@@ -30,178 +133,413 @@ export default function DashboardPage() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <SidebarLayout>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <ProfileSkeleton />
+          </div>
+        </div>
+      </SidebarLayout>
+    );
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'match':
+        return <Target className="w-4 h-4 text-blue-400" />;
+      case 'view':
+        return <Eye className="w-4 h-4 text-green-400" />;
+      case 'message':
+        return <MessageSquare className="w-4 h-4 text-purple-400" />;
+      case 'investment':
+        return <DollarSign className="w-4 h-4 text-yellow-400" />;
+      default:
+        return <Activity className="w-4 h-4 text-gray-400" />;
+    }
+  };
+
+  const getActivityColor = (type: string) => {
+    switch (type) {
+      case 'match':
+        return 'bg-blue-900/20 border-blue-800 text-blue-400';
+      case 'view':
+        return 'bg-green-900/20 border-green-800 text-green-400';
+      case 'message':
+        return 'bg-purple-900/20 border-purple-800 text-purple-400';
+      case 'investment':
+        return 'bg-yellow-900/20 border-yellow-800 text-yellow-400';
+      default:
+        return 'bg-gray-900/20 border-gray-800 text-gray-400';
+    }
+  };
+
   return (
     <SidebarLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Welcome to your Dashboard, {user.name}!
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">
-            Account Type: <span className="capitalize font-medium text-gray-900 dark:text-white">{user.userType}</span>
-          </p>
-
-          {profileStatus && (
-            <Card className="mt-4 dark:bg-slate-800 dark:border-slate-700">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Profile Completion</span>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">{profileStatus.percentage}%</span>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          {/* Personalized Welcome Section */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-white/10 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5" />
+            <div className="relative p-8">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div className="flex items-center gap-6">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
+                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center ${user.isVerified ? 'bg-green-500' : 'bg-amber-500'}`}>
+                      {user.isVerified ? (
+                        <CheckCircle className="w-4 h-4 text-white" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-white" />
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold text-white mb-2">
+                      Welcome back, {user.name}!
+                    </h1>
+                    <p className="text-slate-300 text-lg mb-3">
+                      Ready to {user.userType === 'creator' ? 'pitch your next big idea' : 'discover amazing opportunities'}?
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <Badge variant="outline" className="bg-white/10 text-white border-white/20 capitalize">
+                        {user.userType}
+                      </Badge>
+                      <div className="flex items-center gap-2 text-sm text-slate-300">
+                        <Star className="w-4 h-4 text-yellow-400" />
+                        <span>{stats?.successRate}% Success Rate</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Progress value={profileStatus.percentage} className="mb-2" />
-                {!profileStatus.isComplete && (
-                  <p className="text-sm text-amber-400 mt-2">
-                    Complete your profile to get better matches
-                  </p>
-                )}
-              </CardContent>
-            </Card>)}
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                    <div className="text-2xl font-bold text-white mb-1">{stats?.totalMatches || 0}</div>
+                    <div className="text-sm text-slate-300">Total Matches</div>
+                  </div>
+                  <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                    <div className="text-2xl font-bold text-white mb-1">{stats?.profileViews || 0}</div>
+                    <div className="text-sm text-slate-300">Profile Views</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Recent Activity */}
+          {/* Key Metrics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-blue-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Target className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-400 mb-1">Total Matches</p>
+                  <p className="text-3xl font-bold text-white mb-2">{stats?.totalMatches || 0}</p>
+                  <p className="text-xs text-green-400 flex items-center gap-1">
+                    <ArrowUpRight className="w-3 h-3" />
+                    +12% from last month
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {/* Quick Actions */}
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-green-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <DollarSign className="w-6 h-6 text-green-400" />
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-400 mb-1">Total Earnings</p>
+                  <p className="text-3xl font-bold text-white mb-2">{formatCurrency(stats?.totalEarnings || 0)}</p>
+                  <p className="text-xs text-green-400 flex items-center gap-1">
+                    <ArrowUpRight className="w-3 h-3" />
+                    +8% from last month
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-purple-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Activity className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <ArrowDownRight className="w-4 h-4 text-red-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-400 mb-1">Response Rate</p>
+                  <p className="text-3xl font-bold text-white mb-2">{stats?.responseRate || 0}%</p>
+                  <p className="text-xs text-red-400 flex items-center gap-1">
+                    <ArrowDownRight className="w-3 h-3" />
+                    -3% from last month
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Eye className="w-6 h-6 text-yellow-400" />
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-400 mb-1">Profile Views</p>
+                  <p className="text-3xl font-bold text-white mb-2">{stats?.profileViews || 0}</p>
+                  <p className="text-xs text-green-400 flex items-center gap-1">
+                    <ArrowUpRight className="w-3 h-3" />
+                    +24% from last month
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Quick Actions */}
+            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Zap className="w-5 h-5 text-yellow-400" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {user.userType === "creator" ? (
+                  <>
+                    <Link href="/ideas/create">
+                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Submit Business Idea
+                      </Button>
+                    </Link>
+                    <Link href="/ideas">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                        <Lightbulb className="w-4 h-4 mr-2" />
+                        Browse All Ideas
+                      </Button>
+                    </Link>
+                    <Link href="/matches">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                        <Target className="w-4 h-4 mr-2" />
+                        My Matches
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/ideas">
+                      <Button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-medium py-3">
+                        <Eye className="w-4 h-4 mr-2" />
+                        Browse Business Ideas
+                      </Button>
+                    </Link>
+                    <Link href="/offers/create">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Investment Offer
+                      </Button>
+                    </Link>
+                    <Link href="/matches">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                        <Target className="w-4 h-4 mr-2" />
+                        My Matches
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Profile Completion */}
+            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Award className="w-5 h-5 text-purple-400" />
+                  Profile Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {profileStatus && (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-slate-300">Completion</span>
+                        <span className="text-sm text-slate-400">{profileStatus.percentage}%</span>
+                      </div>
+                      <Progress value={profileStatus.percentage} className="h-2 bg-slate-700" />
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${user.isVerified ? 'bg-green-900/20' : 'bg-amber-900/20'}`}>
+                          <Clock className={`w-4 h-4 ${user.isVerified ? 'text-green-400' : 'text-amber-400'}`} />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">Account Status</p>
+                          <p className={`text-xs ${user.isVerified ? 'text-green-400' : 'text-amber-400'}`}>
+                            {user.isVerified ? "Verified" : "Pending Verification"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                        <div className="w-8 h-8 rounded-full bg-blue-900/20 flex items-center justify-center">
+                          <User className="w-4 h-4 text-blue-400" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">Profile Info</p>
+                          <p className="text-xs text-slate-400">
+                            {user.bio || user.location ? "Complete" : "Incomplete"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Link href="/profile">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
+                        {user.bio || user.location ? "Edit Profile" : "Complete Profile"}
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Activity className="w-5 h-5 text-green-400" />
+                  Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {stats?.recentActivity.slice(0, 4).map((activity) => (
+                    <div key={activity.id} className={`p-3 rounded-lg border ${getActivityColor(activity.type)}`}>
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5">
+                          {getActivityIcon(activity.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{activity.title}</p>
+                          <p className="text-xs text-slate-300 truncate">{activity.description}</p>
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-xs text-slate-400">{activity.timestamp}</span>
+                            {activity.amount && (
+                              <span className="text-xs font-medium text-green-400">
+                                {formatCurrency(activity.amount)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/matches">
+                  <Button variant="outline" className="w-full mt-4 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
+                    View All Activity
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Platform Overview */}
+          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
+                Platform Overview
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Current platform statistics and your performance
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-              {user.userType === "creator" ? (
-                <>
-                  <Link href="/ideas/create">
-                    <Button className="w-full">Submit Business Idea</Button>
-                  </Link>
-                  <Link href="/ideas">
-                    <Button variant="outline" className="w-full">Browse All Ideas</Button>
-                  </Link>
-                  <Link href="/matches">
-                    <Button variant="outline" className="w-full">My Matches</Button>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link href="/ideas">
-                    <Button className="w-full">Browse Business Ideas</Button>
-                  </Link>
-                  <Link href="/offers/create">
-                    <Button variant="outline" className="w-full">Create Investment Offer</Button>
-                  </Link>
-                  <Link href="/matches">
-                    <Button variant="outline" className="w-full">My Matches</Button>
-                  </Link>
-                </>
-              )}
-            </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                  <div className="text-2xl font-bold text-blue-400 mb-1">1,234</div>
+                  <div className="text-sm text-slate-400">Total Ideas</div>
+                </div>
+                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                  <div className="text-2xl font-bold text-green-400 mb-1">567</div>
+                  <div className="text-sm text-slate-400">Active Investors</div>
+                </div>
+                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                  <div className="text-2xl font-bold text-purple-400 mb-1">89</div>
+                  <div className="text-sm text-slate-400">Matches Today</div>
+                </div>
+                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                  <div className="text-2xl font-bold text-yellow-400 mb-1">$2.4M</div>
+                  <div className="text-sm text-slate-400">Total Funding</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-medium text-white">Your Performance</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-slate-300">Success Rate</span>
+                        <span className="text-sm text-slate-400">{stats?.successRate}%</span>
+                      </div>
+                      <Progress value={stats?.successRate} className="h-2 bg-slate-700" />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-slate-300">Response Rate</span>
+                        <span className="text-sm text-slate-400">{stats?.responseRate}%</span>
+                      </div>
+                      <Progress value={stats?.responseRate} className="h-2 bg-slate-700" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-medium text-white">Top Industries</h4>
+                  <div className="space-y-2">
+                    {['Technology', 'Healthcare', 'Finance', 'E-commerce'].map((industry, index) => (
+                      <div key={industry} className="flex items-center justify-between p-2 bg-slate-700/50 rounded border border-slate-600">
+                        <span className="text-sm text-slate-300">{industry}</span>
+                        <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
+                          #{index + 1}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
-          {/* Profile Summary */}
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
-            <CardHeader>
-              <CardTitle>Profile Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 border border-slate-700">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-900/20 flex items-center justify-center">
-                      <User className="w-4 h-4 text-blue-400" />
-                    </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Email</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">{user.email}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 border border-slate-700">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-900/20 flex items-center justify-center">
-                      <Briefcase className="w-4 h-4 text-green-400" />
-                    </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Account Type</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">{user.userType}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 border border-slate-700">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${user.isVerified ? 'bg-green-900/20' : 'bg-amber-900/20'}`}>
-                      <Clock className={`w-4 h-4 ${user.isVerified ? 'text-green-400' : 'text-amber-400'}`} />
-                    </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Status</span>
-                  </div>
-                  <span className={`text-sm font-medium ${user.isVerified ? 'text-green-400' : 'text-amber-400'}`}>
-                    {user.isVerified ? "Verified" : "Pending Verification"}
-                  </span>
-                </div>
-              <Link href="/profile">
-                <Button variant="outline" className="w-full mt-4">
-                  {user.bio || user.location ? "Edit Profile" : "Complete Profile"}
-                </Button>
-              </Link>
-            </div>
-            </CardContent>
-          </Card>
-          
-
-          {/* Platform Stats */}
-          <Card className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${animations.cardHover} dark:bg-slate-800 dark:border-slate-700`}>
-            <CardHeader>
-              <CardTitle>Platform Overview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="w-4 h-4 text-blue-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Total Ideas</span>
-                  </div>
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white">1,234</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-green-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Active Investors</span>
-                  </div>
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white">567</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-purple-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Matches Today</span>
-                  </div>
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white">89</span>
-                </div>
-              <Link href="/matches">
-                <Button variant="outline" className="w-full mt-4">
-                  View Matches
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card className="mt-8 border-dashed dark:bg-slate-800 dark:border-slate-700">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="py-12">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
-                <svg className="w-8 h-8 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Recent Activity</h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                {user.userType === "creator"
-                  ? "Submit your first business idea to get started!"
-                  : "Create your first investment offer to begin matching with ideas!"
-                }
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </SidebarLayout>
   );
