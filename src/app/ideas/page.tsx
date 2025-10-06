@@ -51,65 +51,9 @@ export default function IdeasPage() {
       setFilteredIdeas(convertedIdeas);
       setIsLoading(false);
     } else {
-      // Fallback: Use sample data if Convex query fails or returns empty
-      const fallbackIdeas: BusinessIdea[] = [
-        {
-          id: "1",
-          creatorId: "creator-1",
-          title: "AI-Powered Personal Finance Assistant",
-          description: "An intelligent mobile app that uses machine learning to provide personalized financial advice, budgeting tools, and investment recommendations tailored to individual financial goals and risk tolerance.",
-          category: "Technology",
-          tags: ["AI", "Fintech", "Mobile App", "Personal Finance"],
-          fundingGoal: 500000,
-          currentFunding: 0,
-          equityOffered: 15,
-          valuation: 3000000,
-          stage: "mvp",
-          timeline: "12 months to launch, 24 months to profitability",
-          teamSize: 5,
-          status: "published",
-          createdAt: Date.now() - 86400000,
-          updatedAt: Date.now() - 86400000,
-        },
-        {
-          id: "2",
-          creatorId: "creator-2",
-          title: "Sustainable Urban Farming Solutions",
-          description: "Vertical farming technology for urban environments, enabling restaurants and households to grow fresh produce year-round using 90% less water and space than traditional farming.",
-          category: "Agriculture",
-          tags: ["Sustainability", "Urban Farming", "AgriTech", "Green Technology"],
-          fundingGoal: 750000,
-          currentFunding: 150000,
-          equityOffered: 20,
-          stage: "early",
-          timeline: "6 months to market expansion",
-          teamSize: 8,
-          status: "published",
-          createdAt: Date.now() - 172800000,
-          updatedAt: Date.now() - 172800000,
-        },
-        {
-          id: "3",
-          creatorId: "creator-3",
-          title: "Telemedicine Platform for Mental Health",
-          description: "A comprehensive telemedicine platform specifically designed for mental health services, connecting patients with licensed therapists and providing evidence-based digital therapeutics.",
-          category: "Healthcare",
-          tags: ["Telemedicine", "Mental Health", "Healthcare", "Digital Health"],
-          fundingGoal: 1000000,
-          currentFunding: 300000,
-          equityOffered: 12,
-          valuation: 8000000,
-          stage: "growth",
-          timeline: "Already profitable, expanding to new markets",
-          teamSize: 15,
-          status: "published",
-          createdAt: Date.now() - 259200000,
-          updatedAt: Date.now() - 259200000,
-        },
-      ];
-
-      setIdeas(fallbackIdeas);
-      setFilteredIdeas(fallbackIdeas);
+      // No fallback data - show empty state
+      setIdeas([]);
+      setFilteredIdeas([]);
       setIsLoading(false);
     }
   }, [businessIdeas]);

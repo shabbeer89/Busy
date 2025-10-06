@@ -24,7 +24,7 @@ export default function OffersPage() {
   const [stageFilter, setStageFilter] = useState("all");
   const [isLoadingOffers, setIsLoadingOffers] = useState(true);
 
-  // Convert Convex data format to component format (with fallback)
+  // Convert Convex data format to component format
   useEffect(() => {
     if (investmentOffers && investmentOffers.length > 0 && investmentOffers[0]._id) {
       const convertedOffers = investmentOffers.map((offer: any) => ({
@@ -44,36 +44,9 @@ export default function OffersPage() {
       setFilteredOffers(convertedOffers);
       setIsLoadingOffers(false);
     } else {
-      // Fallback: Use sample data if Convex query fails or returns empty
-      const fallbackOffers = [
-        {
-          id: "1",
-          title: "Tech Startup Investment",
-          description: "Looking to invest in early-stage technology companies with strong growth potential.",
-          amountRange: { min: 50000, max: 200000 },
-          preferredEquity: { min: 10, max: 25 },
-          preferredStages: ["mvp", "early"],
-          preferredIndustries: ["Technology", "SaaS", "AI"],
-          investmentType: "equity",
-          isActive: true,
-          createdAt: Date.now() - 86400000,
-        },
-        {
-          id: "2",
-          title: "Healthcare Innovation Fund",
-          description: "Seeking innovative healthcare solutions and medical technology startups.",
-          amountRange: { min: 100000, max: 500000 },
-          preferredEquity: { min: 15, max: 30 },
-          preferredStages: ["concept", "mvp", "early"],
-          preferredIndustries: ["Healthcare", "Biotech", "Medical Devices"],
-          investmentType: "equity",
-          isActive: true,
-          createdAt: Date.now() - 172800000,
-        },
-      ];
-
-      setOffers(fallbackOffers);
-      setFilteredOffers(fallbackOffers);
+      // No fallback data - show empty state
+      setOffers([]);
+      setFilteredOffers([]);
       setIsLoadingOffers(false);
     }
   }, [investmentOffers]);

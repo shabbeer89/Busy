@@ -485,19 +485,19 @@ export default function DashboardPage() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                 <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-                  <div className="text-2xl font-bold text-blue-400 mb-1">1,234</div>
+                  <div className="text-2xl font-bold text-blue-400 mb-1">324</div>
                   <div className="text-sm text-slate-400">Total Ideas</div>
                 </div>
                 <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-                  <div className="text-2xl font-bold text-green-400 mb-1">567</div>
-                  <div className="text-sm text-slate-400">Active Investors</div>
+                  <div className="text-2xl font-bold text-green-400 mb-1">156</div>
+                  <div className="text-sm text-slate-400">Active Offers</div>
                 </div>
                 <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-                  <div className="text-2xl font-bold text-purple-400 mb-1">89</div>
-                  <div className="text-sm text-slate-400">Matches Today</div>
+                  <div className="text-2xl font-bold text-purple-400 mb-1">289</div>
+                  <div className="text-sm text-slate-400">Total Matches</div>
                 </div>
                 <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-                  <div className="text-2xl font-bold text-yellow-400 mb-1">$2.4M</div>
+                  <div className="text-2xl font-bold text-yellow-400 mb-1">$2.8M</div>
                   <div className="text-sm text-slate-400">Total Funding</div>
                 </div>
               </div>

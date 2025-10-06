@@ -273,11 +273,23 @@ export const getMatchesByInvestor = query({
 
 // Get matches by creator
 export const getMatchesByCreator = query({
-  args: { creatorId: v.id("users") },
+  args: { userId: v.id("users") },
   handler: async (ctx, args) => {
+    // Find the user in the database by ID
+    const user = await ctx.db.get(args.userId);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Only return matches if user is a creator
+    if (user.userType !== "creator") {
+      return [];
+    }
+
     return await ctx.db
       .query("matches")
-      .withIndex("by_creator", (q) => q.eq("creatorId", args.creatorId))
+      .withIndex("by_creator", (q) => q.eq("creatorId", user._id))
       .collect();
   },
 });
@@ -337,5 +349,12 @@ export const getTopMatchesForIdea = query({
     return matches
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, limit);
+  },
+});
+
+// Get all matches (for analytics and admin purposes)
+export const getAllMatches = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("matches").collect();
   },
 });

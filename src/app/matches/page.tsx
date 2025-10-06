@@ -12,21 +12,41 @@ import { api } from "@/lib/convex";
 import { Id } from "../../../convex/_generated/dataModel";
 
 export default function MatchesPage() {
-  const { user } = useAuth();
+  const { user, signOut, hasValidConvexId } = useAuth();
   const [matches, setMatches] = useState<any[]>([]);
   const [filteredMatches, setFilteredMatches] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
 
+  // Check for fake IDs and force logout if detected
+  useEffect(() => {
+    if (user && !hasValidConvexId(user.id)) {
+      console.log("Fake ID detected, forcing logout");
+      signOut();
+      // Clear local storage to force fresh login
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+    }
+  }, [user, hasValidConvexId, signOut]);
+
+
+  // Convex IDs are now properly typed in the User object
+
   // Get matches based on user type
   const creatorMatches = useQuery(
     api.matches.getMatchesByCreator,
-    user?.userType === "creator" ? { creatorId: user.id as Id<"users"> } : "skip"
+    user?.userType === "creator" && hasValidConvexId(user.id)
+      ? { userId: user.id }
+      : "skip"
   );
 
   const investorMatches = useQuery(
     api.matches.getMatchesByInvestor,
-    user?.userType === "investor" ? { investorId: user.id as Id<"users"> } : "skip"
+    user?.userType === "investor" && hasValidConvexId(user.id)
+      ? { investorId: user.id }
+      : "skip"
   );
 
   // Add onClick handlers for action buttons
@@ -74,13 +94,38 @@ export default function MatchesPage() {
     }
   }, [matches, statusFilter]);
 
-  if (!user) {
+  if (!user || !hasValidConvexId(user.id)) {
     return (
       <SidebarLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Access Denied</h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">Please sign in to view your matches.</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              {!hasValidConvexId(user?.id) ? "Account Setup Required" : "Access Denied"}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              {!hasValidConvexId(user?.id)
+                ? "Your account needs to be updated. Please sign out and sign in again to get a proper account ID."
+                : "Please sign in to view your matches."
+              }
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link href="/auth/register">
+                <Button>
+                  {!hasValidConvexId(user?.id) ? "Sign Up" : "Sign In"}
+                </Button>
+              </Link>
+              {user && !hasValidConvexId(user.id) && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    // Force sign out to clear fake ID
+                    window.location.href = "/auth/login";
+                  }}
+                >
+                  Sign Out & Fix Account
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </SidebarLayout>

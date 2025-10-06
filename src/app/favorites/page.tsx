@@ -39,18 +39,7 @@ interface FavoriteIdea {
 
 export default function FavoritesPage() {
   const { user } = useAuth();
-  const { removeFromFavorites } = useFavorites();
-
-  // Use existing favorites hook for now (will be replaced with Convex queries later)
-  const { favorites, isLoading } = useFavorites();
-
-  // Mock data with Indian names for display (will be replaced with real Convex data)
-  const favoritedOffers: FavoriteOffer[] = [];
-  const favoritedIdeas: FavoriteIdea[] = [];
-
-  // Filter favorites by type for display
-  const offerFavorites = favorites.filter(fav => fav.itemType === "offer");
-  const ideaFavorites = favorites.filter(fav => fav.itemType === "idea");
+  const { favoritedOffers, favoritedIdeas, removeFromFavorites, isLoading } = useFavorites();
 
   if (!user) {
     return (
@@ -145,15 +134,15 @@ export default function FavoritesPage() {
           <Tabs defaultValue="offers" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="offers">
-                Investment Offers ({offerFavorites.length})
+                Investment Offers ({favoritedOffers.length})
               </TabsTrigger>
               <TabsTrigger value="ideas">
-                Business Ideas ({ideaFavorites.length})
+                Business Ideas ({favoritedIdeas.length})
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="offers" className="space-y-6">
-              {offerFavorites.length === 0 ? (
+              {favoritedOffers.length === 0 ? (
                 <Card className="bg-slate-800 dark:bg-slate-800 border-slate-700">
                   <CardContent className="p-8 text-center">
                     <p className="text-gray-600 dark:text-gray-300">No favorited offers yet</p>
@@ -164,16 +153,55 @@ export default function FavoritesPage() {
                 </Card>
               ) : (
                 <div className="grid gap-6">
-                  <div className="text-center py-8">
-                    <p className="text-gray-600 dark:text-gray-300">No favorited offers yet</p>
-                    <p className="text-gray-600 dark:text-gray-300">Browse offers to add favorites</p>
-                  </div>
+                  {favoritedOffers.map((offer: any) => (
+                    <Card key={offer._id} className="bg-slate-800 border-slate-700">
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <CardTitle className="text-xl text-white">{offer.title}</CardTitle>
+                            <CardDescription className="mt-2 text-slate-300">
+                              Added {formatTimeAgo(offer.favoritedAt)}
+                            </CardDescription>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRemoveFavorite(offer._id, "offer")}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-slate-300 mb-4">{offer.description}</p>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm font-medium text-slate-400">Investment Range</p>
+                            <p className="text-lg font-semibold text-white">
+                              {formatCurrency(offer.amountRange.min)} - {formatCurrency(offer.amountRange.max)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-slate-400">Preferred Industries</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {offer.preferredIndustries.slice(0, 3).map((industry: string) => (
+                                <Badge key={industry} variant="outline" className="text-xs">
+                                  {industry}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
             </TabsContent>
 
             <TabsContent value="ideas" className="space-y-6">
-              {ideaFavorites.length === 0 ? (
+              {favoritedIdeas.length === 0 ? (
                 <Card className="bg-slate-800 dark:bg-slate-800 border-slate-700">
                   <CardContent className="p-8 text-center">
                     <p className="text-gray-600 dark:text-gray-300">No favorited ideas yet</p>
@@ -184,10 +212,45 @@ export default function FavoritesPage() {
                 </Card>
               ) : (
                 <div className="grid gap-6">
-                  <div className="text-center py-8">
-                    <p className="text-gray-600 dark:text-gray-300">No favorited ideas yet</p>
-                    <p className="text-gray-600 dark:text-gray-300">Browse ideas to add favorites</p>
-                  </div>
+                  {favoritedIdeas.map((idea: any) => (
+                    <Card key={idea._id} className="bg-slate-800 border-slate-700">
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <CardTitle className="text-xl text-white">{idea.title}</CardTitle>
+                            <CardDescription className="mt-2 text-slate-300">
+                              Added {formatTimeAgo(idea.favoritedAt)}
+                            </CardDescription>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRemoveFavorite(idea._id, "idea")}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-slate-300 mb-4">{idea.description}</p>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm font-medium text-slate-400">Funding Goal</p>
+                            <p className="text-lg font-semibold text-white">
+                              {formatCurrency(idea.fundingGoal)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-slate-400">Stage</p>
+                            <Badge variant="outline" className="capitalize">
+                              {idea.stage}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
             </TabsContent>

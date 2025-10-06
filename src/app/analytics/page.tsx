@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, AnimatedCard
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
+import { useQuery } from "convex/react";
+import { api } from "@/lib/convex";
 
 interface PlatformStats {
   totalUsers: number;
@@ -30,46 +32,30 @@ interface PlatformStats {
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<PlatformStats | null>(null);
   const [timeRange, setTimeRange] = useState("30d");
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Mock analytics data
-    const fetchStats = async () => {
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+  // For demo purposes, using realistic but hardcoded data
+  // In production, this would fetch from Convex queries
+  const stats: PlatformStats = {
+    totalUsers: 1247,
+    totalCreators: 892,
+    totalInvestors: 355,
+    totalIdeas: 324,
+    totalOffers: 156,
+    totalMatches: 289,
+    totalInvestments: 23,
+    totalFunding: 2840000, // $2.84M
+    averageMatchScore: 76,
+    topIndustries: ["Technology", "Healthcare", "Finance", "E-commerce", "AI"],
+    recentActivity: {
+      newIdeas: 47,
+      newOffers: 23,
+      newMatches: 89,
+      newInvestments: 3,
+    },
+  };
 
-        const mockStats: PlatformStats = {
-          totalUsers: 15420,
-          totalCreators: 8930,
-          totalInvestors: 6490,
-          totalIdeas: 3240,
-          totalOffers: 1250,
-          totalMatches: 5890,
-          totalInvestments: 234,
-          totalFunding: 89750000, // $89.75M
-          averageMatchScore: 78,
-          topIndustries: ["Technology", "Healthcare", "Finance", "E-commerce", "AI"],
-          recentActivity: {
-            newIdeas: 127,
-            newOffers: 89,
-            newMatches: 203,
-            newInvestments: 12,
-          },
-        };
-
-        setStats(mockStats);
-      } catch (error) {
-        console.error("Failed to fetch analytics:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [timeRange]);
+  const isLoading = false;
 
   if (!user) {
     return (

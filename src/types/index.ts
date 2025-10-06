@@ -11,9 +11,12 @@ export type TransactionStatus = "pending" | "confirmed" | "completed" | "failed"
 
 export type PaymentMethod = "crypto" | "bank_transfer";
 
+// Import Convex types
+import { Id } from "../../convex/_generated/dataModel";
+
 // User profile interfaces
 export interface User {
-  id: string;
+  id: Id<"users">;
   email: string;
   name: string;
   avatar?: string;
@@ -48,7 +51,7 @@ export interface User {
 // Business idea interfaces
 export interface BusinessIdea {
   id: string;
-  creatorId: string;
+  creatorId: Id<"users">;
   title: string;
   description: string;
   category: string;
@@ -79,7 +82,7 @@ export interface BusinessIdea {
 // Investment offer interfaces
 export interface InvestmentOffer {
   id: string;
-  investorId: string;
+  investorId: Id<"users">;
   title: string;
   description: string;
 
@@ -119,8 +122,8 @@ export interface MatchingFactors {
 export interface Match {
   id: string;
   ideaId: string;
-  investorId: string;
-  creatorId: string;
+  investorId: Id<"users">;
+  creatorId: Id<"users">;
   offerId: string;
 
   // Match details
@@ -139,8 +142,8 @@ export interface Match {
 export interface Transaction {
   id: string;
   matchId: string;
-  investorId: string;
-  creatorId: string;
+  investorId: Id<"users">;
+  creatorId: Id<"users">;
 
   // Transaction details
   amount: number;

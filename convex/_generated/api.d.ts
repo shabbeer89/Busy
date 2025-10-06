@@ -19,6 +19,7 @@ import type * as investmentOffers from "../investmentOffers.js";
 import type * as matches from "../matches.js";
 import type * as sampleData from "../sampleData.js";
 import type * as seedData from "../seedData.js";
+import type * as seedDatabase from "../seedDatabase.js";
 import type * as transactions from "../transactions.js";
 import type * as users from "../users.js";
 
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   matches: typeof matches;
   sampleData: typeof sampleData;
   seedData: typeof seedData;
+  seedDatabase: typeof seedDatabase;
   transactions: typeof transactions;
   users: typeof users;
 }>;
