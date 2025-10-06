@@ -3,15 +3,15 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { WalletConnect, useWallet } from "@/components/wallet/wallet-connect";
+import { BABTValidator } from "@/components/wallet/babt-validator";
+import { ContractInfo } from "@/components/wallet/contract-info";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, AnimatedCard } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
-import { CheckCircle, XCircle, AlertCircle, Clock, Shield, Wallet as WalletIcon, Check } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -31,18 +31,6 @@ export default function WalletPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState<string>("0.0000");
   const [isLoading, setIsLoading] = useState(true);
-  const [babtValidation, setBabtValidation] = useState<{
-    step: number;
-    isValid: boolean;
-    isLoading: boolean;
-    error?: string;
-    completedSteps: number[];
-  }>({
-    step: 0,
-    isValid: false,
-    isLoading: false,
-    completedSteps: []
-  });
 
   useEffect(() => {
     // Mock wallet data
@@ -133,286 +121,6 @@ export default function WalletPage() {
     }
   };
 
-  // BABT Validation Steps
-  const babtValidationSteps = [
-    {
-      id: 1,
-      title: "Connect Binance Account",
-      description: "Link your Binance account to verify ownership",
-      icon: <WalletIcon className="w-5 h-5" />
-    },
-    {
-      id: 2,
-      title: "Verify BABT Ownership",
-      description: "Confirm you own a valid BABT token",
-      icon: <Shield className="w-5 h-5" />
-    },
-    {
-      id: 3,
-      title: "Validate Token Authenticity",
-      description: "Verify token metadata and authenticity",
-      icon: <CheckCircle className="w-5 h-5" />
-    },
-    {
-      id: 4,
-      title: "Complete Verification",
-      description: "Finalize the validation process",
-      icon: <Check className="w-5 h-5" />
-    }
-  ];
-
-  const handleBABTValidation = async (step: number) => {
-    if (!isConnected || !wallet) {
-      setBabtValidation(prev => ({
-        ...prev,
-        error: "Please connect your wallet first"
-      }));
-      return;
-    }
-
-    setBabtValidation(prev => ({
-      ...prev,
-      step,
-      isLoading: true,
-      error: undefined
-    }));
-
-    try {
-      // Step 1: Connect Binance Account
-      if (step === 1) {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-        setBabtValidation(prev => ({
-          ...prev,
-          step: 2,
-          completedSteps: [...prev.completedSteps, 1],
-          isLoading: false
-        }));
-      }
-
-      // Step 2: Verify BABT Ownership
-      else if (step === 2) {
-        // Simulate BABT token verification
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
-        // For demo, randomly succeed/fail to show both states
-        const isValidToken = Math.random() > 0.3;
-
-        if (isValidToken) {
-          setBabtValidation(prev => ({
-            ...prev,
-            step: 3,
-            completedSteps: [...prev.completedSteps, 2],
-            isLoading: false
-          }));
-        } else {
-          setBabtValidation(prev => ({
-            ...prev,
-            isLoading: false,
-            error: "No valid BABT token found in your wallet"
-          }));
-        }
-      }
-
-      // Step 3: Validate Token Authenticity
-      else if (step === 3) {
-        await new Promise(resolve => setTimeout(resolve, 2500));
-
-        setBabtValidation(prev => ({
-          ...prev,
-          step: 4,
-          completedSteps: [...prev.completedSteps, 3],
-          isLoading: false
-        }));
-      }
-
-      // Step 4: Complete Verification
-      else if (step === 4) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        setBabtValidation(prev => ({
-          ...prev,
-          step: 5,
-          completedSteps: [...prev.completedSteps, 4],
-          isValid: true,
-          isLoading: false
-        }));
-      }
-
-    } catch (error: any) {
-      setBabtValidation(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error.message || "Validation failed"
-      }));
-    }
-  };
-
-  const resetBABTValidation = () => {
-    setBabtValidation({
-      step: 0,
-      isValid: false,
-      isLoading: false,
-      completedSteps: []
-    });
-  };
-
-  const BABTValidationSection = ({ isConnected, wallet, validation, onValidate }: {
-    isConnected: boolean;
-    wallet: any;
-    validation: typeof babtValidation;
-    onValidate: (step: number) => void;
-  }) => {
-    if (!isConnected || !wallet) {
-      return (
-        <AnimatedCard className="mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-blue-400" />
-              Binance Account Bound Token
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center">
-              <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                Connect your wallet to validate your BABT token.
-              </div>
-              <div className="text-xs text-gray-500">
-                BABT (Binance Account Bound Token) verification required for enhanced security.
-              </div>
-            </div>
-          </CardContent>
-        </AnimatedCard>
-      );
-    }
-
-    return (
-      <AnimatedCard className="mt-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-blue-400" />
-            BABT Validation {validation.isValid && <CheckCircle className="w-5 h-5 text-green-400" />}
-          </CardTitle>
-          <CardDescription>
-            Verify your Binance Account Bound Token for enhanced security and KYC compliance
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Error Display */}
-          {validation.error && (
-            <div className="p-3 bg-red-900/20 border border-red-800 rounded-lg">
-              <div className="flex items-center gap-2 text-red-400">
-                <XCircle className="w-4 h-4" />
-                <span className="text-sm">{validation.error}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Validation Steps */}
-          <div className="space-y-4">
-            {babtValidationSteps.map((step) => {
-              const isCompleted = validation.completedSteps.includes(step.id);
-              const isCurrent = validation.step === step.id;
-              const isPending = step.id > validation.step;
-
-              return (
-                <div key={step.id} className="flex items-start gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    isCompleted ? 'bg-green-900/20 text-green-400' :
-                    isCurrent && validation.isLoading ? 'bg-blue-900/20 text-blue-400 animate-pulse' :
-                    isCurrent ? 'bg-blue-900/20 text-blue-400' :
-                    'bg-gray-900/20 text-gray-400'
-                  }`}>
-                    {isCompleted ? <Check className="w-4 h-4" /> : step.icon}
-                  </div>
-                  <div className="flex-1">
-                    <div className={`font-medium ${isCompleted ? 'text-green-400' : isCurrent ? 'text-blue-400' : 'text-gray-300'}`}>
-                      {step.title}
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      {step.description}
-                    </div>
-                    {isCurrent && (
-                      <div className="mt-2">
-                        <Button
-                          size="sm"
-                          onClick={() => onValidate(step.id)}
-                          disabled={validation.isLoading}
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          {validation.isLoading ? (
-                            <>
-                              <Clock className="w-4 h-4 mr-2 animate-spin" />
-                              Validating...
-                            </>
-                          ) : (
-                            'Start Validation'
-                          )}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Progress</span>
-              <span className="text-gray-400">
-                {validation.completedSteps.length} / {babtValidationSteps.length} steps
-              </span>
-            </div>
-            <Progress
-              value={(validation.completedSteps.length / babtValidationSteps.length) * 100}
-              className="h-2"
-            />
-          </div>
-
-          {/* Validation Result */}
-          {validation.isValid && (
-            <div className="p-4 bg-green-900/20 border border-green-800 rounded-lg">
-              <div className="flex items-center gap-2 text-green-400">
-                <CheckCircle className="w-5 h-5" />
-                <div>
-                  <div className="font-medium">BABT Validation Successful!</div>
-                  <div className="text-sm text-green-300">
-                    Your Binance Account Bound Token has been verified. You now have enhanced access to premium features.
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Reset Button */}
-          {validation.step > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={resetBABTValidation}
-              className="w-full"
-            >
-              Reset Validation
-            </Button>
-          )}
-
-          {/* Info Section */}
-          <div className="p-3 bg-blue-900/10 border border-blue-800 rounded-lg">
-            <div className="text-sm text-blue-300">
-              <div className="font-medium mb-1">Why validate BABT?</div>
-              <ul className="text-xs space-y-1 text-blue-200">
-                <li>• Enhanced security for your investments</li>
-                <li>• Access to premium investment opportunities</li>
-                <li>• KYC compliance verification</li>
-                <li>• Priority support and features</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </AnimatedCard>
-    );
-  };
 
   return (
           <SidebarLayout>
@@ -464,21 +172,17 @@ export default function WalletPage() {
             )}
 
             {/* Binance Account Bound Token Validation */}
-            <BABTValidationSection
-              isConnected={isConnected}
-              wallet={wallet}
-              validation={babtValidation}
-              onValidate={handleBABTValidation}
-            />
+            <BABTValidator />
           </div>
 
           {/* Transaction History & Activity */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="transactions" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="transactions">Transactions</TabsTrigger>
                 <TabsTrigger value="investments">Investments</TabsTrigger>
                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                <TabsTrigger value="contract">Contract Info</TabsTrigger>
               </TabsList>
 
               <TabsContent value="transactions" className="space-y-6">
@@ -625,6 +329,10 @@ export default function WalletPage() {
                     </CardContent>
                   </Card>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="contract" className="space-y-6">
+                <ContractInfo />
               </TabsContent>
             </Tabs>
           </div>

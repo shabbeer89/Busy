@@ -106,6 +106,47 @@ export function WalletConnect({ onWalletConnected, onWalletDisconnected, classNa
     onWalletDisconnected?.();
   };
 
+  const switchToBNBChain = async () => {
+    if (!(window as any).ethereum) {
+      setError("MetaMask not detected. Please install MetaMask to continue.");
+      return;
+    }
+
+    try {
+      // Switch to BNB Smart Chain
+      await (window as any).ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x38' }], // BNB Smart Chain Mainnet
+      });
+    } catch (switchError: any) {
+      // This error code indicates that the chain has not been added to MetaMask
+      if (switchError.code === 4902) {
+        try {
+          await (window as any).ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: '0x38',
+                chainName: 'BNB Smart Chain Mainnet',
+                nativeCurrency: {
+                  name: 'BNB',
+                  symbol: 'BNB',
+                  decimals: 18,
+                },
+                rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                blockExplorerUrls: ['https://bscscan.com/'],
+              },
+            ],
+          });
+        } catch (addError) {
+          setError("Failed to add BNB Smart Chain to MetaMask");
+        }
+      } else {
+        setError("Failed to switch to BNB Smart Chain");
+      }
+    }
+  };
+
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
@@ -117,6 +158,8 @@ export function WalletConnect({ onWalletConnected, onWalletDisconnected, classNa
       case 11155111: return "Sepolia Testnet";
       case 137: return "Polygon Mainnet";
       case 80001: return "Polygon Mumbai";
+      case 56: return "BNB Smart Chain";
+      case 97: return "BNB Smart Chain Testnet";
       default: return `Chain ID: ${chainId}`;
     }
   };
@@ -150,6 +193,15 @@ export function WalletConnect({ onWalletConnected, onWalletDisconnected, classNa
               size="lg"
             >
               {isConnecting ? "Connecting..." : "Connect MetaMask"}
+            </Button>
+  
+            <Button
+              onClick={switchToBNBChain}
+              variant="outline"
+              className="w-full"
+              size="sm"
+            >
+              Switch to BNB Chain (for BABT)
             </Button>
 
             <div className="relative">
@@ -204,9 +256,21 @@ export function WalletConnect({ onWalletConnected, onWalletDisconnected, classNa
 
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">Network:</span>
-            <Badge variant="secondary">
-              {getNetworkName(wallet.chainId)}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={wallet.chainId === 56 ? "default" : "secondary"}>
+                {getNetworkName(wallet.chainId)}
+              </Badge>
+              {wallet.chainId !== 56 && (
+                <Button
+                  onClick={switchToBNBChain}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-6"
+                >
+                  Switch to BSC
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
@@ -240,6 +304,46 @@ export function WalletConnect({ onWalletConnected, onWalletDisconnected, classNa
 export function useWallet() {
   const [wallet, setWallet] = useState<WalletInfo | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+
+  const switchToBNBChain = async () => {
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      try {
+        // Switch to BNB Smart Chain
+        await (window as any).ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x38' }], // BNB Smart Chain Mainnet
+        });
+      } catch (switchError: any) {
+        // This error code indicates that the chain has not been added to MetaMask
+        if (switchError.code === 4902) {
+          try {
+            await (window as any).ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [
+                {
+                  chainId: '0x38',
+                  chainName: 'BNB Smart Chain Mainnet',
+                  nativeCurrency: {
+                    name: 'BNB',
+                    symbol: 'BNB',
+                    decimals: 18,
+                  },
+                  rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                  blockExplorerUrls: ['https://bscscan.com/'],
+                },
+              ],
+            });
+          } catch (addError) {
+            throw new Error("Failed to add BNB Smart Chain to MetaMask");
+          }
+        } else {
+          throw new Error("Failed to switch to BNB Smart Chain");
+        }
+      }
+    } else {
+      throw new Error("MetaMask not detected. Please install MetaMask to continue.");
+    }
+  };
 
   const connect = async (providerParam: string = "metamask") => {
     if (typeof window !== "undefined" && (window as any).ethereum) {
@@ -285,5 +389,6 @@ export function useWallet() {
     isConnected,
     connect,
     disconnect,
+    switchToBNBChain,
   };
 }

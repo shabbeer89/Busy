@@ -11,8 +11,49 @@ export type TransactionStatus = "pending" | "confirmed" | "completed" | "failed"
 
 export type PaymentMethod = "crypto" | "bank_transfer";
 
+// BABT validation types
+export interface BABTValidationResult {
+  isValid: boolean;
+  balance: string;
+  walletAddress: string;
+}
+
+export interface BABTValidationState {
+  isLoading: boolean;
+  isValid: boolean | null;
+  balance: string;
+  error: string | null;
+  walletAddress: string | null;
+}
+
+// Wallet connection types
+export interface WalletConnection {
+  address: string;
+  chainId: number;
+  provider: any; // ethers provider type
+}
+
 // Import Convex types
 import { Id } from "../../convex/_generated/dataModel";
+
+// NFT Validation types
+export interface NFTValidationResult {
+  hasTokens: boolean;
+  balance: string;
+  contractType: 'ERC721' | 'ERC1155' | 'UNKNOWN';
+  tokenIds?: string[];
+  contractName?: string;
+  contractSymbol?: string;
+  error?: string;
+}
+
+export interface ContractAddressInfo {
+  address: string;
+  name?: string;
+  symbol?: string;
+  contractType?: 'ERC721' | 'ERC1155' | 'UNKNOWN';
+  isValid?: boolean;
+}
 
 // User profile interfaces
 export interface User {
