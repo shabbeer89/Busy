@@ -1,11 +1,168 @@
 import { useState, useCallback } from 'react';
-import { validateNFTOwnership, validateContractAddress, detectContractType, connectWallet, COMMON_SBT_ADDRESSES, isContractAddress } from '@/lib/babt-validation';
+import {
+  validateNFTOwnership,
+  validateContractAddress,
+  detectContractType,
+  connectWallet,
+  connectWalletWithBABTVerification,
+  verifyBABTSignature,
+  verifyBABTOwnership,
+  COMMON_SBT_ADDRESSES,
+  isContractAddress
+} from '@/lib/babt-validation';
 import type { NFTValidationResult } from '@/types';
 
 interface NFTValidationState extends NFTValidationResult {
   isLoading: boolean;
   customContractAddress?: string;
   tokenId?: string;
+  signedMessage?: string;
+}
+
+interface BABTVerificationState {
+  isLoading: boolean;
+  hasBABT: boolean;
+  tokenIds: string[];
+  contractName?: string;
+  contractSymbol?: string;
+  signedMessage?: string;
+  originalMessage?: string;
+  error?: string;
+}
+
+// Enhanced BABT verification hook
+export function useBABTVerification() {
+  const [state, setState] = useState<BABTVerificationState>({
+    isLoading: false,
+    hasBABT: false,
+    tokenIds: []
+  });
+
+  const verifyBABT = useCallback(async (
+    walletAddress?: string,
+    contractAddress: string = COMMON_SBT_ADDRESSES.BABT_BSC,
+    rpcUrl?: string
+  ) => {
+    setState(prev => ({ ...prev, isLoading: true, error: undefined }));
+
+    try {
+      const result = await verifyBABTOwnership(walletAddress!, contractAddress, rpcUrl);
+
+      setState({
+        ...result,
+        isLoading: false
+      });
+
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'BABT verification failed';
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: errorMessage,
+        hasBABT: false,
+        tokenIds: []
+      }));
+
+      return {
+        hasBABT: false,
+        tokenIds: [],
+        error: errorMessage
+      };
+    }
+  }, []);
+
+  const connectAndVerifyBABT = useCallback(async (
+    contractAddress?: string,
+    rpcUrl?: string
+  ) => {
+    try {
+      setState(prev => ({ ...prev, isLoading: true, error: undefined }));
+
+      const connectionResult = await connectWalletWithBABTVerification();
+
+      if (!connectionResult.address) {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: connectionResult.error || 'Failed to connect wallet'
+        }));
+        return { address: null, hasBABT: false };
+      }
+
+      if (!connectionResult.signedMessage) {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: 'Signature required for BABT verification'
+        }));
+        return { address: connectionResult.address, hasBABT: false };
+      }
+
+      // Verify the signature
+      const isSignatureValid = await verifyBABTSignature(
+        connectionResult.address,
+        connectionResult.signedMessage,
+        connectionResult.originalMessage
+      );
+
+      if (!isSignatureValid) {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: 'Invalid signature'
+        }));
+        return { address: connectionResult.address, hasBABT: false };
+      }
+
+      // Now verify BABT ownership
+      const babtResult = await verifyBABTOwnership(
+        connectionResult.address,
+        contractAddress,
+        rpcUrl
+      );
+
+      setState({
+        ...babtResult,
+        isLoading: false,
+        signedMessage: connectionResult.signedMessage,
+        originalMessage: connectionResult.originalMessage
+      });
+
+      return {
+        address: connectionResult.address,
+        hasBABT: babtResult.hasBABT,
+        signedMessage: connectionResult.signedMessage,
+        originalMessage: connectionResult.originalMessage
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'BABT verification failed';
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: errorMessage,
+        hasBABT: false,
+        tokenIds: []
+      }));
+
+      return { address: null, hasBABT: false };
+    }
+  }, []);
+
+  const reset = useCallback(() => {
+    setState({
+      isLoading: false,
+      hasBABT: false,
+      tokenIds: []
+    });
+  }, []);
+
+  return {
+    ...state,
+    verifyBABT,
+    connectAndVerifyBABT,
+    reset,
+  };
 }
 
 export function useNFTValidation() {

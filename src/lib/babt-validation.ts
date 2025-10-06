@@ -373,6 +373,187 @@ export async function connectWallet(): Promise<string | null> {
   return null;
 }
 
+// Enhanced wallet connection with message signing for BABT verification
+export async function connectWalletWithBABTVerification(): Promise<{
+  address: string | null;
+  signedMessage?: string;
+  originalMessage?: string;
+  error?: string;
+}> {
+  try {
+    if (typeof window === 'undefined' || !(window as any).ethereum) {
+      return { address: null, error: 'MetaMask not installed' };
+    }
+
+    const provider = new ethers.BrowserProvider((window as any).ethereum);
+    const signer = await provider.getSigner();
+
+    // Request account access
+    const accounts = await provider.send('eth_requestAccounts', []);
+    const address = accounts[0];
+
+    if (!address) {
+      return { address: null, error: 'No wallet address received' };
+    }
+
+    // Create verification message for BABT authentication
+    const timestamp = Date.now();
+    const message = `BABT Verification Request
+
+Wallet Address: ${address}
+Timestamp: ${timestamp}
+
+Please sign this message to prove ownership of your wallet and verify your BABT status.
+
+This request will not trigger any blockchain transaction or cost any gas fees.`;
+
+    // Request signature
+    const signedMessage = await signer.signMessage(message);
+
+    return {
+      address,
+      signedMessage,
+      originalMessage: message,
+      error: undefined
+    };
+  } catch (error: any) {
+    console.error('Error in BABT wallet connection:', error);
+
+    // Handle user rejection
+    if (error.code === 4001 || error.message?.includes('User rejected')) {
+      return { address: null, error: 'User rejected the request' };
+    }
+
+    if (error.code === -32002) {
+      return { address: null, error: 'Connection request already pending. Check MetaMask.' };
+    }
+
+    return {
+      address: null,
+      error: error.message || 'Failed to connect wallet'
+    };
+  }
+}
+
+// Verify signature for BABT authentication
+export async function verifyBABTSignature(
+  address: string,
+  signedMessage: string,
+  originalMessage?: string
+): Promise<boolean> {
+  try {
+    // If original message is provided, use it directly
+    if (originalMessage) {
+      const recoveredAddress = ethers.verifyMessage(originalMessage, signedMessage);
+      return recoveredAddress.toLowerCase() === address.toLowerCase();
+    }
+
+    // If no original message, try to verify against a pattern
+    // This handles cases where the signature was created in a different session
+    const messagePattern = `BABT Verification Request
+
+Wallet Address: ${address}
+Timestamp:`;
+
+    try {
+      // Try to verify with the current timestamp pattern
+      const currentMessage = `BABT Verification Request
+
+Wallet Address: ${address}
+Timestamp: ${Date.now()}
+
+Please sign this message to prove ownership of your wallet and verify your BABT status.
+
+This request will not trigger any blockchain transaction or cost any gas fees.`;
+
+      const recoveredAddress = ethers.verifyMessage(currentMessage, signedMessage);
+
+      // If the recovered address matches, the signature is valid
+      if (recoveredAddress.toLowerCase() === address.toLowerCase()) {
+        return true;
+      }
+    } catch (error) {
+      // If verification fails with current message, try a more flexible approach
+    }
+
+    // Fallback: try to extract timestamp from signature and verify
+    // This is a more complex approach that handles signatures created with different timestamps
+    try {
+      // For now, we'll use a reasonable time window (last 24 hours)
+      const now = Date.now();
+      const timeWindow = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+      // Try a few recent timestamps
+      for (let offset = 0; offset < timeWindow; offset += 60 * 60 * 1000) { // Check every hour
+        const testTimestamp = now - offset;
+        const testMessage = `BABT Verification Request
+
+Wallet Address: ${address}
+Timestamp: ${testTimestamp}
+
+Please sign this message to prove ownership of your wallet and verify your BABT status.
+
+This request will not trigger any blockchain transaction or cost any gas fees.`;
+
+        try {
+          const recoveredAddress = ethers.verifyMessage(testMessage, signedMessage);
+          if (recoveredAddress.toLowerCase() === address.toLowerCase()) {
+            return true;
+          }
+        } catch (error) {
+          // Continue trying other timestamps
+        }
+      }
+    } catch (error) {
+      console.error('Error in timestamp-based verification:', error);
+    }
+
+    return false;
+  } catch (error) {
+    console.error('Error verifying signature:', error);
+    return false;
+  }
+}
+
+// BABT-specific verification function
+export async function verifyBABTOwnership(
+  walletAddress: string,
+  contractAddress: string = COMMON_SBT_ADDRESSES.BABT_BSC,
+  rpcUrl: string = 'https://bsc-dataseed.binance.org/'
+): Promise<{
+  hasBABT: boolean;
+  tokenIds: string[];
+  contractName?: string;
+  contractSymbol?: string;
+  error?: string;
+}> {
+  try {
+    const result = await validateNFTOwnership(walletAddress, contractAddress, undefined, rpcUrl);
+
+    if (result.error) {
+      return {
+        hasBABT: false,
+        tokenIds: [],
+        error: result.error
+      };
+    }
+
+    return {
+      hasBABT: result.hasTokens,
+      tokenIds: result.tokenIds || [],
+      contractName: result.contractName,
+      contractSymbol: result.contractSymbol
+    };
+  } catch (error) {
+    console.error('Error verifying BABT ownership:', error);
+    return {
+      hasBABT: false,
+      tokenIds: [],
+      error: error instanceof Error ? error.message : 'Verification failed'
+    };
+  }
+}
+
 // Legacy BABT validation function (for backward compatibility)
 export async function validateBABT(
   walletAddress: string,

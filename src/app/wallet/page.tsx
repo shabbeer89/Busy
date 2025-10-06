@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { WalletConnect, useWallet } from "@/components/wallet/wallet-connect";
+import { BABTValidator } from "@/components/wallet/babt-validator";
+import { BinanceBABTVerifier } from "@/components/wallet/binance-babt-verifier";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
-import { ArrowUpRight, ArrowDownLeft, Activity, Plus } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, Activity, Plus, Shield, AlertCircle } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -169,7 +171,7 @@ export default function WalletPage() {
 
           {/* Clean Tabs */}
           <Tabs defaultValue="transactions" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8 bg-gray-100 dark:bg-gray-800">
+            <TabsList className="grid w-full grid-cols-3 mb-8 bg-gray-100 dark:bg-gray-800">
               <TabsTrigger value="transactions" className="flex items-center gap-2">
                 <Activity className="w-4 h-4" />
                 Transactions
@@ -177,6 +179,10 @@ export default function WalletPage() {
               <TabsTrigger value="portfolio" className="flex items-center gap-2">
                 <Plus className="w-4 h-4" />
                 Portfolio
+              </TabsTrigger>
+              <TabsTrigger value="babt" className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                BABT Verification
               </TabsTrigger>
             </TabsList>
 
@@ -212,6 +218,77 @@ export default function WalletPage() {
                  </div>
                </CardContent>
              </Card>
+           </TabsContent>
+
+           <TabsContent value="babt" className="space-y-6">
+             {/* Clear Explanation */}
+             <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
+               <CardHeader>
+                 <CardTitle className="flex items-center gap-2">
+                   <AlertCircle className="h-5 w-5 text-blue-500" />
+                   Choose Your BABT Verification Method
+                 </CardTitle>
+                 <CardDescription>
+                   Different verification methods for different BABT types
+                 </CardDescription>
+               </CardHeader>
+               <CardContent>
+                 <div className="grid md:grid-cols-2 gap-4 text-sm">
+                   <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
+                     <div className="font-medium text-blue-600 dark:text-blue-400 mb-2">🔗 Binance App BABT</div>
+                     <div className="text-gray-600 dark:text-gray-300 mb-3">
+                       BABT tokens from Binance mobile/web app
+                     </div>
+                     <div className="text-xs text-gray-500">
+                       • Requires Binance OAuth<br/>
+                       • No wallet signature needed<br/>
+                       • Links to Binance account
+                     </div>
+                   </div>
+                   <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
+                     <div className="font-medium text-purple-600 dark:text-purple-400 mb-2">⛓️ Web3 BABT Tokens</div>
+                     <div className="text-gray-600 dark:text-gray-300 mb-3">
+                       BABT tokens on blockchain (on-chain)
+                     </div>
+                     <div className="text-xs text-gray-500">
+                       • Requires wallet connection<br/>
+                       • Checks on-chain ownership<br/>
+                       • MetaMask signature needed
+                     </div>
+                   </div>
+                 </div>
+               </CardContent>
+             </Card>
+
+             {/* Binance BABT Verifier */}
+             <div className="space-y-3">
+               <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                 <Shield className="h-5 w-5 text-blue-500" />
+                 Binance BABT Verifier (Recommended)
+               </h3>
+               <BinanceBABTVerifier />
+             </div>
+
+             {/* Separator */}
+             <div className="relative">
+               <div className="absolute inset-0 flex items-center">
+                 <span className="w-full border-t" />
+               </div>
+               <div className="relative flex justify-center text-xs uppercase">
+                 <span className="bg-white dark:bg-gray-900 px-2 text-muted-foreground">
+                   Alternative Method
+                 </span>
+               </div>
+             </div>
+
+             {/* Legacy BABT Validator */}
+             <div className="space-y-3">
+               <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                 <AlertCircle className="h-5 w-5 text-orange-500" />
+                 Web3 Token Validator (Legacy)
+               </h3>
+               <BABTValidator />
+             </div>
            </TabsContent>
          </Tabs>
        </div>

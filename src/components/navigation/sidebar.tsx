@@ -22,7 +22,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  LogOut
+  LogOut,
+  Search,
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -80,6 +82,18 @@ export function Sidebar({ className }: SidebarProps) {
       href: "/wallet",
       icon: Wallet,
       current: pathname.startsWith("/wallet"),
+    },
+    {
+      name: "Scan Token",
+      href: "/scan-token",
+      icon: Search,
+      current: pathname.startsWith("/scan-token"),
+    },
+    {
+      name: "BABT Protected",
+      href: "/babt-protected",
+      icon: Wallet,
+      current: pathname.startsWith("/babt-protected"),
     },
     {
       name: "Analytics",

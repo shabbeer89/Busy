@@ -102,7 +102,7 @@ export function BABTValidator() {
           </Button>
         </CardTitle>
         <CardDescription>
-          Validate NFT or Soulbound Token ownership with custom contract addresses
+          ⚠️ OLD SYSTEM: Validates Web3 tokens on-chain. For Binance App BABT, use "Binance BABT Verifier" instead.
         </CardDescription>
       </CardHeader>
 
@@ -260,11 +260,11 @@ export function BABTValidator() {
 
         {/* Network Requirements */}
         <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <div className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Network Requirements</div>
+          <div className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">⚠️ For Binance App BABT</div>
           <div className="space-y-1 text-xs text-blue-700 dark:text-blue-300">
-            <div>✅ BNB Smart Chain (BSC) - Chain ID: 56</div>
-            <div>✅ Valid token contract address</div>
-            <div>✅ Connected wallet with tokens</div>
+            <div className="font-medium">❌ This validator is for Web3 tokens only</div>
+            <div>✅ For Binance App BABT: Use "Binance BABT Verifier" component</div>
+            <div>✅ Binance BABT requires OAuth authentication</div>
           </div>
         </div>
 
