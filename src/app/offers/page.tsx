@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -16,7 +16,7 @@ import { api } from "@/lib/convex";
 // Use Convex query to get active investment offers
 export default function OffersPage() {
   const { user } = useAuth();
-  const investmentOffers = useQuery(api.investmentOffers.getActiveOffers) || [];
+  const rawInvestmentOffers = useQuery(api.investmentOffers.getActiveOffers) || [];
   const [offers, setOffers] = useState<any[]>([]);
   const [filteredOffers, setFilteredOffers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,10 +24,10 @@ export default function OffersPage() {
   const [stageFilter, setStageFilter] = useState("all");
   const [isLoadingOffers, setIsLoadingOffers] = useState(true);
 
-  // Convert Convex data format to component format
-  useEffect(() => {
-    if (investmentOffers && investmentOffers.length > 0 && investmentOffers[0]._id) {
-      const convertedOffers = investmentOffers.map((offer: any) => ({
+  // Memoize offers to prevent unnecessary re-renders
+  const investmentOffers = useMemo(() => {
+    if (rawInvestmentOffers && rawInvestmentOffers.length > 0 && rawInvestmentOffers[0]._id) {
+      return rawInvestmentOffers.map((offer: any) => ({
         id: offer._id,
         title: offer.title,
         description: offer.description,
@@ -39,17 +39,23 @@ export default function OffersPage() {
         isActive: offer.isActive,
         createdAt: offer.createdAt,
       }));
+    }
+    return [];
+  }, [rawInvestmentOffers]);
 
-      setOffers(convertedOffers);
-      setFilteredOffers(convertedOffers);
+  // Convert Convex data format to component format
+  useEffect(() => {
+    if (investmentOffers.length > 0) {
+      setOffers(investmentOffers);
+      setFilteredOffers(investmentOffers);
       setIsLoadingOffers(false);
-    } else {
-      // No fallback data - show empty state
+    } else if (investmentOffers.length === 0 && !isLoadingOffers) {
+      // Only update if not already loading to prevent infinite loop
       setOffers([]);
       setFilteredOffers([]);
       setIsLoadingOffers(false);
     }
-  }, [investmentOffers]);
+  }, [investmentOffers, isLoadingOffers]);
 
   // Filter offers based on search and filters
   useEffect(() => {

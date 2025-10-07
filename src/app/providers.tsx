@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { convex } from "@/lib/convex";
 import { Toaster } from "@/components/toast-provider";
@@ -9,18 +9,25 @@ import { useAuthStore } from "@/stores/auth-store";
 
 // Internal component to sync NextAuth session with Zustand store
 function AuthSync({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const syncWithNextAuth = useAuthStore((state) => state.syncWithNextAuth);
+  const logout = useAuthStore((state) => state.logout);
+  const previousSessionRef = useRef<any>(null);
 
   useEffect(() => {
-    if (session?.user) {
-      // Sync NextAuth session with Zustand store
-      syncWithNextAuth(session.user);
-    } else if (session === null) {
-      // User signed out from NextAuth, also sign out from Zustand
-      useAuthStore.getState().logout();
+    // Prevent infinite loops by checking if session actually changed
+    if (previousSessionRef.current !== session) {
+      previousSessionRef.current = session;
+
+      if (session?.user && status === "authenticated") {
+        // Sync NextAuth session with Zustand store
+        syncWithNextAuth(session.user);
+      } else if (status === "unauthenticated" && previousSessionRef.current?.user) {
+        // User signed out from NextAuth, also sign out from Zustand
+        logout();
+      }
     }
-  }, [session, syncWithNextAuth]);
+  }, [session, status, syncWithNextAuth, logout]);
 
   return <>{children}</>;
 }

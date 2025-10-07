@@ -10,7 +10,7 @@ export interface SecurityHeadersConfig {
 }
 
 const DEFAULT_SECURITY_HEADERS: SecurityHeadersConfig = {
-  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://bsc-dataseed.binance.org https://*.convex.cloud;",
+  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud;",
   xFrameOptions: 'DENY',
   xContentTypeOptions: 'nosniff',
   referrerPolicy: 'strict-origin-when-cross-origin',
@@ -58,14 +58,14 @@ export function createSecurityHeadersMiddleware(config: SecurityHeadersConfig = 
 
 // Pre-configured middleware for different route types
 export const apiSecurityHeaders = createSecurityHeadersMiddleware({
-  contentSecurityPolicy: "default-src 'self'; connect-src 'self' https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud;",
+  contentSecurityPolicy: "default-src 'self'; connect-src 'self' ws://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud;",
   xFrameOptions: 'DENY',
   xContentTypeOptions: 'nosniff',
   referrerPolicy: 'strict-origin-when-cross-origin'
 });
 
 export const pageSecurityHeaders = createSecurityHeadersMiddleware({
-  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud;",
+  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ws://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud;",
   xFrameOptions: 'SAMEORIGIN',
   xContentTypeOptions: 'nosniff',
   referrerPolicy: 'strict-origin-when-cross-origin',

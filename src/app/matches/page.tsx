@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/lib/convex";
 import { Id } from "../../../convex/_generated/dataModel";
 
@@ -17,6 +17,7 @@ export default function MatchesPage() {
   const [filteredMatches, setFilteredMatches] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [convexUserId, setConvexUserId] = useState<string | null>(null);
 
   // Check for fake IDs and force logout if detected
   useEffect(() => {
@@ -34,20 +35,27 @@ export default function MatchesPage() {
 
   // Convex IDs are now properly typed in the User object
 
-  // Get matches based on user type
-  const creatorMatches = useQuery(
+  // Get matches based on user type - only query when we have a valid Convex user ID
+  const rawCreatorMatches = useQuery(
     api.matches.getMatchesByCreator,
-    user?.userType === "creator" && hasValidConvexId(user.id)
-      ? { userId: user.id }
+    user?.userType === "creator" && convexUserId && convexUserId !== user?.id
+      ? { userId: convexUserId as any }
       : "skip"
   );
 
-  const investorMatches = useQuery(
+  const rawInvestorMatches = useQuery(
     api.matches.getMatchesByInvestor,
-    user?.userType === "investor" && hasValidConvexId(user.id)
-      ? { investorId: user.id }
+    user?.userType === "investor" && convexUserId && convexUserId !== user?.id
+      ? { investorId: convexUserId as any }
       : "skip"
   );
+
+  // Convex mutations for OAuth user handling
+  const findOrCreateUserMutation = useMutation(api.users.findOrCreateUserByOAuth);
+
+  // Memoize matches to prevent unnecessary re-renders
+  const creatorMatches = useMemo(() => rawCreatorMatches || [], [rawCreatorMatches]);
+  const investorMatches = useMemo(() => rawInvestorMatches || [], [rawInvestorMatches]);
 
   // Add onClick handlers for action buttons
   const handleAcceptMatch = (matchId: string) => {
@@ -70,21 +78,59 @@ export default function MatchesPage() {
     console.log("Continue discussion:", matchId);
   };
 
+  // Handle OAuth user creation and get Convex user ID
+  useEffect(() => {
+    const setupUser = async () => {
+      if (!user) return;
+
+      // If user has a valid Convex ID, use it directly
+      if (hasValidConvexId(user.id)) {
+        setConvexUserId(user.id);
+        setIsLoading(false);
+        return;
+      }
+
+      // For OAuth users, create/find Convex user record
+      if (user.email && (user as any).provider) {
+        try {
+          const convexId = await findOrCreateUserMutation({
+            oauthId: user.id,
+            email: user.email,
+            name: user.name || user.email.split('@')[0],
+            provider: (user as any).provider,
+          });
+
+          if (convexId) {
+            setConvexUserId(convexId);
+            setIsLoading(false);
+          }
+        } catch (error) {
+          console.error("Error setting up OAuth user:", error);
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    setupUser();
+  }, [user, hasValidConvexId, findOrCreateUserMutation]);
+
   // Convert Convex matches to component format
   useEffect(() => {
     const matchesData = user?.userType === "creator" ? creatorMatches : investorMatches;
 
-    if (matchesData && matchesData.length > 0 && matchesData[0]?._id) {
+    if (matchesData && matchesData.length > 0) {
       setMatches(matchesData);
       setFilteredMatches(matchesData);
       setIsLoading(false);
-    } else if (matchesData !== undefined) {
-      // No matches found
+    } else if (matchesData !== undefined && !isLoading && convexUserId) {
+      // No matches found - only update if not already loading and we have a convex user ID
       setMatches([]);
       setFilteredMatches([]);
       setIsLoading(false);
     }
-  }, [creatorMatches, investorMatches, user]);
+  }, [creatorMatches, investorMatches, user, isLoading, convexUserId]);
 
   useEffect(() => {
     if (statusFilter === "all") {

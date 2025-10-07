@@ -11,6 +11,8 @@ export default defineSchema({
     userType: v.union(v.literal("creator"), v.literal("investor")),
     isVerified: v.boolean(),
     phoneVerified: v.optional(v.boolean()),
+    oauthId: v.optional(v.string()),
+    provider: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
 

@@ -173,3 +173,58 @@ export const searchUsers = query({
     return filteredUsers;
   },
 });
+
+// Find or create user by OAuth ID and email
+export const findOrCreateUserByOAuth = mutation({
+  args: {
+    oauthId: v.string(),
+    email: v.string(),
+    name: v.string(),
+    provider: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { oauthId, email, name, provider } = args;
+
+    // First, try to find existing user by email
+    let existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+
+    if (existingUser) {
+      // Update the user with OAuth information if not already set
+      if (!existingUser.oauthId) {
+        await ctx.db.patch(existingUser._id, {
+          oauthId,
+          provider,
+          updatedAt: Date.now(),
+        });
+      }
+      return existingUser._id;
+    }
+
+    // Create new user for OAuth
+    const now = Date.now();
+    const newUserId = await ctx.db.insert("users", {
+      email,
+      name,
+      userType: "creator", // Default to creator, can be changed later
+      isVerified: true, // OAuth users are typically verified
+      oauthId,
+      provider,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return newUserId;
+  },
+});
+
+// Get user by OAuth ID
+export const getUserByOAuthId = query({
+  args: { oauthId: v.string() },
+  handler: async (ctx, args) => {
+    const users = await ctx.db.query("users").collect();
+    return users.find(user => user.oauthId === args.oauthId) || null;
+  },
+});

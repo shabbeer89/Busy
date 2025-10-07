@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,13 +22,12 @@ export default function IdeasPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Use Convex query to get published business ideas (with fallback)
-  const businessIdeas = useQuery(api.businessIdeas?.getPublishedIdeas) || [];
+  const rawBusinessIdeas = useQuery(api.businessIdeas?.getPublishedIdeas) || [];
 
-  useEffect(() => {
-    // Check if Convex query is available and has data
-    if (businessIdeas && businessIdeas.length > 0 && businessIdeas[0]._id) {
-      // Convert Convex data format to BusinessIdea format
-      const convertedIdeas = businessIdeas.map((idea: any) => ({
+  // Memoize the converted ideas to prevent unnecessary re-renders
+  const businessIdeas = useMemo(() => {
+    if (rawBusinessIdeas && rawBusinessIdeas.length > 0 && rawBusinessIdeas[0]._id) {
+      return rawBusinessIdeas.map((idea: any) => ({
         id: idea._id,
         creatorId: idea.creatorId,
         title: idea.title,
@@ -46,17 +45,20 @@ export default function IdeasPage() {
         createdAt: idea.createdAt || Date.now(),
         updatedAt: idea.updatedAt || Date.now(),
       })) as BusinessIdea[];
+    }
+    return [];
+  }, [rawBusinessIdeas]);
 
-      setIdeas(convertedIdeas);
-      setFilteredIdeas(convertedIdeas);
+  useEffect(() => {
+    if (businessIdeas.length > 0) {
+      setIdeas(businessIdeas);
+      setFilteredIdeas(businessIdeas);
       setIsLoading(false);
-    } else {
-      // No fallback data - show empty state
-      setIdeas([]);
-      setFilteredIdeas([]);
+    } else if (businessIdeas.length === 0 && !isLoading) {
+      // Only set loading to false if we've already tried loading
       setIsLoading(false);
     }
-  }, [businessIdeas]);
+  }, [businessIdeas, isLoading]);
 
   useEffect(() => {
     let filtered = ideas;
