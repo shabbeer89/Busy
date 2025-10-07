@@ -6,6 +6,11 @@ import { apiCORSMiddleware } from '@/lib/cors';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Skip middleware for NextAuth routes to avoid OAuth interference
+  if (pathname.startsWith('/api/auth/') || pathname.includes('/auth/')) {
+    return NextResponse.next();
+  }
+
   // Apply security headers based on route type
   if (pathname.startsWith('/api/')) {
     // API routes get API-specific security headers

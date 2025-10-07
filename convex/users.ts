@@ -6,11 +6,13 @@ export const createUser = mutation({
   args: {
     email: v.string(),
     name: v.string(),
+    phoneNumber: v.optional(v.string()),
     userType: v.union(v.literal("creator"), v.literal("investor")),
     avatar: v.optional(v.string()),
+    phoneVerified: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const { email, name, userType, avatar } = args;
+    const { email, name, phoneNumber, userType, avatar, phoneVerified = false } = args;
 
     // Check if user already exists
     const existingUser = await ctx.db
@@ -22,14 +24,28 @@ export const createUser = mutation({
       throw new Error("User with this email already exists");
     }
 
+    // Check if phone number already exists (if provided)
+    if (phoneNumber) {
+      const existingPhoneUser = await ctx.db
+        .query("users")
+        .withIndex("by_phone", (q) => q.eq("phoneNumber", phoneNumber))
+        .first();
+
+      if (existingPhoneUser) {
+        throw new Error("User with this phone number already exists");
+      }
+    }
+
     const now = Date.now();
 
     return await ctx.db.insert("users", {
       email,
       name,
+      phoneNumber,
       userType,
       avatar,
       isVerified: false,
+      phoneVerified,
       createdAt: now,
       updatedAt: now,
     });
@@ -107,6 +123,28 @@ export const verifyUser = mutation({
       isVerified: true,
       updatedAt: Date.now(),
     });
+  },
+});
+
+// Verify user phone number
+export const verifyPhone = mutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    return await ctx.db.patch(args.userId, {
+      phoneVerified: true,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// Get user by phone number
+export const getUserByPhone = query({
+  args: { phoneNumber: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_phone", (q) => q.eq("phoneNumber", args.phoneNumber))
+      .first();
   },
 });
 

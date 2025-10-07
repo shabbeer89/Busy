@@ -6,9 +6,11 @@ export default defineSchema({
   users: defineTable({
     email: v.string(),
     name: v.string(),
+    phoneNumber: v.optional(v.string()),
     avatar: v.optional(v.string()),
     userType: v.union(v.literal("creator"), v.literal("investor")),
     isVerified: v.boolean(),
+    phoneVerified: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
 
@@ -35,6 +37,7 @@ export default defineSchema({
     })),
   })
     .index("by_email", ["email"])
+    .index("by_phone", ["phoneNumber"])
     .index("by_userType", ["userType"]),
 
   // Business ideas from creators

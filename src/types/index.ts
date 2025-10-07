@@ -60,9 +60,11 @@ export interface User {
   id: Id<"users">;
   email: string;
   name: string;
+  phoneNumber?: string;
   avatar?: string;
   userType: UserType;
   isVerified: boolean;
+  phoneVerified?: boolean;
   createdAt: number;
   updatedAt: number;
 
@@ -213,8 +215,10 @@ export interface ApiResponse<T> {
 export interface CreateUserData {
   email: string;
   name: string;
+  phoneNumber?: string;
   userType: UserType;
   password: string;
+  phoneVerified?: boolean;
 }
 
 export interface UpdateUserData {

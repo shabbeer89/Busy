@@ -16,6 +16,7 @@ export function useAuth() {
 
   // Convex mutations and queries
   const createUserMutation = useMutation(api.users.createUser);
+  const verifyPhoneMutation = useMutation(api.users.verifyPhone);
 
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setLoading(true);
@@ -147,7 +148,9 @@ export function useAuth() {
         const convexUserId = await createUserMutation({
           email: userData.email,
           name: userData.name,
+          phoneNumber: userData.phoneNumber,
           userType: userData.userType,
+          phoneVerified: false, // Will be verified via OTP
         });
 
         // Create user object with the actual Convex ID
@@ -155,6 +158,7 @@ export function useAuth() {
           id: stringToConvexId(convexUserId),
           email: userData.email,
           name: userData.name,
+          phoneNumber: userData.phoneNumber,
           userType: userData.userType,
           isVerified: false,
           createdAt: Date.now(),
@@ -177,6 +181,57 @@ export function useAuth() {
     }
   };
 
+  const verifyPhoneNumber = async (phoneNumber: string, otp: string): Promise<{ success: boolean; error?: string }> => {
+    setLoading(true);
+
+    try {
+      // Validate OTP format
+      if (!otp || otp.length !== 6) {
+        return { success: false, error: "Please enter a valid 6-digit OTP" };
+      }
+
+      // Simulate API delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Verify OTP against stored value
+      const { verifyOTP } = await import('@/lib/otp');
+      const verificationResult = verifyOTP(phoneNumber, otp);
+
+      if (!verificationResult.success) {
+        return verificationResult;
+      }
+
+      // OTP is valid, mark phone as verified in database
+      // For now, we'll just return success since we don't have a user ID yet
+      // In a real implementation, you'd update the user's phone verification status
+      try {
+        // If we have a user, update their phone verification status
+        if (user) {
+          await verifyPhoneMutation({ userId: stringToConvexId(user.id) });
+
+          // Update local user state to reflect phone verification
+          setUser({
+            ...user,
+            phoneVerified: true,
+            updatedAt: Date.now(),
+          });
+        }
+
+        return { success: true };
+
+      } catch (error) {
+        console.error("Phone verification error:", error);
+        return { success: false, error: "Failed to verify phone number" };
+      }
+
+    } catch (error) {
+      console.error("Phone verification error:", error);
+      return { success: false, error: "Failed to verify phone. Please try again." };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signOut = () => {
     logout();
   };
@@ -194,6 +249,7 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    verifyPhoneNumber,
     hasValidConvexId,
   };
 }
