@@ -17,6 +17,7 @@ import type * as businessIdeas from "../businessIdeas.js";
 import type * as favorites from "../favorites.js";
 import type * as investmentOffers from "../investmentOffers.js";
 import type * as matches from "../matches.js";
+import type * as messages from "../messages.js";
 import type * as sampleData from "../sampleData.js";
 import type * as seedData from "../seedData.js";
 import type * as seedDatabase from "../seedDatabase.js";
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   favorites: typeof favorites;
   investmentOffers: typeof investmentOffers;
   matches: typeof matches;
+  messages: typeof messages;
   sampleData: typeof sampleData;
   seedData: typeof seedData;
   seedDatabase: typeof seedDatabase;

@@ -185,4 +185,34 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_item", ["itemId", "itemType"])
     .index("by_user_item", ["userId", "itemId", "itemType"]),
+
+  // Conversations between matched users
+  conversations: defineTable({
+    matchId: v.id("matches"),
+    participant1Id: v.id("users"), // Creator or investor
+    participant2Id: v.id("users"), // The other user
+    lastMessageId: v.optional(v.id("messages")),
+    lastMessageAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_match", ["matchId"])
+    .index("by_participants", ["participant1Id", "participant2Id"])
+    .index("by_updated", ["updatedAt"]),
+
+  // Individual messages within conversations
+  messages: defineTable({
+    conversationId: v.id("conversations"),
+    senderId: v.id("users"),
+    content: v.string(),
+    type: v.union(v.literal("text"), v.literal("system")),
+    read: v.boolean(),
+    readAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_conversation", ["conversationId"])
+    .index("by_sender", ["senderId"])
+    .index("by_conversation_created", ["conversationId", "createdAt"])
+    .index("by_unread", ["read"]),
 });

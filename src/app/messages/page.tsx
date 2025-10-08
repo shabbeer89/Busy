@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,20 +9,23 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/lib/convex";
+import { useToast } from "@/components/ui/toast";
 
 interface Message {
-  id: string;
-  matchId: string;
+  _id: string;
+  conversationId: string;
   senderId: string;
-  recipientId: string;
   content: string;
-  timestamp: number;
+  createdAt: number;
   read: boolean;
   type: "text" | "system";
+  updatedAt: number;
 }
 
 interface Conversation {
-  id: string;
+  _id: string;
   matchId: string;
   otherUser: {
     id: string;
@@ -30,154 +33,123 @@ interface Conversation {
     avatar?: string;
     userType: "creator" | "investor";
   };
-  lastMessage: Message;
+  lastMessage: Message | null;
   unreadCount: number;
   updatedAt: number;
+  createdAt: number;
 }
 
 export default function MessagesPage() {
-  const { user } = useAuth();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const { user, hasValidConvexId } = useAuth();
+  const { toast } = useToast();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [convexUserId, setConvexUserId] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  // For OAuth users, we need to ensure they have a Convex user record first
+  const findOrCreateUserMutation = useMutation(api.users.findOrCreateUserByOAuth);
+
+  // Handle OAuth user creation and get Convex user ID
   useEffect(() => {
-    // Mock conversations data
-    const mockConversations: Conversation[] = [
-      {
-        id: "1",
-        matchId: "match1",
-        otherUser: {
-          id: "investor1",
-          name: "Jane Doe",
-          userType: "investor",
-        },
-        lastMessage: {
-          id: "msg1",
-          matchId: "match1",
-          senderId: "investor1",
-          recipientId: "creator1",
-          content: "Hi! I'm very interested in your AI assistant idea. Could we schedule a call?",
-          timestamp: Date.now() - 3600000, // 1 hour ago
-          read: false,
-          type: "text",
-        },
-        unreadCount: 2,
-        updatedAt: Date.now() - 3600000,
-      },
-      {
-        id: "2",
-        matchId: "match2",
-        otherUser: {
-          id: "creator2",
-          name: "Mike Johnson",
-          userType: "creator",
-        },
-        lastMessage: {
-          id: "msg2",
-          matchId: "match2",
-          senderId: "creator2",
-          recipientId: "investor1",
-          content: "Thank you for your interest! The current valuation is $3M pre-money.",
-          timestamp: Date.now() - 86400000, // 1 day ago
-          read: true,
-          type: "text",
-        },
-        unreadCount: 0,
-        updatedAt: Date.now() - 86400000,
-      },
-      {
-        id: "3",
-        matchId: "match3",
-        otherUser: {
-          id: "investor2",
-          name: "Sarah Wilson",
-          userType: "investor",
-        },
-        lastMessage: {
-          id: "msg3",
-          matchId: "match3",
-          senderId: "investor2",
-          recipientId: "creator1",
-          content: "Great pitch deck! I have a few questions about your go-to-market strategy.",
-          timestamp: Date.now() - 172800000, // 2 days ago
-          read: true,
-          type: "text",
-        },
-        unreadCount: 0,
-        updatedAt: Date.now() - 172800000,
-      },
-    ];
+    const setupUser = async () => {
+      if (!user) return;
 
-    setConversations(mockConversations);
-    setIsLoading(false);
+      // If user has a valid Convex ID, use it directly
+      if (hasValidConvexId(user.id)) {
+        setConvexUserId(user.id);
+        return;
+      }
+
+      // For OAuth users, create/find Convex user record
+      if (user.email && (user as any).provider) {
+        try {
+          const convexId = await findOrCreateUserMutation({
+            oauthId: user.id,
+            email: user.email,
+            name: user.name || user.email.split('@')[0],
+            provider: (user as any).provider,
+          });
+
+          if (convexId) {
+            setConvexUserId(convexId);
+          }
+        } catch (error) {
+          console.error("Error setting up OAuth user:", error);
+        }
+      }
+    };
+
+    setupUser();
+  }, [user, hasValidConvexId, findOrCreateUserMutation]);
+
+  // Convex queries and mutations
+  const conversations = useQuery(
+    api.messages.getConversationsForUser,
+    convexUserId ? { userId: convexUserId as any } : "skip"
+  );
+
+  const messages = useQuery(
+    api.messages.getMessages,
+    selectedConversation ? { conversationId: selectedConversation._id as any } : "skip"
+  );
+
+  const sendMessageMutation = useMutation(api.messages.sendMessage);
+  const markAsReadMutation = useMutation(api.messages.markMessagesAsRead);
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   useEffect(() => {
-    if (selectedConversation) {
-      // Mock messages for selected conversation
-      const mockMessages: Message[] = [
-        {
-          id: "msg1",
-          matchId: selectedConversation.matchId,
-          senderId: "investor1",
-          recipientId: "creator1",
-          content: "Hi! I'm very interested in your AI assistant idea. Could we schedule a call?",
-          timestamp: Date.now() - 3600000,
-          read: false,
-          type: "text",
-        },
-        {
-          id: "msg2",
-          matchId: selectedConversation.matchId,
-          senderId: "creator1",
-          recipientId: "investor1",
-          content: "Hi Jane! Thanks for your interest. I'd be happy to schedule a call. What's your availability this week?",
-          timestamp: Date.now() - 3300000,
-          read: true,
-          type: "text",
-        },
-        {
-          id: "msg3",
-          matchId: selectedConversation.matchId,
-          senderId: "investor1",
-          recipientId: "creator1",
-          content: "I'm available Thursday afternoon or Friday morning. Also, could you send me your financial projections?",
-          timestamp: Date.now() - 3000000,
-          read: false,
-          type: "text",
-        },
-      ];
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
-      setMessages(mockMessages);
+  // Mark messages as read when conversation is selected
+  useEffect(() => {
+    if (selectedConversation && convexUserId) {
+      markAsReadMutation({
+        conversationId: selectedConversation._id as any,
+        userId: convexUserId as any,
+      });
     }
-  }, [selectedConversation]);
+  }, [selectedConversation, convexUserId, markAsReadMutation]);
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedConversation || !convexUserId || isSending) return;
 
-    const message: Message = {
-      id: `msg_${Date.now()}`,
-      matchId: selectedConversation.matchId,
-      senderId: user!.id,
-      recipientId: selectedConversation.otherUser.id,
-      content: newMessage,
-      timestamp: Date.now(),
-      read: false,
-      type: "text",
-    };
+    setIsSending(true);
+    try {
+      await sendMessageMutation({
+        conversationId: selectedConversation._id as any,
+        senderId: convexUserId as any,
+        content: newMessage.trim(),
+      });
 
-    setMessages(prev => [...prev, message]);
-    setNewMessage("");
+      setNewMessage("");
+      toast({
+        title: "Message sent",
+        description: "Your message has been delivered successfully.",
+      });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      toast({
+        title: "Failed to send message",
+        description: "Please try again. If the problem persists, check your connection.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
 
-    // Update conversation's last message
-    setConversations(prev => prev.map(conv =>
-      conv.id === selectedConversation.id
-        ? { ...conv, lastMessage: message, updatedAt: Date.now() }
-        : conv
-    ));
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   const formatTime = (timestamp: number) => {
@@ -217,7 +189,27 @@ export default function MessagesPage() {
     );
   }
 
-  if (isLoading) {
+  if (!convexUserId) {
+    return (
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Account Setup Required</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              Your account needs to be updated. Please sign out and sign in again to get a proper account ID.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link href="/auth/login">
+                <Button>Sign Out & Fix Account</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </SidebarLayout>
+    );
+  }
+
+  if (conversations === undefined) {
     return (
       <SidebarLayout>
         <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -229,6 +221,9 @@ export default function MessagesPage() {
       </SidebarLayout>
     );
   }
+
+  // Show loading state for messages when conversation is selected
+  const isLoadingMessages = selectedConversation && messages === undefined;
 
   return (
           <SidebarLayout>
@@ -258,9 +253,9 @@ export default function MessagesPage() {
               ) : (
                 conversations.map((conversation) => (
                   <div
-                    key={conversation.id}
+                    key={conversation._id}
                     className={`p-4 border-b border-border cursor-pointer hover:bg-accent ${
-                      selectedConversation?.id === conversation.id ? "bg-accent" : ""
+                      selectedConversation?._id === conversation._id ? "bg-accent" : ""
                     }`}
                     onClick={() => setSelectedConversation(conversation)}
                   >
@@ -282,12 +277,12 @@ export default function MessagesPage() {
                               </Badge>
                             )}
                             <span className="text-xs text-gray-600 dark:text-gray-300">
-                              {formatTime(conversation.lastMessage.timestamp)}
+                              {conversation.lastMessage ? formatTime(conversation.lastMessage.createdAt) : formatTime(conversation.createdAt)}
                             </span>
                           </div>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
-                          {conversation.lastMessage.content}
+                          {conversation.lastMessage ? conversation.lastMessage.content : "No messages yet"}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="outline" className="text-xs">
@@ -333,27 +328,47 @@ export default function MessagesPage() {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.senderId === user!.id ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                          message.senderId === user!.id
-                            ? "bg-blue-600 text-white"
-                            : "bg-slate-700 text-gray-100 border border-slate-600"
-                        }`}
-                      >
-                        <p className="text-sm">{message.content}</p>
-                        <p className={`text-xs mt-1 ${
-                          message.senderId === user!.id ? "text-blue-100" : "text-gray-400"
-                        }`}>
-                          {formatTime(message.timestamp)}
-                        </p>
+                  {isLoadingMessages ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-2"></div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Loading messages...</p>
                       </div>
                     </div>
-                  ))}
+                  ) : messages && messages.length > 0 ? (
+                    messages.map((message) => (
+                      <div
+                        key={message._id}
+                        className={`flex ${message.senderId === user!.id ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                            message.senderId === user!.id
+                              ? "bg-blue-600 text-white"
+                              : "bg-slate-700 text-gray-100 border border-slate-600"
+                          }`}
+                        >
+                          <p className="text-sm">{message.content}</p>
+                          <p className={`text-xs mt-1 ${
+                            message.senderId === user!.id ? "text-blue-100" : "text-gray-400"
+                          }`}>
+                            {formatTime(message.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      <div className="text-center">
+                        <svg className="w-12 h-12 mx-auto mb-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <p className="text-gray-600 dark:text-gray-300">No messages yet</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Start the conversation!</p>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Message Input */}
@@ -363,11 +378,15 @@ export default function MessagesPage() {
                       placeholder="Type your message..."
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                      onKeyPress={handleKeyPress}
+                      disabled={isSending}
                       className="flex-1"
                     />
-                    <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-                      Send
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim() || isSending}
+                    >
+                      {isSending ? "Sending..." : "Send"}
                     </Button>
                   </div>
                 </CardFooter>

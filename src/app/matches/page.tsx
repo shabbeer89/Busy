@@ -8,11 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { useQuery, useMutation } from "convex/react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/convex";
 import { Id } from "../../../convex/_generated/dataModel";
+import { toast } from "sonner";
 
 export default function MatchesPage() {
   const { user, signOut, hasValidConvexId } = useAuth();
+  const router = useRouter();
   const [matches, setMatches] = useState<any[]>([]);
   const [filteredMatches, setFilteredMatches] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,29 +56,78 @@ export default function MatchesPage() {
   // Convex mutations for OAuth user handling
   const findOrCreateUserMutation = useMutation(api.users.findOrCreateUserByOAuth);
 
+  // Convex mutations for match actions
+  const updateMatchStatusMutation = useMutation(api.matches.updateMatchStatus);
+  const getOrCreateConversationMutation = useMutation(api.messages.getOrCreateConversation);
+
   // Memoize matches to prevent unnecessary re-renders
   const creatorMatches = useMemo(() => rawCreatorMatches || [], [rawCreatorMatches]);
   const investorMatches = useMemo(() => rawInvestorMatches || [], [rawInvestorMatches]);
 
-  // Add onClick handlers for action buttons
-  const handleAcceptMatch = (matchId: string) => {
-    // TODO: Implement accept match functionality
-    console.log("Accept match:", matchId);
+  // Find the other user ID for a match (the person we're matched with)
+  const getOtherUserId = (match: any) => {
+    if (user?.userType === "creator") {
+      return match.investorId;
+    } else {
+      return match.creatorId;
+    }
   };
 
-  const handleRejectMatch = (matchId: string) => {
-    // TODO: Implement reject match functionality
-    console.log("Reject match:", matchId);
+  // Handle match status updates and create conversations
+  const handleAcceptMatch = async (matchId: string) => {
+    if (!convexUserId) return;
+
+    try {
+      await updateMatchStatusMutation({ matchId: matchId as Id<"matches">, status: "contacted" });
+      toast.success("Match accepted! Conversation created.");
+      // Refresh the matches
+      window.location.reload();
+    } catch (error) {
+      console.error("Error accepting match:", error);
+      toast.error("Failed to accept match. Please try again.");
+    }
   };
 
-  const handleStartConversation = (matchId: string) => {
-    // TODO: Implement start conversation functionality
-    console.log("Start conversation:", matchId);
+  const handleRejectMatch = async (matchId: string) => {
+    if (!convexUserId) return;
+
+    try {
+      await updateMatchStatusMutation({ matchId: matchId as Id<"matches">, status: "rejected" });
+      toast.success("Match rejected.");
+      // Refresh the matches
+      window.location.reload();
+    } catch (error) {
+      console.error("Error rejecting match:", error);
+      toast.error("Failed to reject match. Please try again.");
+    }
   };
 
-  const handleContinueDiscussion = (matchId: string) => {
-    // TODO: Implement continue discussion functionality
-    console.log("Continue discussion:", matchId);
+  const handleStartConversation = async (match: any) => {
+    if (!convexUserId) return;
+
+    try {
+      const otherUserId = getOtherUserId(match);
+      const conversation = await getOrCreateConversationMutation({
+        matchId: match._id,
+        participant1Id: convexUserId as Id<"users">,
+        participant2Id: otherUserId as Id<"users">,
+      });
+
+      await updateMatchStatusMutation({ matchId: match._id, status: "contacted" });
+
+      toast.success("Conversation started!");
+      // Navigate to messages page
+      router.push("/messages");
+    } catch (error) {
+      console.error("Error starting conversation:", error);
+      toast.error("Failed to start conversation. Please try again.");
+    }
+  };
+
+  const handleContinueDiscussion = (match: any) => {
+    // Navigate to messages page - the conversation should already exist
+    toast.info("Continuing discussion...");
+    router.push("/messages");
   };
 
   // Handle OAuth user creation and get Convex user ID
@@ -124,13 +176,13 @@ export default function MatchesPage() {
       setMatches(matchesData);
       setFilteredMatches(matchesData);
       setIsLoading(false);
-    } else if (matchesData !== undefined && !isLoading && convexUserId) {
-      // No matches found - only update if not already loading and we have a convex user ID
+    } else if (matchesData !== undefined && convexUserId) {
+      // No matches found - only update if we have a convex user ID
       setMatches([]);
       setFilteredMatches([]);
       setIsLoading(false);
     }
-  }, [creatorMatches, investorMatches, user, isLoading, convexUserId]);
+  }, [creatorMatches, investorMatches, user, convexUserId]);
 
   useEffect(() => {
     if (statusFilter === "all") {
@@ -324,7 +376,7 @@ export default function MatchesPage() {
                         </>
                       )}
                       {match.status === "viewed" && (
-                        <Button size="sm" onClick={() => handleStartConversation(match._id)}>Start Conversation</Button>
+                        <Button size="sm" onClick={() => handleStartConversation(match)}>Start Conversation</Button>
                       )}
                       {(match.status === "contacted" || match.status === "negotiating") && (
                         <Button size="sm" onClick={() => handleContinueDiscussion(match._id)}>Continue Discussion</Button>

@@ -12,6 +12,7 @@ import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
 import { useQuery } from "convex/react";
 import { api } from "@/lib/convex";
+import { IdeaCardSkeleton } from "@/components/ui/skeleton";
 
 export default function IdeasPage() {
   const { user } = useAuth();
@@ -84,14 +85,27 @@ export default function IdeasPage() {
 
   if (isLoading) {
     return (
-            <SidebarLayout>
+      <SidebarLayout>
+        <div className="min-h-screen bg-slate-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mb-8">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Business Ideas</h1>
+                  <p className="text-gray-600 dark:text-gray-300 mt-2">
+                    Discover innovative business opportunities from entrepreneurs worldwide
+                  </p>
+                </div>
+              </div>
+            </div>
 
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading business ideas...</p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <IdeaCardSkeleton key={index} />
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
       </SidebarLayout>
     );
   }

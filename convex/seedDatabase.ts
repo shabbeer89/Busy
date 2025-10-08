@@ -12,6 +12,40 @@ import {
   getRandomCurrentFunding
 } from "./seedData";
 
+// Sample messages for conversations
+const sampleConversationMessages = [
+  [
+    { content: "Hi! I'm interested in your coconut processing business. The supply chain optimization looks impressive.", type: "text", sender: "investor" },
+    { content: "Thank you! We've been working on this for 2 years. The automated sorting reduces labor costs by 60%.", type: "text", sender: "creator" },
+    { content: "That's great! I'd like to discuss potential investment terms. When would be a good time to connect?", type: "text", sender: "investor" },
+    { content: "I'm available tomorrow afternoon. Maybe we can do a quick call to discuss next steps?", type: "text", sender: "creator" },
+  ],
+  [
+    { content: "Hello! Your jasmine supply chain platform caught my attention. How does the blockchain integration work?", type: "text", sender: "investor" },
+    { content: "Hi! We use blockchain for traceability from farm to consumer. It ensures authenticity and fair pricing.", type: "text", sender: "creator" },
+    { content: "Interesting. What's your current round valuation and how much are you raising?", type: "text", sender: "investor" },
+    { content: "We're raising $450K at $4M pre-money. Happy to share our pitch deck!", type: "text", sender: "creator" },
+  ],
+  [
+    { content: "I like your textile recycling technology. How sustainable is the recycling process?", type: "text", sender: "investor" },
+    { content: "Our process converts 95% of textile waste back into fiber. It's circular economy focused.", type: "text", sender: "creator" },
+    { content: "What markets are you targeting initially?", type: "text", sender: "investor" },
+    { content: "Starting with Coimbatore textile mills, then expanding to export markets in Europe.", type: "text", sender: "creator" },
+  ],
+  [
+    { content: "Your medical tourism platform seems well-positioned. What's your go-to-market strategy?", type: "text", sender: "investor" },
+    { content: "We're partnering with 10 hospitals in Bangalore initially. Focus on international patients from Middle East.", type: "text", sender: "creator" },
+    { content: "Interesting. What's your competitive advantage?", type: "text", sender: "investor" },
+    { content: "We offer end-to-end support: visas, accommodation, treatment coordination.", type: "text", sender: "creator" },
+  ],
+  [
+    { content: "The spice quality assurance system sounds innovative. Who are your target customers?", type: "text", sender: "investor" },
+    { content: "Kerala spice exporters and international buyers. We ensure authenticity and quality standards.", type: "text", sender: "creator" },
+    { content: "How does the blockchain verification work?", type: "text", sender: "investor" },
+    { content: "Each batch gets a unique QR code linked to blockchain. Consumers can verify authenticity instantly.", type: "text", sender: "creator" },
+  ]
+];
+
 // Helper function to convert string to Id
 function stringToId(id: string) {
   return id as any;
@@ -120,6 +154,7 @@ export const seedSouthIndianData = mutation({
     }
 
     // Seed matches
+    const createdMatches: string[] = [];
     for (let i = 0; i < southIndianMatches.length; i++) {
       const match = southIndianMatches[i];
       const ideaId = createdIdeas[i];
@@ -130,7 +165,7 @@ export const seedSouthIndianData = mutation({
       // Get the actual idea and creator for this match
       const idea = await ctx.db.get(stringToId(ideaId));
       if (idea) {
-        await ctx.db.insert("matches", {
+        const matchId = await ctx.db.insert("matches", {
           ...match,
           ideaId: stringToId(ideaId),
           investorId: stringToId(investorId),
@@ -139,6 +174,53 @@ export const seedSouthIndianData = mutation({
           createdAt: getRandomTimestamp(20),
           updatedAt: getRandomTimestamp(5),
         });
+        createdMatches.push(matchId);
+      }
+    }
+
+    // Seed conversations and messages for some matches
+    for (let i = 0; i < Math.min(createdMatches.length, sampleConversationMessages.length); i++) {
+      const matchId = createdMatches[i];
+      const conversationMessages = sampleConversationMessages[i];
+      const creatorId = creators[i];  // Use the creator from the loop
+      const investorId = investors[i % investors.length];  // Use the investor from the loop
+
+      // Create conversation
+      const conversationId = await ctx.db.insert("conversations", {
+        matchId: stringToId(matchId),
+        participant1Id: stringToId(creatorId),
+        participant2Id: stringToId(investorId),
+        createdAt: getRandomTimestamp(15),
+        updatedAt: getRandomTimestamp(5),
+        lastMessageAt: getRandomTimestamp(5),
+      });
+
+      // Add messages to conversation
+      let lastMessageId: string | null = null;
+      for (let j = 0; j < conversationMessages.length; j++) {
+        const msg = conversationMessages[j];
+        const senderId = msg.sender === "investor" ? stringToId(investorId) : stringToId(creatorId);
+
+        const messageId = await ctx.db.insert("messages", {
+          conversationId: stringToId(conversationId),
+          senderId: senderId,
+          content: msg.content,
+          type: msg.type as "text",
+          read: Math.random() > 0.5, // Randomly mark as read/unread
+          readAt: Math.random() > 0.5 ? getRandomTimestamp(10) : undefined,
+          createdAt: getRandomTimestamp(15 - j * 2), // Older messages first
+          updatedAt: getRandomTimestamp(15 - j * 2),
+        });
+
+        // Update conversation with last message for every other message
+        if (j === conversationMessages.length - 1 || j % 2 === 1) {
+          lastMessageId = messageId;
+          await ctx.db.patch(stringToId(conversationId), {
+            lastMessageId: stringToId(messageId),
+            lastMessageAt: getRandomTimestamp(5),
+            updatedAt: getRandomTimestamp(5),
+          });
+        }
       }
     }
 
