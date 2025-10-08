@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { WalletConnect, useWallet } from "@/components/wallet/wallet-connect";
 import { BABTValidator } from "@/components/wallet/babt-validator";
-import { BinanceBABTVerifier } from "@/components/wallet/binance-babt-verifier";
+import { BABTVerificationFlow } from "@/components/wallet/babt-verification-flow";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
-import { ArrowUpRight, ArrowDownLeft, Activity, Plus, Shield, AlertCircle } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, Activity, Plus, Shield, AlertCircle, ExternalLink } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -25,7 +25,7 @@ interface Transaction {
   description?: string;
 }
 export default function WalletPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { wallet, isConnected } = useWallet();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState<string>("0.0000");
@@ -83,6 +83,19 @@ export default function WalletPage() {
     }
     setIsLoading(false);
   }, [isConnected, wallet]);
+
+  if (authLoading) {
+    return (
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+          </div>
+        </div>
+      </SidebarLayout>
+    );
+  }
 
   if (!user) {
     return (
@@ -221,73 +234,52 @@ export default function WalletPage() {
            </TabsContent>
 
            <TabsContent value="babt" className="space-y-6">
-             {/* Clear Explanation */}
-             <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
-               <CardHeader>
-                 <CardTitle className="flex items-center gap-2">
-                   <AlertCircle className="h-5 w-5 text-blue-500" />
-                   Choose Your BABT Verification Method
-                 </CardTitle>
-                 <CardDescription>
-                   Different verification methods for different BABT types
-                 </CardDescription>
-               </CardHeader>
-               <CardContent>
-                 <div className="grid md:grid-cols-2 gap-4 text-sm">
-                   <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
-                     <div className="font-medium text-blue-600 dark:text-blue-400 mb-2">🔗 Binance App BABT</div>
-                     <div className="text-gray-600 dark:text-gray-300 mb-3">
-                       BABT tokens from Binance mobile/web app
+             {/* BABT Verification Status */}
+             <BABTVerificationFlow mode="status" showStartButton={true} />
+
+             {/* Verification Actions */}
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               {/* Quick Verification Start */}
+               <Card className="border-0 shadow-sm">
+                 <CardContent className="p-6">
+                   <div className="space-y-4">
+                     <div className="flex items-center gap-2">
+                       <Shield className="w-5 h-5 text-blue-500" />
+                       <h3 className="font-medium">Start Verification</h3>
                      </div>
-                     <div className="text-xs text-gray-500">
-                       • Requires Binance OAuth<br/>
-                       • No wallet signature needed<br/>
-                       • Links to Binance account
-                     </div>
+                     <p className="text-sm text-gray-600 dark:text-gray-400">
+                       Begin the BABT verification process with guided steps.
+                     </p>
+                     <Link href="/babt-protected" className="block">
+                       <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                         <Shield className="w-4 h-4 mr-2" />
+                         Verify BABT
+                       </Button>
+                     </Link>
                    </div>
-                   <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
-                     <div className="font-medium text-purple-600 dark:text-purple-400 mb-2">⛓️ Web3 BABT Tokens</div>
-                     <div className="text-gray-600 dark:text-gray-300 mb-3">
-                       BABT tokens on blockchain (on-chain)
+                 </CardContent>
+               </Card>
+
+               {/* Access Full Verification Center */}
+               <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
+                 <CardContent className="p-6">
+                   <div className="space-y-4">
+                     <div className="flex items-center gap-2">
+                       <ExternalLink className="w-5 h-5 text-purple-500" />
+                       <h3 className="font-medium">Verification Center</h3>
                      </div>
-                     <div className="text-xs text-gray-500">
-                       • Requires wallet connection<br/>
-                       • Checks on-chain ownership<br/>
-                       • MetaMask signature needed
-                     </div>
+                     <p className="text-sm text-gray-600 dark:text-gray-400">
+                       Access all verification methods, advanced tools, and detailed guides.
+                     </p>
+                     <Link href="/babt-protected" className="block">
+                       <Button variant="outline" className="w-full">
+                         <ExternalLink className="w-4 h-4 mr-2" />
+                         Open Full Center
+                       </Button>
+                     </Link>
                    </div>
-                 </div>
-               </CardContent>
-             </Card>
-
-             {/* Binance BABT Verifier */}
-             <div className="space-y-3">
-               <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                 <Shield className="h-5 w-5 text-blue-500" />
-                 Binance BABT Verifier (Recommended)
-               </h3>
-               <BinanceBABTVerifier />
-             </div>
-
-             {/* Separator */}
-             <div className="relative">
-               <div className="absolute inset-0 flex items-center">
-                 <span className="w-full border-t" />
-               </div>
-               <div className="relative flex justify-center text-xs uppercase">
-                 <span className="bg-white dark:bg-gray-900 px-2 text-muted-foreground">
-                   Alternative Method
-                 </span>
-               </div>
-             </div>
-
-             {/* Legacy BABT Validator */}
-             <div className="space-y-3">
-               <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                 <AlertCircle className="h-5 w-5 text-orange-500" />
-                 Web3 Token Validator (Legacy)
-               </h3>
-               <BABTValidator />
+                 </CardContent>
+               </Card>
              </div>
            </TabsContent>
          </Tabs>

@@ -12,9 +12,13 @@ function AuthSync({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const syncWithNextAuth = useAuthStore((state) => state.syncWithNextAuth);
   const logout = useAuthStore((state) => state.logout);
+  const setLoading = useAuthStore((state) => state.setLoading);
   const previousSessionRef = useRef<any>(null);
 
   useEffect(() => {
+    // Set loading to true when component mounts and while checking auth
+    setLoading(true);
+
     // Prevent infinite loops by checking if session actually changed
     if (previousSessionRef.current !== session) {
       previousSessionRef.current = session;
@@ -22,12 +26,17 @@ function AuthSync({ children }: { children: React.ReactNode }) {
       if (session?.user && status === "authenticated") {
         // Sync NextAuth session with Zustand store
         syncWithNextAuth(session.user);
+        setLoading(false);
       } else if (status === "unauthenticated" && previousSessionRef.current?.user) {
         // User signed out from NextAuth, also sign out from Zustand
         logout();
+        setLoading(false);
+      } else if (status === "unauthenticated" && !previousSessionRef.current?.user) {
+        // No session and no previous session - definitively not authenticated
+        setLoading(false);
       }
     }
-  }, [session, status, syncWithNextAuth, logout]);
+  }, [session, status, syncWithNextAuth, logout, setLoading]);
 
   return <>{children}</>;
 }

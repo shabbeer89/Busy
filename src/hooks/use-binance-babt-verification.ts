@@ -4,8 +4,7 @@
 import { useState, useCallback } from 'react';
 import {
   createBABTVerificationWorkflow,
-  VerificationResult,
-  BINANCE_CONFIG
+  VerificationResult
 } from '@/lib/binance-babt-verification';
 
 export interface BABTVerificationState {

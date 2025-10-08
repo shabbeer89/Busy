@@ -4,7 +4,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   createBABTVerificationWorkflow,
-  WalletLinkRequest,
   VerificationResult
 } from '@/lib/binance-babt-verification';
 import { verificationRateLimiter, getClientIP } from '@/lib/rate-limiter';
@@ -53,21 +52,59 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Check if Binance credentials are properly configured for OAuth verification
+    const clientId = process.env.BINANCE_CLIENT_ID;
+    const clientSecret = process.env.BINANCE_CLIENT_SECRET;
+    const redirectUri = process.env.BINANCE_REDIRECT_URI;
+
     const body = await request.json();
     const {
       walletAddress,
       binanceAuthCode,
       signature,
       linkWallet = false,
-      verificationMethod = 'auto'
+      // verificationMethod = 'auto' // Reserved for future use
     } = body;
 
+    // Validate credentials if OAuth code is provided
+    if (binanceAuthCode && (!clientId || !clientSecret || !redirectUri ||
+        clientId === 'your-binance-client-id' ||
+        clientSecret === 'your-binance-client-secret')) {
+
+      const response = NextResponse.json(
+        {
+          error: 'Binance OAuth not configured',
+          message: 'Binance OAuth credentials are not properly configured for verification.',
+          setupInstructions: {
+            step1: 'Create a Binance developer application at https://developers.binance.com/',
+            step2: 'Get your Client ID and Client Secret from the Binance developer dashboard',
+            step3: 'Set the environment variables in your .env.local file',
+            requiredVariables: [
+              'BINANCE_CLIENT_ID=your_actual_client_id',
+              'BINANCE_CLIENT_SECRET=your_actual_client_secret',
+              'BINANCE_REDIRECT_URI=http://localhost:3000/api/babt/callback'
+            ]
+          }
+        },
+        { status: 503 } // Service Unavailable
+      );
+      addCORSHeaders(response, request);
+      return response;
+    }
+
+    // Use valid credentials for verification
+    const validBabtVerifier = createBABTVerificationWorkflow(
+      clientId || 'your-binance-client-id',
+      clientSecret || 'your-binance-client-secret',
+      redirectUri || 'http://localhost:3000/api/babt/callback'
+    );
+
     // Comprehensive verification
-    const result: VerificationResult = await babtVerifier.verifyBABT(
-      walletAddress,
-      binanceAuthCode,
-      signature,
-      linkWallet
+    const result: VerificationResult = await validBabtVerifier.verifyBABT(
+      walletAddress || undefined,
+      binanceAuthCode || undefined,
+      signature || undefined,
+      linkWallet || false
     );
 
     // Return verification result
@@ -114,7 +151,39 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const state = searchParams.get('state') || 'babt_verification';
 
-    const authUrl = babtVerifier['binanceVerifier'].generateAuthUrl(state);
+    // Check if Binance credentials are properly configured
+    const clientId = process.env.BINANCE_CLIENT_ID;
+    const clientSecret = process.env.BINANCE_CLIENT_SECRET;
+    const redirectUri = process.env.BINANCE_REDIRECT_URI;
+
+    if (!clientId || !clientSecret || !redirectUri ||
+        clientId === 'your-binance-client-id' ||
+        clientSecret === 'your-binance-client-secret') {
+
+      const response = NextResponse.json(
+        {
+          error: 'Binance OAuth not configured',
+          message: 'Binance OAuth credentials are not properly configured. Please set BINANCE_CLIENT_ID, BINANCE_CLIENT_SECRET, and BINANCE_REDIRECT_URI environment variables.',
+          setupInstructions: {
+            step1: 'Create a Binance developer application at https://developers.binance.com/',
+            step2: 'Get your Client ID and Client Secret from the Binance developer dashboard',
+            step3: 'Set the environment variables in your .env.local file',
+            requiredVariables: [
+              'BINANCE_CLIENT_ID=your_actual_client_id',
+              'BINANCE_CLIENT_SECRET=your_actual_client_secret',
+              'BINANCE_REDIRECT_URI=http://localhost:3000/api/babt/callback'
+            ]
+          }
+        },
+        { status: 503 } // Service Unavailable
+      );
+      addCORSHeaders(response, request);
+      return response;
+    }
+
+    // Recreate verifier with valid credentials
+    const validBabtVerifier = createBABTVerificationWorkflow(clientId, clientSecret, redirectUri);
+    const authUrl = validBabtVerifier['binanceVerifier'].generateAuthUrl(state);
 
     const response = NextResponse.json({
       success: true,

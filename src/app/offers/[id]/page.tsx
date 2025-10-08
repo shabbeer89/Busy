@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FavoritesButton } from "@/components/bookmarks/favorites-button";
 import Link from "next/link";
 import { InvestmentOffer } from "@/types";
+import { Id } from "../../../../convex/_generated/dataModel";
 
 export default function OfferDetailPage() {
   const params = useParams();
@@ -29,7 +30,7 @@ export default function OfferDetailPage() {
         // Mock offer data
         const mockOffer: InvestmentOffer = {
           id: params.id as string,
-          investorId: "investor1",
+          investorId: "investor1" as Id<"users">,
           title: "Tech-Focused Growth Capital",
           description: `Strategic investment fund focused on technology startups with proven market traction and scalable business models.
 
