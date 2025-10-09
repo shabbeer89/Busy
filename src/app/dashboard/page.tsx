@@ -35,6 +35,12 @@ import { animations } from "@/lib/animations";
 import { CardSkeleton, ProfileSkeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/lib/convex";
+import { Id } from "../../../convex/_generated/dataModel";
+
+// Helper function to properly convert string to Convex ID
+const stringToConvexId = (id: string): Id<"users"> => {
+  return id as Id<"users">;
+};
 
 interface DashboardStats {
   totalMatches: number;
@@ -56,12 +62,12 @@ interface DashboardStats {
 export default function DashboardPage() {
   const { user, hasValidConvexId } = useAuth();
   const { profileStatus } = useProfile();
-  const [convexUserId, setConvexUserId] = useState<string | null>(null);
+  const [convexUserId, setConvexUserId] = useState<Id<"users"> | null>(null);
 
   // For OAuth users, we need to ensure they have a Convex user record first
   const findOrCreateUserMutation = useMutation(api.users.findOrCreateUserByOAuth);
 
-  // Handle OAuth user creation and get Convex user ID
+  // Handle user creation and get Convex user ID
   useEffect(() => {
     const setupUser = async () => {
       if (!user) {
@@ -72,17 +78,10 @@ export default function DashboardPage() {
       console.log("Setting up user:", user.id, "hasValidConvexId:", hasValidConvexId(user.id));
       console.log("User provider:", (user as any).provider);
 
-      // If user has a valid Convex ID, use it directly
-      if (hasValidConvexId(user.id)) {
-        console.log("Using direct Convex ID:", user.id);
-        setConvexUserId(user.id);
-        return;
-      }
-
-      // For OAuth users, create/find Convex user record
+      // Always use findOrCreateUserMutation for all users to ensure proper Convex ID
       if (user.email) {
         try {
-          console.log("Creating/finding Convex user for:", user.id);
+          console.log("Creating/finding Convex user:", user.id);
           const convexId = await findOrCreateUserMutation({
             oauthId: user.id,
             email: user.email,
@@ -92,23 +91,23 @@ export default function DashboardPage() {
 
           if (convexId) {
             console.log("Got Convex user ID:", convexId);
-            setConvexUserId(convexId);
+            setConvexUserId(stringToConvexId(convexId));
           } else {
             console.error("No Convex ID returned from findOrCreateUserByOAuth");
           }
         } catch (error) {
-          console.error("Error setting up OAuth user:", error);
+          console.error("Error setting up user:", error);
         }
       }
     };
 
     setupUser();
-  }, [user, hasValidConvexId, findOrCreateUserMutation]);
+  }, [user, findOrCreateUserMutation]);
 
   // Fetch dynamic dashboard data
   const dashboardStats = useQuery(
     api.analytics.getUserDashboardStats,
-    convexUserId ? { userId: convexUserId as any } : "skip"
+    convexUserId ? { userId: convexUserId } : "skip"
   );
 
   // Fetch platform-wide stats to sync with analytics page

@@ -46,19 +46,28 @@ export const getConversationsForUser = query({
     userId: v.string(),
   },
   handler: async (ctx, args) => {
-    // Try to find user by OAuth ID first
-    let user = await ctx.db
-      .query("users")
-      .withIndex("by_oauth", (q) => q.eq("oauthId", args.userId))
-      .first();
+    // Try direct Convex ID first
+    let user = null;
+    try {
+      user = await ctx.db.get(args.userId as Id<"users">);
+    } catch {
+      // Not a valid Convex ID, continue
+    }
 
-    // If not found by OAuth ID, try direct Convex ID
+    // If not found by Convex ID, try OAuth ID
     if (!user) {
-      try {
-        user = await ctx.db.get(args.userId as Id<"users">);
-      } catch {
-        // Ignore conversion error
-      }
+      user = await ctx.db
+        .query("users")
+        .withIndex("by_oauth", (q) => q.eq("oauthId", args.userId))
+        .first();
+    }
+
+    // If still not found, try email lookup (in case it's an email)
+    if (!user) {
+      user = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", args.userId))
+        .first();
     }
 
     if (!user) return [];

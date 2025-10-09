@@ -190,9 +190,54 @@ export default function MatchesPage() {
       setFilteredMatches(matchesData);
       setIsLoading(false);
     } else if (matchesData !== undefined && convexUserId) {
-      // No matches found - only update if we have a convex user ID
-      setMatches([]);
-      setFilteredMatches([]);
+      // No matches found for current user
+
+      // In development mode, show sample matches for UI testing if user has no matches
+      if (process.env.NODE_ENV === 'development' && matchesData.length === 0) {
+        console.log("No matches found for current user, showing sample data for UI testing");
+        // Use the first few matches from the database as sample data for UI testing
+        const sampleMatches = [
+          {
+            _id: 'sample-match-1',
+            matchScore: 89,
+            status: 'suggested' as const,
+            createdAt: Date.now() - 86400000, // 1 day ago
+            updatedAt: Date.now() - 86400000,
+            matchingFactors: {
+              amountCompatibility: 95,
+              industryAlignment: 92,
+              stagePreference: 85,
+              riskAlignment: 88,
+            },
+            ideaId: 'sample-idea-1',
+            offerId: 'sample-offer-1',
+            investorId: 'sample-investor-1',
+            creatorId: 'sample-creator-1'
+          },
+          {
+            _id: 'sample-match-2',
+            matchScore: 76,
+            status: 'viewed' as const,
+            createdAt: Date.now() - 172800000, // 2 days ago
+            updatedAt: Date.now() - 172800000,
+            matchingFactors: {
+              amountCompatibility: 82,
+              industryAlignment: 85,
+              stagePreference: 70,
+              riskAlignment: 75,
+            },
+            ideaId: 'sample-idea-2',
+            offerId: 'sample-offer-2',
+            investorId: 'sample-investor-2',
+            creatorId: 'sample-creator-2'
+          }
+        ];
+        setMatches(sampleMatches);
+        setFilteredMatches(sampleMatches);
+      } else {
+        setMatches([]);
+        setFilteredMatches([]);
+      }
       setIsLoading(false);
     }
   }, [creatorMatches, investorMatches, user, convexUserId]);
@@ -210,7 +255,10 @@ export default function MatchesPage() {
     user: user?.id,
     hasValidConvexId: user ? hasValidConvexId(user.id) : false,
     convexUserId,
-    isLoading
+    isLoading,
+    userType: user?.userType,
+    creatorMatchesCount: creatorMatches.length,
+    investorMatchesCount: investorMatches.length
   });
 
   if (!user || !hasValidConvexId(user.id)) {
@@ -315,17 +363,46 @@ export default function MatchesPage() {
         </div>
 
         {filteredMatches.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              {statusFilter === "all" ? "No matches yet" : `No ${statusFilter} matches`}
-            </p>
-            <p className="text-gray-400 mt-2">
-              {user.userType === "creator"
-                ? "Complete your profile and submit business ideas to start getting matched with investors."
-                : "Complete your profile and create investment offers to start getting matched with business ideas."
-              }
-            </p>
-          </div>
+           <div className="text-center py-12">
+             {/* Debug info for development */}
+             {process.env.NODE_ENV === 'development' && (
+               <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                 <h3 className="text-lg font-semibold mb-2">Debug Information</h3>
+                 <div className="text-sm space-y-1">
+                   <p>User ID: {user?.id}</p>
+                   <p>Convex User ID: {convexUserId}</p>
+                   <p>User Type: {user?.userType}</p>
+                   <p>Has Valid Convex ID: {user ? hasValidConvexId(user.id).toString() : 'false'}</p>
+                   <p>Raw Creator Matches: {creatorMatches.length}</p>
+                   <p>Raw Investor Matches: {investorMatches.length}</p>
+                   <p>Total Matches: {matches.length}</p>
+                   <p>Status Filter: {statusFilter}</p>
+                 </div>
+                 {convexUserId && (
+                   <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded">
+                     <p className="text-sm text-blue-800 dark:text-blue-200">
+                       💡 Try signing in with one of these test accounts that have matches:
+                     </p>
+                     <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                       Creator: vignesh.kumar@email.com<br/>
+                       Creator: meera.srinivasan@email.com<br/>
+                       Investor: arjun.iyer@email.com
+                     </p>
+                   </div>
+                 )}
+               </div>
+             )}
+
+             <p className="text-gray-500 text-lg">
+               {statusFilter === "all" ? "No matches yet" : `No ${statusFilter} matches`}
+             </p>
+             <p className="text-gray-400 mt-2">
+               {user.userType === "creator"
+                 ? "Complete your profile and submit business ideas to start getting matched with investors."
+                 : "Complete your profile and create investment offers to start getting matched with business ideas."
+               }
+             </p>
+           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredMatches.map((match: any) => (
