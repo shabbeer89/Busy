@@ -238,9 +238,22 @@ export function useAuth() {
 
   // Helper function to check if user has valid Convex ID
   const hasValidConvexId = (userId: string | undefined): boolean => {
-    // Convex IDs are typically longer than simple strings and don't contain "demo", "temp", or "real_"
-    return userId ? userId.length > 20 && !userId.includes("demo") && !userId.includes("temp") && !userId.includes("real_") : false;
+    if (!userId) return false;
+
+    // Allow Convex IDs that start with "js"
+    if (userId.startsWith("js") && userId.length > 20) {
+      return true;
+    }
+
+    // Also allow OAuth-style IDs that look like long numbers (for OAuth users)
+    if (userId.length >= 10 && /^\d+$/.test(userId)) {
+      return true;
+    }
+
+    return false;
   };
+
+
 
   return {
     user,

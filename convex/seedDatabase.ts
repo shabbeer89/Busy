@@ -12,37 +12,67 @@ import {
   getRandomCurrentFunding
 } from "./seedData";
 
-// Sample messages for conversations
+// Sample messages for conversations - expanded for South Indian business context
 const sampleConversationMessages = [
   [
-    { content: "Hi! I'm interested in your coconut processing business. The supply chain optimization looks impressive.", type: "text", sender: "investor" },
-    { content: "Thank you! We've been working on this for 2 years. The automated sorting reduces labor costs by 60%.", type: "text", sender: "creator" },
-    { content: "That's great! I'd like to discuss potential investment terms. When would be a good time to connect?", type: "text", sender: "investor" },
-    { content: "I'm available tomorrow afternoon. Maybe we can do a quick call to discuss next steps?", type: "text", sender: "creator" },
+    { content: "Namaste! I'm interested in your coconut processing automation in Kerala. The AI sorting technology sounds revolutionary.", type: "text", sender: "investor" },
+    { content: "Thank you! We're revolutionizing traditional coconut processing in Alappuzha. Reduces manual labor by 80% while ensuring quality.", type: "text", sender: "creator" },
+    { content: "Impressive ROI! I'd like to discuss investment. Are you open to ₹1.5 crore funding?", type: "text", sender: "investor" },
+    { content: "Yes definitely! We're seeking ₹1.2 crores for 15% equity. Shall we schedule a call?", type: "text", sender: "creator" },
   ],
   [
-    { content: "Hello! Your jasmine supply chain platform caught my attention. How does the blockchain integration work?", type: "text", sender: "investor" },
-    { content: "Hi! We use blockchain for traceability from farm to consumer. It ensures authenticity and fair pricing.", type: "text", sender: "creator" },
-    { content: "Interesting. What's your current round valuation and how much are you raising?", type: "text", sender: "investor" },
-    { content: "We're raising $450K at $4M pre-money. Happy to share our pitch deck!", type: "text", sender: "creator" },
+    { content: "Hello! Your Madurai jasmine supply chain caught my attention. The blockchain traceability is interesting.", type: "text", sender: "investor" },
+    { content: "Hi! We ensure fair pricing for Madurai's jasmine farmers through blockchain verification from flower to customer.", type: "text", sender: "creator" },
+    { content: "What's your pre-money valuation? Interested in angel investment.", type: "text", sender: "investor" },
+    { content: "₹4 crores pre-money. Seeking ₹45 lakhs. Can share our farmer network details!", type: "text", sender: "creator" },
   ],
   [
-    { content: "I like your textile recycling technology. How sustainable is the recycling process?", type: "text", sender: "investor" },
-    { content: "Our process converts 95% of textile waste back into fiber. It's circular economy focused.", type: "text", sender: "creator" },
-    { content: "What markets are you targeting initially?", type: "text", sender: "investor" },
-    { content: "Starting with Coimbatore textile mills, then expanding to export markets in Europe.", type: "text", sender: "creator" },
+    { content: "Your textile recycling in Coimbatore looks promising. What's the waste processing capacity?", type: "text", sender: "investor" },
+    { content: "Our technology converts 95% of Tamil Nadu textile waste back into usable fibers. Circular economy approach.", type: "text", sender: "creator" },
+    { content: "Sustainable focus aligns with recent ESG mandates. Ready to invest ₹90 lakhs?", type: "text", sender: "investor" },
+    { content: "Perfect! We'll expand to European export markets. Let's discuss partnership terms.", type: "text", sender: "creator" },
   ],
   [
-    { content: "Your medical tourism platform seems well-positioned. What's your go-to-market strategy?", type: "text", sender: "investor" },
-    { content: "We're partnering with 10 hospitals in Bangalore initially. Focus on international patients from Middle East.", type: "text", sender: "creator" },
-    { content: "Interesting. What's your competitive advantage?", type: "text", sender: "investor" },
-    { content: "We offer end-to-end support: visas, accommodation, treatment coordination.", type: "text", sender: "creator" },
+    { content: "Bangalore medical tourism platform seems well-positioned. How do you handle visa processing?", type: "text", sender: "investor" },
+    { content: "We provide end-to-end support: childcare during treatment, accommodation, and visa assistance for international patients.", type: "text", sender: "creator" },
+    { content: "What's your expansion plan? Had cross-border healthcare experience.", type: "text", sender: "investor" },
+    { content: "Targeting Middle East patients initially, then expanding to 15 Karnataka hospitals. Seeking ₹2 crores.", type: "text", sender: "creator" },
   ],
   [
-    { content: "The spice quality assurance system sounds innovative. Who are your target customers?", type: "text", sender: "investor" },
-    { content: "Kerala spice exporters and international buyers. We ensure authenticity and quality standards.", type: "text", sender: "creator" },
-    { content: "How does the blockchain verification work?", type: "text", sender: "investor" },
-    { content: "Each batch gets a unique QR code linked to blockchain. Consumers can verify authenticity instantly.", type: "text", sender: "creator" },
+    { content: "Kerala spice quality assurance system is innovative. How does AI detect adulteration?", type: "text", sender: "investor" },
+    { content: "Our AI analyzes chemical composition and visual patterns to ensure Kozhikode spice authenticity.", type: "text", sender: "creator" },
+    { content: "Export market potential is huge. Interested in providing ₹60 lakhs funding.", type: "text", sender: "investor" },
+    { content: "Great! We'll focus on premium spice exports to Europe. Ready to share quality certificates!", type: "text", sender: "creator" },
+  ],
+  [
+    { content: "Hyderabad AI research center looks promising. How will you commercialize healthcare diagnostics?", type: "text", sender: "investor" },
+    { content: "Partnering with Telangana hospitals for AI-powered diagnosis. Focus on affordable solutions.", type: "text", sender: "creator" },
+    { content: "Healthcare AI has huge potential. What's your technology roadmap?", type: "text", sender: "investor" },
+    { content: "Two-year roadmap to deploy in 20 hospitals. Seeking ₹2.8 crores for 23% equity.", type: "text", sender: "creator" },
+  ],
+  [
+    { content: "Chennai port logistics optimization will transform trade. What's the IoT implementation plan?", type: "text", sender: "investor" },
+    { content: "Installing sensors across Chennai Port to track cargo movement and predict maintenance needs.", type: "text", sender: "creator" },
+    { content: "Port efficiency will save millions in Tamil Nadu trade. Ready to invest ₹2.5 crores?", type: "text", sender: "investor" },
+    { content: "Yes! We're offering 22% equity. Will integrate with existing port management systems.", type: "text", sender: "creator" },
+  ],
+  [
+    { content: "Kerala backwater tourism AR/VR platform is creative. How does it drive bookings?", type: "text", sender: "investor" },
+    { content: "Virtual tours of Alappuzha houseboats allow tourists to experience Kerala before booking.", type: "text", sender: "creator" },
+    { content: "Tourism recovery needs innovation. What markets are you targeting?", type: "text", sender: "investor" },
+    { content: "European and Middle East markets initially. Seeking ₹55 lakhs for platform development.", type: "text", sender: "creator" },
+  ],
+  [
+    { content: "Tamil Nadu coffee processing automation addresses real pain points. What's your farmer network?", type: "text", sender: "investor" },
+    { content: "Connected with 500 Coorg coffee farmers. Our AI ensures consistent quality for premium exports.", type: "text", sender: "creator" },
+    { content: "Global coffee market values consistency. Interested in funding ₹1.3 crores.", type: "text", sender: "investor" },
+    { content: "Perfect! We'll expand to Chikmagalur region too. Equity at 19% for the round.", type: "text", sender: "creator" },
+  ],
+  [
+    { content: "Your Karnataka organic farming platform solves real market access issues. What's the commission structure?", type: "text", sender: "investor" },
+    { content: "Farmers get 85% of sale price, platform takes 10%, logistics 5%. Direct farm-to-consumer model.", type: "text", sender: "creator" },
+    { content: "Fair pricing will attract Bangalore consumers. How many farmers are you starting with?", type: "text", sender: "investor" },
+    { content: "50 certified organic farmers initially, scaling to 200. Seeking ₹1.2 crores for platform.", type: "text", sender: "creator" },
   ]
 ];
 
@@ -115,8 +145,14 @@ export const seedSouthIndianData = mutation({
     const createdIdeas: string[] = [];
     for (let i = 0; i < southIndianBusinessIdeas.length; i++) {
       const idea = southIndianBusinessIdeas[i];
-      const creatorId = creators[i];
-      const ideaId = await ctx.db.insert("businessIdeas", {
+      const creatorIndex = i % creators.length;
+      const creatorId = creators[creatorIndex]; // Cycle through available creators
+
+      if (!creatorId) {
+        throw new Error(`No creator found for idea ${i}`);
+      }
+
+      const ideaData = {
         title: idea.title,
         description: idea.description,
         category: idea.category,
@@ -128,13 +164,15 @@ export const seedSouthIndianData = mutation({
         stage: idea.stage,
         timeline: idea.timeline,
         teamSize: idea.teamSize,
-        creatorId: stringToId(creatorId),
+        creatorId: creatorId as any, // Cast to bypass TypeScript strict typing
         status: "published" as const,
         createdAt: getRandomTimestamp(30),
         updatedAt: getRandomTimestamp(10),
         images: [`https://picsum.photos/seed/south-idea-${i}/800/600`],
         documents: [],
-      });
+      };
+
+      const ideaId = await ctx.db.insert("businessIdeas", ideaData);
       createdIdeas.push(ideaId);
     }
 
@@ -142,10 +180,12 @@ export const seedSouthIndianData = mutation({
     const createdOffers: string[] = [];
     for (let i = 0; i < southIndianInvestmentOffers.length; i++) {
       const offer = southIndianInvestmentOffers[i];
-      const investorId = investors[i];
+      const investorIndex = i % investors.length;
+      const investorId = investors[investorIndex]; // Cycle through available investors
+
       const offerId = await ctx.db.insert("investmentOffers", {
         ...offer,
-        investorId: stringToId(investorId),
+        investorId: investorId as any, // Cast to bypass TypeScript strict typing
         isActive: Math.random() > 0.2, // 80% active
         createdAt: getRandomTimestamp(30),
         updatedAt: getRandomTimestamp(10),

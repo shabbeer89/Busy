@@ -170,3 +170,57 @@ export function ProfileSkeleton() {
     </div>
   );
 }
+
+export function ConversationSkeleton() {
+  return (
+    <div className="p-4 border-b border-border">
+      <div className="flex items-start gap-3">
+        <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-32" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-3 w-8" />
+            </div>
+          </div>
+          <Skeleton className="h-3 w-48" />
+          <Skeleton className="h-3 w-16" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ConversationsListSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div className="space-y-0">
+      {Array.from({ length: count }).map((_, i) => (
+        <ConversationSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
+export function MessageSkeleton({ isOwn = false }: { isOwn?: boolean }) {
+  return (
+    <div className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
+      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg space-y-2 ${
+        isOwn ? "bg-blue-600" : "bg-slate-700 border border-slate-600"
+      }`}>
+        <Skeleton className={`h-4 ${isOwn ? "w-32" : "w-40"}`} />
+        <Skeleton className={`h-3 ${isOwn ? "w-16" : "w-20"}`} />
+      </div>
+    </div>
+  );
+}
+
+export function MessagesSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: count }).map((_, i) => (
+        <MessageSkeleton key={i} isOwn={i % 2 === 0} />
+      ))}
+    </div>
+  );
+}

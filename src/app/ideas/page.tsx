@@ -25,6 +25,9 @@ export default function IdeasPage() {
   // Use Convex query to get published business ideas (with fallback)
   const rawBusinessIdeas = useQuery(api.businessIdeas?.getPublishedIdeas) || [];
 
+  // Fetch dynamic categories
+  const dynamicCategories = useQuery(api.analytics.getAvailableCategories) || [];
+
   // Memoize the converted ideas to prevent unnecessary re-renders
   const businessIdeas = useMemo(() => {
     if (rawBusinessIdeas && rawBusinessIdeas.length > 0 && rawBusinessIdeas[0]._id) {
@@ -81,7 +84,8 @@ export default function IdeasPage() {
     setFilteredIdeas(filtered);
   }, [ideas, selectedCategory, searchTerm]);
 
-  const categories = ["all", "Technology", "Healthcare", "Finance", "Agriculture", "E-commerce"];
+  // Combine "all" with dynamic categories from the database
+  const categories = ["all", ...dynamicCategories];
 
   if (isLoading) {
     return (

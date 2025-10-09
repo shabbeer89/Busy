@@ -39,6 +39,7 @@ export default defineSchema({
     })),
   })
     .index("by_email", ["email"])
+    .index("by_oauth", ["oauthId"])
     .index("by_phone", ["phoneNumber"])
     .index("by_userType", ["userType"]),
 
@@ -198,7 +199,9 @@ export default defineSchema({
   })
     .index("by_match", ["matchId"])
     .index("by_participants", ["participant1Id", "participant2Id"])
-    .index("by_updated", ["updatedAt"]),
+    .index("by_updated", ["updatedAt"])
+    .index("by_participant1", ["participant1Id"])
+    .index("by_participant2", ["participant2Id"]),
 
   // Individual messages within conversations
   messages: defineTable({

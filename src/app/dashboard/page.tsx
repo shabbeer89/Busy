@@ -33,6 +33,8 @@ import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
 import { CardSkeleton, ProfileSkeleton } from "@/components/ui/skeleton";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/lib/convex";
 
 interface DashboardStats {
   totalMatches: number;
@@ -52,70 +54,80 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, hasValidConvexId } = useAuth();
   const { profileStatus } = useProfile();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [convexUserId, setConvexUserId] = useState<string | null>(null);
 
+  // For OAuth users, we need to ensure they have a Convex user record first
+  const findOrCreateUserMutation = useMutation(api.users.findOrCreateUserByOAuth);
+
+  // Handle OAuth user creation and get Convex user ID
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+    const setupUser = async () => {
+      if (!user) {
+        setConvexUserId(null);
+        return;
+      }
 
-        const mockStats: DashboardStats = {
-          totalMatches: user?.userType === 'creator' ? 12 : 8,
-          activeOffers: user?.userType === 'investor' ? 5 : 0,
-          totalEarnings: user?.userType === 'creator' ? 125000 : 0,
-          profileViews: Math.floor(Math.random() * 50) + 10,
-          responseRate: Math.floor(Math.random() * 20) + 75,
-          successRate: Math.floor(Math.random() * 15) + 80,
-          recentActivity: [
-            {
-              id: '1',
-              type: 'match',
-              title: 'New Match Found',
-              description: user?.userType === 'creator' ? 'AI-Powered Health App matched with investor' : 'Health Tech Startup matches your criteria',
-              timestamp: '2 hours ago',
-              amount: user?.userType === 'creator' ? 50000 : undefined
-            },
-            {
-              id: '2',
-              type: 'view',
-              title: 'Profile Viewed',
-              description: user?.userType === 'creator' ? 'Your business idea was viewed by 3 investors' : 'You viewed 3 new business ideas',
-              timestamp: '5 hours ago'
-            },
-            {
-              id: '3',
-              type: 'message',
-              title: 'New Message',
-              description: 'Investor sent you a message about your FinTech idea',
-              timestamp: '1 day ago'
-            },
-            {
-              id: '4',
-              type: 'investment',
-              title: 'Investment Received',
-              description: 'Congratulations! You received $25,000 investment',
-              timestamp: '2 days ago',
-              amount: 25000
-            }
-          ]
-        };
+      console.log("Setting up user:", user.id, "hasValidConvexId:", hasValidConvexId(user.id));
+      console.log("User provider:", (user as any).provider);
 
-        setStats(mockStats);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setIsLoading(false);
+      // If user has a valid Convex ID, use it directly
+      if (hasValidConvexId(user.id)) {
+        console.log("Using direct Convex ID:", user.id);
+        setConvexUserId(user.id);
+        return;
+      }
+
+      // For OAuth users, create/find Convex user record
+      if (user.email) {
+        try {
+          console.log("Creating/finding Convex user for:", user.id);
+          const convexId = await findOrCreateUserMutation({
+            oauthId: user.id,
+            email: user.email,
+            name: user.name || user.email.split('@')[0],
+            provider: (user as any).provider || "auth",
+          });
+
+          if (convexId) {
+            console.log("Got Convex user ID:", convexId);
+            setConvexUserId(convexId);
+          } else {
+            console.error("No Convex ID returned from findOrCreateUserByOAuth");
+          }
+        } catch (error) {
+          console.error("Error setting up OAuth user:", error);
+        }
       }
     };
 
-    if (user) {
-      fetchDashboardData();
-    }
-  }, [user]);
+    setupUser();
+  }, [user, hasValidConvexId, findOrCreateUserMutation]);
+
+  // Fetch dynamic dashboard data
+  const dashboardStats = useQuery(
+    api.analytics.getUserDashboardStats,
+    convexUserId ? { userId: convexUserId as any } : "skip"
+  );
+
+  // Fetch platform-wide stats to sync with analytics page
+  const platformStats = useQuery(api.analytics.getPlatformStats);
+
+  const stats = dashboardStats || null;
+  const isLoading = dashboardStats === undefined && user !== undefined;
+
+  // Debug logging
+  useEffect(() => {
+    console.log("Dashboard Debug:", {
+      user: user?.id,
+      convexUserId,
+      dashboardStats,
+      platformStats,
+      isLoading,
+      hasValidConvexId: user ? hasValidConvexId(user.id) : false
+    });
+  }, [user, convexUserId, dashboardStats, platformStats, isLoading, hasValidConvexId]);
 
   if (!user) {
     return (
@@ -485,19 +497,19 @@ export default function DashboardPage() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                 <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-                  <div className="text-2xl font-bold text-blue-400 mb-1">324</div>
+                  <div className="text-2xl font-bold text-blue-400 mb-1">{platformStats?.totalIdeas || 0}</div>
                   <div className="text-sm text-slate-400">Total Ideas</div>
                 </div>
                 <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-                  <div className="text-2xl font-bold text-green-400 mb-1">156</div>
+                  <div className="text-2xl font-bold text-green-400 mb-1">{platformStats?.totalOffers || 0}</div>
                   <div className="text-sm text-slate-400">Active Offers</div>
                 </div>
                 <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-                  <div className="text-2xl font-bold text-purple-400 mb-1">289</div>
+                  <div className="text-2xl font-bold text-purple-400 mb-1">{platformStats?.totalMatches || 0}</div>
                   <div className="text-sm text-slate-400">Total Matches</div>
                 </div>
                 <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-                  <div className="text-2xl font-bold text-yellow-400 mb-1">$2.8M</div>
+                  <div className="text-2xl font-bold text-yellow-400 mb-1">${((platformStats?.totalFunding || 0) / 1000000).toFixed(1)}M</div>
                   <div className="text-sm text-slate-400">Total Funding</div>
                 </div>
               </div>
@@ -526,14 +538,14 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                   <h4 className="font-medium text-white">Top Industries</h4>
                   <div className="space-y-2">
-                    {['Technology', 'Healthcare', 'Finance', 'E-commerce'].map((industry, index) => (
+                    {platformStats?.topIndustries?.slice(0, 4).map((industry, index) => (
                       <div key={industry} className="flex items-center justify-between p-2 bg-slate-700/50 rounded border border-slate-600">
                         <span className="text-sm text-slate-300">{industry}</span>
                         <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
                           #{index + 1}
                         </Badge>
                       </div>
-                    ))}
+                    )) || []}
                   </div>
                 </div>
               </div>

@@ -133,34 +133,47 @@ export default function MatchesPage() {
   // Handle OAuth user creation and get Convex user ID
   useEffect(() => {
     const setupUser = async () => {
-      if (!user) return;
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("Matches setupUser - user:", user.id, "hasValidConvexId:", hasValidConvexId(user.id));
+      console.log("User provider:", (user as any).provider);
 
       // If user has a valid Convex ID, use it directly
       if (hasValidConvexId(user.id)) {
+        console.log("Using direct Convex ID:", user.id);
         setConvexUserId(user.id);
         setIsLoading(false);
         return;
       }
 
       // For OAuth users, create/find Convex user record
-      if (user.email && (user as any).provider) {
+      if (user.email) {
         try {
+          console.log("Creating/finding Convex user for matches:", user.id);
           const convexId = await findOrCreateUserMutation({
             oauthId: user.id,
             email: user.email,
             name: user.name || user.email.split('@')[0],
-            provider: (user as any).provider,
+            provider: (user as any).provider || "auth",
           });
 
           if (convexId) {
+            console.log("Got Convex user ID for matches:", convexId);
             setConvexUserId(convexId);
+            setIsLoading(false);
+          } else {
+            console.error("No Convex ID returned from findOrCreateUserByOAuth for matches");
             setIsLoading(false);
           }
         } catch (error) {
-          console.error("Error setting up OAuth user:", error);
+          console.error("Error setting up OAuth user for matches:", error);
           setIsLoading(false);
         }
       } else {
+        console.log("No email found for user, setting loading to false");
         setIsLoading(false);
       }
     };
@@ -191,6 +204,14 @@ export default function MatchesPage() {
       setFilteredMatches(matches.filter((match: any) => match.status === statusFilter));
     }
   }, [matches, statusFilter]);
+
+  // Debug user state
+  console.log("Matches page render:", {
+    user: user?.id,
+    hasValidConvexId: user ? hasValidConvexId(user.id) : false,
+    convexUserId,
+    isLoading
+  });
 
   if (!user || !hasValidConvexId(user.id)) {
     return (

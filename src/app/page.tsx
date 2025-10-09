@@ -7,10 +7,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, AnimatedCard } from "@/components/ui/card";
+import { useQuery } from "convex/react";
+import { api } from "@/lib/convex";
 
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+
+  // Fetch dynamic platform statistics
+  const realtimeStats = useQuery(api.analytics.getRealtimeStats);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -62,7 +67,7 @@ export default function Home() {
             {/* Live indicator */}
             <div className="flex items-center justify-center gap-2 text-green-300">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm">1,247 entrepreneurs online now</span>
+              <span className="text-sm">{realtimeStats?.onlineUsers || 0} entrepreneurs online now</span>
             </div>
           </div>
         </div>

@@ -12,6 +12,7 @@ import { animations } from "@/lib/animations";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/lib/convex";
 import { useToast } from "@/components/ui/toast";
+import { Skeleton, ConversationsListSkeleton, MessagesSkeleton } from "@/components/ui/skeleton";
 
 interface Message {
   _id: string;
@@ -56,27 +57,32 @@ export default function MessagesPage() {
     const setupUser = async () => {
       if (!user) return;
 
+      console.log("Setting up user:", typeof user.id === 'string' ? `String: ${user.id.substring(0, 10)}...` : `ID: ${String(user.id).substring(0, 10)}...`);
+
       // If user has a valid Convex ID, use it directly
       if (hasValidConvexId(user.id)) {
         setConvexUserId(user.id);
         return;
       }
 
-      // For OAuth users, create/find Convex user record
-      if (user.email && (user as any).provider) {
+      // For all users (including OAuth), create/find Convex user record
+      // This ensures even email/password users have proper Convex IDs
+      if (user.email) {
         try {
           const convexId = await findOrCreateUserMutation({
-            oauthId: user.id,
+            oauthId: user.id, // Use user's ID as OAuth ID for all users
             email: user.email,
             name: user.name || user.email.split('@')[0],
-            provider: (user as any).provider,
+            provider: (user as any).provider || "auth", // Default to "auth" if no provider
           });
 
           if (convexId) {
             setConvexUserId(convexId);
+          } else {
+            console.error("No Convex ID returned from findOrCreateUserByOAuth");
           }
         } catch (error) {
-          console.error("Error setting up OAuth user:", error);
+          console.error("Error setting up user:", error);
         }
       }
     };
@@ -212,10 +218,49 @@ export default function MessagesPage() {
   if (conversations === undefined) {
     return (
       <SidebarLayout>
-        <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-300">Loading conversations...</p>
+        <div className="min-h-screen bg-slate-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mb-8">
+              <Skeleton className="h-8 w-48 mb-2" />
+              <Skeleton className="h-4 w-96" />
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-8 h-[600px]">
+              {/* Conversations List Skeleton */}
+              <Card className="lg:col-span-1 dark:bg-slate-800 dark:border-slate-700">
+                <CardHeader className="pb-3">
+                  <Skeleton className="h-6 w-24" />
+                </CardHeader>
+                <CardContent className="p-0">
+                  <ConversationsListSkeleton count={5} />
+                </CardContent>
+              </Card>
+
+              {/* Messages Area Skeleton */}
+              <Card className="lg:col-span-2 flex flex-col dark:bg-slate-800 dark:border-slate-700">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-10 h-10 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                    <Skeleton className="h-8 w-20" />
+                  </div>
+                </CardHeader>
+
+                <div className="flex-1 p-4">
+                  <MessagesSkeleton count={3} />
+                </div>
+
+                <CardFooter className="pt-6">
+                  <div className="flex gap-3 w-full">
+                    <Skeleton className="flex-1 h-10" />
+                    <Skeleton className="w-20 h-10" />
+                  </div>
+                </CardFooter>
+              </Card>
+            </div>
           </div>
         </div>
       </SidebarLayout>
@@ -329,12 +374,7 @@ export default function MessagesPage() {
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {isLoadingMessages ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-2"></div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">Loading messages...</p>
-                      </div>
-                    </div>
+                    <MessagesSkeleton count={3} />
                   ) : messages && messages.length > 0 ? (
                     messages.map((message) => (
                       <div

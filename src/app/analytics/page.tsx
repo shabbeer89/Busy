@@ -34,28 +34,9 @@ export default function AnalyticsPage() {
   const { user } = useAuth();
   const [timeRange, setTimeRange] = useState("30d");
 
-  // For demo purposes, using realistic but hardcoded data
-  // In production, this would fetch from Convex queries
-  const stats: PlatformStats = {
-    totalUsers: 1247,
-    totalCreators: 892,
-    totalInvestors: 355,
-    totalIdeas: 324,
-    totalOffers: 156,
-    totalMatches: 289,
-    totalInvestments: 23,
-    totalFunding: 2840000, // $2.84M
-    averageMatchScore: 76,
-    topIndustries: ["Technology", "Healthcare", "Finance", "E-commerce", "AI"],
-    recentActivity: {
-      newIdeas: 47,
-      newOffers: 23,
-      newMatches: 89,
-      newInvestments: 3,
-    },
-  };
-
-  const isLoading = false;
+  // Fetch dynamic data from Convex
+  const stats = useQuery(api.analytics.getPlatformStats);
+  const isLoading = stats === undefined;
 
   if (!user) {
     return (
@@ -253,7 +234,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {stats.topIndustries.map((industry, index) => (
+                {stats?.topIndustries?.map((industry, index) => (
                   <div key={industry} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="w-6 h-6 bg-slate-700 dark:bg-slate-600 rounded-full flex items-center justify-center text-xs font-medium text-gray-300 dark:text-gray-300">
@@ -265,7 +246,7 @@ export default function AnalyticsPage() {
                       {Math.floor(Math.random() * 500) + 100} ideas
                     </Badge>
                   </div>
-                ))}
+                )) || []}
               </div>
             </CardContent>
           </Card>
@@ -341,30 +322,40 @@ export default function AnalyticsPage() {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Match Success Rate</span>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">89%</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {stats ? Math.floor((stats.totalInvestments / Math.max(stats.totalMatches, 1)) * 100) : 0}%
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div className="bg-green-600 h-3 rounded-full" style={{ width: "89%" }} />
+                  <div
+                    className="bg-green-600 h-3 rounded-full"
+                    style={{ width: `${stats ? Math.floor((stats.totalInvestments / Math.max(stats.totalMatches, 1)) * 100) : 0}%` }}
+                  />
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Average Match Score</span>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">{stats.averageMatchScore}%</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{stats?.averageMatchScore || 0}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div className="bg-blue-600 h-3 rounded-full" style={{ width: `${stats.averageMatchScore}%` }} />
+                  <div className="bg-blue-600 h-3 rounded-full" style={{ width: `${stats?.averageMatchScore || 0}%` }} />
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-gray-900 dark:text-white">User Engagement</span>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">94%</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {stats ? Math.floor((stats.totalMatches / Math.max(stats.totalUsers, 1)) * 100) : 0}%
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div className="bg-purple-600 h-3 rounded-full" style={{ width: "94%" }} />
+                  <div
+                    className="bg-purple-600 h-3 rounded-full"
+                    style={{ width: `${stats ? Math.floor((stats.totalMatches / Math.max(stats.totalUsers, 1)) * 100) : 0}%` }}
+                  />
                 </div>
               </div>
 

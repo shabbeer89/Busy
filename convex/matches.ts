@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 // Calculate match score between idea and offer
 function calculateMatchScore(idea: any, offer: any, creator: any, investor: any): {
@@ -260,36 +261,64 @@ export const getMatchesByIdea = query({
   },
 });
 
-// Get matches by investor
-export const getMatchesByInvestor = query({
-  args: { investorId: v.id("users") },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("matches")
-      .withIndex("by_investor", (q) => q.eq("investorId", args.investorId))
-      .collect();
-  },
-});
 
-// Get matches by creator
+
+// Get matches by creator (accepts any string for OAuth compatibility)
 export const getMatchesByCreator = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.string() },
   handler: async (ctx, args) => {
-    // Find the user in the database by ID
-    const user = await ctx.db.get(args.userId);
+    // Try to find user by OAuth ID first
+    let user = await ctx.db
+      .query("users")
+      .withIndex("by_oauth", (q) => q.eq("oauthId", args.userId))
+      .first();
 
+    // If not found by OAuth ID, try direct Convex ID
     if (!user) {
-      throw new Error("User not found");
+      try {
+        user = await ctx.db.get(args.userId as Id<"users">);
+      } catch {
+        // Ignore conversion error
+      }
     }
 
-    // Only return matches if user is a creator
-    if (user.userType !== "creator") {
+    if (!user || user.userType !== "creator") {
       return [];
     }
 
     return await ctx.db
       .query("matches")
       .withIndex("by_creator", (q) => q.eq("creatorId", user._id))
+      .collect();
+  },
+});
+
+// Get matches by investor (accepts any string for OAuth compatibility)
+export const getMatchesByInvestor = query({
+  args: { investorId: v.string() },
+  handler: async (ctx, args) => {
+    // Try to find user by OAuth ID first
+    let user = await ctx.db
+      .query("users")
+      .withIndex("by_oauth", (q) => q.eq("oauthId", args.investorId))
+      .first();
+
+    // If not found by OAuth ID, try direct Convex ID
+    if (!user) {
+      try {
+        user = await ctx.db.get(args.investorId as Id<"users">);
+      } catch {
+        // Ignore conversion error
+      }
+    }
+
+    if (!user || user.userType !== "investor") {
+      return [];
+    }
+
+    return await ctx.db
+      .query("matches")
+      .withIndex("by_investor", (q) => q.eq("investorId", user._id))
       .collect();
   },
 });

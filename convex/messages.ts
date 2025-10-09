@@ -10,11 +10,16 @@ export const getOrCreateConversation = mutation({
     participant2Id: v.id("users"),
   },
   handler: async (ctx, args) => {
+    // Normalize participants to avoid duplicate conversations
+    const participants = [args.participant1Id, args.participant2Id].sort((a, b) => a.localeCompare(b));
+    const participant1Id = participants[0];
+    const participant2Id = participants[1];
+
     // Check if conversation already exists
     const existing = await ctx.db
       .query("conversations")
       .withIndex("by_participants", (q) =>
-        q.eq("participant1Id", args.participant1Id).eq("participant2Id", args.participant2Id)
+        q.eq("participant1Id", participant1Id).eq("participant2Id", participant2Id)
       )
       .first();
 
@@ -25,8 +30,8 @@ export const getOrCreateConversation = mutation({
     // Create new conversation
     const conversationId = await ctx.db.insert("conversations", {
       matchId: args.matchId,
-      participant1Id: args.participant1Id,
-      participant2Id: args.participant2Id,
+      participant1Id,
+      participant2Id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -35,21 +40,40 @@ export const getOrCreateConversation = mutation({
   },
 });
 
-// Get all conversations for a user
+// Get all conversations for a user (accepts any string for OAuth compatibility)
 export const getConversationsForUser = query({
   args: {
-    userId: v.id("users"),
+    userId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Try to find user by OAuth ID first
+    let user = await ctx.db
+      .query("users")
+      .withIndex("by_oauth", (q) => q.eq("oauthId", args.userId))
+      .first();
+
+    // If not found by OAuth ID, try direct Convex ID
+    if (!user) {
+      try {
+        user = await ctx.db.get(args.userId as Id<"users">);
+      } catch {
+        // Ignore conversion error
+      }
+    }
+
+    if (!user) return [];
+
+    const actualUserId = user._id;
+
     // Get all conversations where user is either participant1 or participant2
     const conversations1 = await ctx.db
       .query("conversations")
-      .filter((q) => q.eq(q.field("participant1Id"), args.userId))
+      .withIndex("by_participant1", (q) => q.eq("participant1Id", actualUserId))
       .collect();
 
     const conversations2 = await ctx.db
       .query("conversations")
-      .filter((q) => q.eq(q.field("participant2Id"), args.userId))
+      .withIndex("by_participant2", (q) => q.eq("participant2Id", actualUserId))
       .collect();
 
     const allConversations = [...conversations1, ...conversations2];
@@ -58,7 +82,7 @@ export const getConversationsForUser = query({
     const conversationsWithDetails = await Promise.all(
       allConversations.map(async (conversation) => {
         const otherUserId =
-          conversation.participant1Id === args.userId
+          conversation.participant1Id === actualUserId
             ? conversation.participant2Id
             : conversation.participant1Id;
 
@@ -72,7 +96,7 @@ export const getConversationsForUser = query({
           .query("messages")
           .filter((q) => q.eq(q.field("conversationId"), conversation._id))
           .filter((q) => q.eq(q.field("read"), false))
-          .filter((q) => q.neq(q.field("senderId"), args.userId))
+          .filter((q) => q.neq(q.field("senderId"), actualUserId))
           .collect()
           .then(messages => messages.length);
 
@@ -139,11 +163,11 @@ export const getMessages = query({
   handler: async (ctx, args) => {
     const messages = await ctx.db
       .query("messages")
-      .filter((q) => q.eq(q.field("conversationId"), args.conversationId))
+      .withIndex("by_conversation_created", (q) => q.eq("conversationId", args.conversationId))
       .collect();
 
-    // Sort by creation time (oldest first)
-    return messages.sort((a, b) => a.createdAt - b.createdAt);
+    // Messages are already sorted by createdAt ascending due to the index
+    return messages;
   },
 });
 
@@ -185,12 +209,12 @@ export const getUnreadCount = query({
     // Get all conversations where user is either participant
     const conversations1 = await ctx.db
       .query("conversations")
-      .filter((q) => q.eq(q.field("participant1Id"), args.userId))
+      .withIndex("by_participant1", (q) => q.eq("participant1Id", args.userId))
       .collect();
 
     const conversations2 = await ctx.db
       .query("conversations")
-      .filter((q) => q.eq(q.field("participant2Id"), args.userId))
+      .withIndex("by_participant2", (q) => q.eq("participant2Id", args.userId))
       .collect();
 
     const allConversations = [...conversations1, ...conversations2];
@@ -216,6 +240,7 @@ export const getUnreadCount = query({
 export const getConversationByMatch = query({
   args: {
     matchId: v.id("matches"),
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const conversation = await ctx.db
@@ -226,7 +251,7 @@ export const getConversationByMatch = query({
     if (!conversation) return null;
 
     const otherUserId =
-      conversation.participant1Id === "current-user-id"
+      conversation.participant1Id === args.userId
         ? conversation.participant2Id
         : conversation.participant1Id;
 
