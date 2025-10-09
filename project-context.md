@@ -6,20 +6,45 @@ This is a comprehensive business investment platform called "Strategic Partnersh
 ## Technology Stack (Updated)
 
 ### Web Application
-- **Frontend**: Next.js + React + TypeScript + Tailwind CSS
-- **Backend**: Convex (currently) → **Migrating to Supabase + PostgreSQL**
-- **Auth**: NextAuth with multiple providers
-- **Database**: PostgreSQL (via Supabase)
-- **Real-time**: Supabase Realtime
+- **Framework & Runtime**: Next.js 15+ with App Router, React 19+, TypeScript, Node.js 20+
+- **Database & Backend**: Supabase with PostgreSQL 15+
+  - Supabase Auth, Realtime, Storage, Edge Functions
+  - Row Level Security (RLS) policies
+- **Authentication**: NextAuth.js with Supabase adapter
+  - Multi-provider OAuth (Google, GitHub, LinkedIn, Apple)
+  - Phone OTP verification via Twilio
+  - JWT token management with automatic refresh
+- **UI & Design System**:
+  - Tailwind CSS 4.0 for styling
+  - shadcn/ui component library built on Radix UI
+  - Lucide React for icons
+  - Responsive design with dark/light mode
+- **State Management**:
+  - Zustand for client state management
+  - TanStack Query for server state and caching
+- **Forms & Validation**:
+  - React Hook Form for performant forms
+  - Zod for TypeScript-first schema validation
+- **Real-time Features**: Supabase Realtime for live updates
+- **API Communication**:
+  - Apollo Client 3.x for GraphQL
+  - Axios for REST endpoints
+- **Crypto Integration**:
+  - Web3.js and Ethers.js for blockchain interaction
+  - WalletConnect for Web3 wallet connections
+  - Multi-chain support (Ethereum, Polygon, BSC)
 
 ### Mobile Application (New)
 - **Framework**: React Native 0.73+ with Expo SDK 50+
-- **Navigation**: Expo Router (file-based routing)
-- **State Management**: Zustand + TanStack Query
-- **UI**: React Native Paper + React Native Elements
+- **Navigation**: React Navigation 6.x with bottom tabs and stack navigator
+- **State Management**: Redux Toolkit with Redux Persist
+- **UI**: NativeBase 3.4+ with React Native Elements
 - **Backend**: Shared Supabase + PostgreSQL
-- **Real-time**: Supabase Realtime
-- **Auth**: Supabase Auth with biometric support
+- **Real-time**: Supabase Realtime for live updates
+- **Auth**: Supabase Auth with biometric support (fingerprint/face ID)
+- **File Storage**: Supabase Storage with CDN optimization
+- **Push Notifications**: Expo Notifications for cross-platform alerts
+- **Crypto Integration**: Web3 React Native with multi-wallet support
 
 ## Core Features
 
@@ -210,23 +235,33 @@ crypto_transactions (match_id, wallet_address, amount, chain, status)
 ```
 
 ### API Architecture
-- **GraphQL**: Apollo Client for efficient data fetching
-- **REST**: Axios for legacy API compatibility
-- **Real-time**: Supabase subscriptions for live updates
-- **File Storage**: Supabase Storage with CDN optimization
+- **GraphQL**: Apollo Client for efficient data fetching with intelligent caching
+- **REST**: Axios for legacy API compatibility and external integrations
+- **Real-time**: Supabase subscriptions and WebSocket connections
+- **File Storage**: Supabase Storage with CDN optimization and image processing
 
 ### Security Implementation
-- **Row Level Security (RLS)**: Database-level access control
-- **SSL Pinning**: Certificate validation for API calls
-- **End-to-end Encryption**: Sensitive message encryption
-- **Secure Key Management**: Hardware-backed key storage
+- **Row Level Security (RLS)**: Database-level access control with Supabase policies
+- **SSL Pinning**: Certificate validation for API calls (mobile)
+- **End-to-end Encryption**: Sensitive message and transaction encryption
+- **Secure Key Management**: Hardware-backed key storage with biometrics
+- **Content Security Policy**: XSS protection for web application
+- **Rate Limiting**: API abuse prevention with request throttling
 
 ### Performance Optimizations
-- **Lazy Loading**: Progressive content loading
-- **Image Optimization**: Automatic compression and WebP conversion
-- **Pagination**: Efficient large dataset handling
-- **Caching Strategy**: Multi-level caching (memory, disk, network)
-- **Background Sync**: Offline data reconciliation
+- **Server-Side Rendering**: Next.js SSR for SEO and initial load performance
+- **Image Optimization**: Next.js Image component with WebP and AVIF support
+- **Code Splitting**: Automatic route-based and component-based splitting
+- **Caching Strategy**: Multi-level caching (memory, disk, CDN, database)
+- **Background Sync**: Offline data reconciliation with conflict resolution
+- **Progressive Loading**: Skeleton screens and progressive content loading
+
+### Development Tools & Testing
+- **TypeScript**: Complete type safety across web and mobile platforms
+- **ESLint + Prettier**: Code formatting and quality enforcement
+- **Husky**: Git hooks for pre-commit quality checks
+- **Testing**: Jest, React Testing Library, Cypress for web; Detox for mobile
+- **Error Monitoring**: Sentry for error tracking and performance monitoring
 
 ## Business Strategy & KPIs
 
@@ -274,6 +309,62 @@ crypto_transactions (match_id, wallet_address, amount, chain, status)
 - Advanced analytics and reporting
 - Enterprise features and white-label
 - International expansion preparation
+
+## Project Structure
+
+### Web Application Structure
+```
+web-app/
+├── src/
+│   ├── app/                 # Next.js App Router
+│   │   ├── (auth)/         # Authentication routes
+│   │   ├── (dashboard)/    # Protected dashboard routes
+│   │   ├── api/           # API routes and server actions
+│   │   ├── globals.css    # Global styles with Tailwind
+│   │   └── layout.tsx     # Root layout with providers
+│   ├── components/        # Reusable UI components
+│   │   ├── ui/           # Base UI components (shadcn/ui)
+│   │   ├── forms/        # Form components with validation
+│   │   ├── layout/       # Layout components (header, sidebar)
+│   │   └── features/     # Feature-specific components
+│   ├── hooks/            # Custom React hooks
+│   ├── lib/             # Utility libraries
+│   │   ├── supabase/    # Supabase client configuration
+│   │   ├── validations/ # Zod schemas and validation logic
+│   │   ├── crypto/      # Blockchain utilities and Web3 functions
+│   │   └── utils.ts     # General utility functions
+│   ├── services/        # External service integrations
+│   ├── stores/          # Zustand store configuration
+│   ├── types/           # TypeScript type definitions
+│   └── styles/          # Additional global styles
+├── public/              # Static assets and icons
+├── middleware.ts       # Next.js middleware for auth and redirects
+└── tailwind.config.ts  # Tailwind CSS configuration
+```
+
+### Mobile Application Structure
+```
+mobile-app/
+├── src/
+│   ├── components/          # Reusable UI components
+│   │   ├── common/         # Generic components
+│   │   ├── screens/        # Screen-specific components
+│   │   └── ui/            # UI library components
+│   ├── hooks/             # Custom React hooks
+│   ├── navigation/        # Navigation configuration
+│   ├── services/          # API and external services
+│   │   ├── api/          # API client configuration
+│   │   ├── supabase/     # Supabase client setup
+│   │   ├── crypto/       # Blockchain service
+│   │   └── storage/      # Local storage service
+│   ├── store/            # Redux store configuration
+│   ├── types/            # TypeScript type definitions
+│   ├── utils/            # Utility functions
+│   └── screens/          # Screen components
+├── assets/               # Static assets
+├── __tests__/           # Test files
+└── package.json
+```
 
 ## Technology Migration Strategy
 
