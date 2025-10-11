@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { MatchStatistics } from "@/components/matching/enhanced-match-card";
 import { AIRecommendations } from "@/components/ai/recommendations";
 import { NotificationBell } from "@/components/notifications/notification-center";
+import { OfflineIndicator } from "@/components/offline/offline-indicator";
 import { useEnhancedMatching } from "@/hooks/use-enhanced-matching";
 import {
   Briefcase,
@@ -116,6 +117,20 @@ export default function DashboardPage() {
     totalMatches: 456,
     totalFunding: 25000000,
     topIndustries: ['Healthcare', 'Technology', 'Finance', 'Education'],
+  }
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+          </div>
+        </div>
+      </SidebarLayout>
+    );
   }
 
   if (!user) {

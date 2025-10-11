@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
-import { useQuery, useMutation } from "convex/react";
-import { useRouter } from "next/navigation";
-import { api } from "@/lib/convex";
-import { Id } from "../../../convex/_generated/dataModel";
+// Using Supabase for data operations
+// import { useQuery, useMutation } from "convex/react";
+// import { useRouter } from "next/navigation";
+// import { api } from "@/lib/convex";
+// import { Id } from "../../../convex/_generated/dataModel";
 import { toast } from "sonner";
 import { EnhancedMatchCard, MatchStatistics, MatchFilter } from "@/components/matching/enhanced-match-card";
 import { useEnhancedMatching } from "@/hooks/use-enhanced-matching";

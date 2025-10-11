@@ -10,8 +10,9 @@ import Link from "next/link";
 import { BusinessIdea } from "@/types";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
-import { useQuery } from "convex/react";
-import { api } from "@/lib/convex";
+// Using mock data for now since this is a Supabase project
+// import { useQuery } from "convex/react";
+// import { api } from "@/lib/convex";
 import { IdeaCardSkeleton } from "@/components/ui/skeleton";
 import { AdvancedSearch, SearchResults } from "@/components/search/advanced-search";
 import { useAdvancedSearch } from "@/hooks/use-advanced-search";
@@ -35,51 +36,54 @@ export default function IdeasPage() {
     clearFilters
   } = useAdvancedSearch();
 
-  // Use Convex query to get published business ideas (with fallback)
-  const rawBusinessIdeas = useQuery(api.businessIdeas?.getPublishedIdeas) || [];
-
-  // Fetch dynamic categories
-  const dynamicCategories = useQuery(api.analytics.getAvailableCategories) || [];
-
-  // Memoize the converted ideas to prevent unnecessary re-renders
-  const businessIdeas = useMemo(() => {
-    if (rawBusinessIdeas && rawBusinessIdeas.length > 0 && rawBusinessIdeas[0]._id) {
-      return rawBusinessIdeas.map((idea: any) => ({
-        id: idea._id,
-        creatorId: idea.creatorId,
-        title: idea.title,
-        description: idea.description,
-        category: idea.category,
-        tags: idea.tags || [],
-        fundingGoal: idea.fundingGoal,
-        currentFunding: idea.currentFunding,
-        equityOffered: idea.equityOffered,
-        valuation: idea.valuation,
-        stage: idea.stage,
-        timeline: idea.timeline,
-        teamSize: idea.teamSize,
-        status: idea.status,
-        createdAt: idea.createdAt || Date.now(),
-        updatedAt: idea.updatedAt || Date.now(),
-      })) as BusinessIdea[];
-    }
-    return [];
-  }, [rawBusinessIdeas]);
+  // Using mock data for now since this is a Supabase project
+  const businessIdeas: BusinessIdea[] = [
+    {
+      id: "1",
+      creatorId: "creator1",
+      title: "AI-Powered Healthcare Platform",
+      description: "Revolutionary healthcare platform using AI for early disease detection and personalized treatment plans.",
+      category: "Healthcare",
+      tags: ["AI", "Healthcare", "Medical"],
+      fundingGoal: 500000,
+      currentFunding: 150000,
+      equityOffered: 15,
+      valuation: 3000000,
+      stage: "mvp",
+      timeline: "12 months",
+      teamSize: 8,
+      status: "published",
+      createdAt: Date.now() - 86400000,
+      updatedAt: Date.now() - 86400000,
+    },
+    {
+      id: "2",
+      creatorId: "creator2",
+      title: "Sustainable Fashion Marketplace",
+      description: "Online marketplace connecting sustainable fashion brands with eco-conscious consumers.",
+      category: "E-commerce",
+      tags: ["Sustainability", "Fashion", "E-commerce"],
+      fundingGoal: 250000,
+      currentFunding: 75000,
+      equityOffered: 20,
+      valuation: 1000000,
+      stage: "early",
+      timeline: "8 months",
+      teamSize: 5,
+      status: "published",
+      createdAt: Date.now() - 172800000,
+      updatedAt: Date.now() - 172800000,
+    },
+  ];
 
   useEffect(() => {
-    if (businessIdeas.length > 0) {
-      setIdeas(businessIdeas);
-      setFilteredIdeas(businessIdeas);
-      setIsLoading(false);
-    } else if (businessIdeas.length === 0 && !isLoading) {
-      // Only set loading to false if we've already tried loading
-      setIsLoading(false);
-    }
-  }, [businessIdeas, isLoading]);
+    setIdeas(businessIdeas);
+    setFilteredIdeas(businessIdeas);
+    setIsLoading(false);
+  }, []);
 
-
-  // Combine "all" with dynamic categories from the database
-  const categories = ["all", ...dynamicCategories];
+  // Static categories for now
+  const categories = ["all", "Healthcare", "E-commerce", "Finance", "Technology"];
 
   if (isLoading) {
     return (

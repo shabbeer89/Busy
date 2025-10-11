@@ -17,6 +17,39 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const urlError = searchParams.get("error");
+
+  // Handle URL error parameters
+  useEffect(() => {
+    if (urlError) {
+      let errorMessage = "An error occurred during authentication.";
+
+      switch (urlError) {
+        case "google":
+          errorMessage = "Google authentication failed. Please try again or use a different sign-in method.";
+          break;
+        case "linkedin":
+          errorMessage = "LinkedIn authentication failed. Please try again or use a different sign-in method.";
+          break;
+        case "oauth":
+          errorMessage = "OAuth authentication failed. Please try again.";
+          break;
+        case "configuration":
+          errorMessage = "Authentication configuration error. Please contact support.";
+          break;
+        case "access_denied":
+          errorMessage = "Access was denied. Please try again or use a different sign-in method.";
+          break;
+        case "server_error":
+          errorMessage = "Server error occurred. Please try again later.";
+          break;
+        default:
+          errorMessage = `Authentication error: ${urlError}`;
+      }
+
+      setError(errorMessage);
+    }
+  }, [urlError]);
 
   // Check if user is already authenticated
   useEffect(() => {

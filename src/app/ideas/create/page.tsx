@@ -5,16 +5,15 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { IdeaForm } from "@/components/ideas/idea-form";
 import { CreateBusinessIdeaData } from "@/types";
-import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
+// Using Supabase for data operations
+// import { useMutation } from "convex/react";
+// import { api } from "../../../../convex/_generated/api";
 
 export default function CreateIdeaPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { user } = useAuth();
-
-  const createIdeaMutation = useMutation(api.businessIdeas.createBusinessIdea);
 
   if (!user) {
     return (
@@ -43,11 +42,15 @@ export default function CreateIdeaPage() {
     setError(null);
 
     try {
-      await createIdeaMutation({
+      // TODO: Replace with actual Supabase insertion when database schema is ready
+      console.log("Creating idea:", {
         creatorId: user.id as any,
         currentFunding: 0, // Start with no current funding
         ...data,
       });
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       router.push("/ideas");
     } catch (err) {

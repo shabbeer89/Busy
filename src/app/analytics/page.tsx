@@ -8,8 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, AnimatedCard
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
-import { useQuery } from "convex/react";
-import { api } from "@/lib/convex";
 
 interface PlatformStats {
   totalUsers: number;
@@ -34,9 +32,27 @@ export default function AnalyticsPage() {
   const { user } = useAuth();
   const [timeRange, setTimeRange] = useState("30d");
 
-  // Fetch dynamic data from Convex
-  const stats = useQuery(api.analytics.getPlatformStats);
-  const isLoading = stats === undefined;
+  // Using static/mock data for now since this is a Supabase project
+  // TODO: Replace with actual Supabase queries when database schema is ready
+  const isLoading = false;
+  const stats: PlatformStats = {
+    totalUsers: 1247,
+    totalCreators: 892,
+    totalInvestors: 355,
+    totalIdeas: 456,
+    totalOffers: 123,
+    totalMatches: 89,
+    totalInvestments: 34,
+    totalFunding: 2840000,
+    averageMatchScore: 78,
+    topIndustries: ["Technology", "Healthcare", "Finance", "E-commerce", "Education"],
+    recentActivity: {
+      newIdeas: 23,
+      newOffers: 8,
+      newMatches: 12,
+      newInvestments: 3,
+    },
+  };
 
   if (!user) {
     return (
