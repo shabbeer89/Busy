@@ -7,15 +7,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, AnimatedCard } from "@/components/ui/card";
-import { useQuery } from "convex/react";
-import { api } from "@/lib/convex";
 
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
-  // Fetch dynamic platform statistics
-  const realtimeStats = useQuery(api.analytics.getRealtimeStats);
+  // Static platform statistics for demo
+  const realtimeStats = { onlineUsers: 247 };
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {

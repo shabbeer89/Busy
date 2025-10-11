@@ -1,0 +1,146 @@
+/* Desktop-specific styles (1024px and up) */
+
+@media (min-width: 1024px) {
+  /* Desktop layout containers */
+  .container-desktop {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-left: var(--space-xl);
+    padding-right: var(--space-xl);
+  }
+
+  /* Desktop grid layouts */
+  .grid-desktop-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+  }
+
+  .grid-desktop-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-xl);
+  }
+
+  .grid-desktop-auto {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-xl);
+  }
+
+  /* Desktop sidebar (full width on desktop) */
+  .sidebar-desktop {
+    width: 320px;
+    flex-shrink: 0;
+    border-right: 1px solid #e5e7eb;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+  }
+
+  /* Desktop navigation */
+  .nav-desktop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg) var(--space-xl);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Desktop card layouts */
+  .card-desktop {
+    margin: var(--space-xl);
+    padding: var(--space-2xl);
+    border-radius: 16px;
+  }
+
+  /* Desktop typography */
+  .text-desktop-sm { font-size: 0.875rem; }
+  .text-desktop-base { font-size: 1rem; }
+  .text-desktop-lg { font-size: 1.125rem; }
+  .text-desktop-xl { font-size: 1.25rem; }
+  .text-desktop-2xl { font-size: 1.5rem; }
+  .text-desktop-3xl { font-size: 1.875rem; }
+  .text-desktop-4xl { font-size: 2.25rem; }
+
+  /* Desktop spacing */
+  .space-desktop-x > * + * { margin-left: var(--space-xl); }
+  .space-desktop-y > * + * { margin-top: var(--space-xl); }
+
+  /* Desktop form layouts */
+  .form-desktop {
+    max-width: 800px;
+  }
+
+  .form-row-desktop {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-xl);
+  }
+
+  /* Desktop-specific components */
+  .desktop-only {
+    display: block;
+  }
+
+  .desktop-hidden {
+    display: none;
+  }
+
+  /* Desktop hover effects (only on devices that can hover) */
+  @media (hover: hover) and (pointer: fine) {
+    .card-desktop:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+    }
+  }
+
+  /* Desktop modal improvements */
+  .modal-desktop {
+    max-width: 900px;
+    margin: var(--space-2xl) auto;
+  }
+
+  /* Desktop table layouts */
+  .table-desktop {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .table-desktop th,
+  .table-desktop td {
+    padding: var(--space-lg) var(--space-xl);
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .table-desktop th {
+    background-color: #f9fafb;
+    font-weight: 600;
+  }
+}
+
+/* Large desktop styles (1280px and up) */
+@media (min-width: 1280px) {
+  .container-xl {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-left: var(--space-2xl);
+    padding-right: var(--space-2xl);
+  }
+
+  /* Extra large grid layouts */
+  .grid-xl-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2xl);
+  }
+
+  .grid-xl-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--space-2xl);
+  }
+}

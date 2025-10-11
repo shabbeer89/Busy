@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { WalletConnect, useWallet } from "@/components/wallet/wallet-connect";
+import { CryptoWallet, InvestmentTransaction } from "@/components/wallet/crypto-wallet";
+import { VideoCallButton } from "@/components/video/video-calling";
 import { BABTValidator } from "@/components/wallet/babt-validator";
 import { BABTVerificationFlow } from "@/components/wallet/babt-verification-flow";
 import { Button } from "@/components/ui/button";
@@ -26,63 +27,57 @@ interface Transaction {
 }
 export default function WalletPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const { wallet, isConnected } = useWallet();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState<string>("0.0000");
   const [isLoading, setIsLoading] = useState(true);
   const [contractToolsExpanded, setContractToolsExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState("transactions");
+  const [activeTab, setActiveTab] = useState("wallet");
   const [toolsExpanded, setToolsExpanded] = useState(false);
   const [babtExpanded, setBabtExpanded] = useState(false);
 
   useEffect(() => {
-    // Mock wallet data
-    if (isConnected && wallet) {
-      setBalance(wallet.balance);
+    // Mock transaction history for demo
+    const mockTransactions: Transaction[] = [
+      {
+        id: "1",
+        type: "investment",
+        amount: 0.5,
+        currency: "ETH",
+        to: "0x742d35Cc6634C0532925a3b8D0C8B7b0B0C8B7b0",
+        from: "0x123456789abcdef123456789abcdef123456789a",
+        status: "completed",
+        timestamp: Date.now() - 86400000 * 2, // 2 days ago
+        txHash: "0x123456789abcdef",
+        description: "Investment in AI Assistant Project",
+      },
+      {
+        id: "2",
+        type: "received",
+        amount: 1.2,
+        currency: "ETH",
+        to: "0x123456789abcdef123456789abcdef123456789a",
+        from: "0x8ba1f109551bD4328030123f8841e9a1b2d2c",
+        status: "completed",
+        timestamp: Date.now() - 86400000 * 5, // 5 days ago
+        txHash: "0xabcdef123456789",
+        description: "Refund from cancelled project",
+      },
+      {
+        id: "3",
+        type: "sent",
+        amount: 0.1,
+        currency: "ETH",
+        to: "0x742d35Cc6634C0532925a3b8D0C8B7b0B0C8B7b0",
+        from: "0x123456789abcdef123456789abcdef123456789a",
+        status: "pending",
+        timestamp: Date.now() - 3600000, // 1 hour ago
+        description: "Gas fee for transaction",
+      },
+    ];
 
-      // Mock transaction history
-      const mockTransactions: Transaction[] = [
-        {
-          id: "1",
-          type: "investment",
-          amount: 0.5,
-          currency: "ETH",
-          to: "0x742d35Cc6634C0532925a3b8D0C8B7b0B0C8B7b0",
-          from: wallet.address,
-          status: "completed",
-          timestamp: Date.now() - 86400000 * 2, // 2 days ago
-          txHash: "0x123456789abcdef",
-          description: "Investment in AI Assistant Project",
-        },
-        {
-          id: "2",
-          type: "received",
-          amount: 1.2,
-          currency: "ETH",
-          to: wallet.address,
-          from: "0x8ba1f109551bD4328030123f8841e9a1b2d2c",
-          status: "completed",
-          timestamp: Date.now() - 86400000 * 5, // 5 days ago
-          txHash: "0xabcdef123456789",
-          description: "Refund from cancelled project",
-        },
-        {
-          id: "3",
-          type: "sent",
-          amount: 0.1,
-          currency: "ETH",
-          to: "0x742d35Cc6634C0532925a3b8D0C8B7b0B0C8B7b0",
-          from: wallet.address,
-          status: "pending",
-          timestamp: Date.now() - 3600000, // 1 hour ago
-          description: "Gas fee for transaction",
-        },
-      ];
-
-      setTransactions(mockTransactions);
-    }
+    setTransactions(mockTransactions);
     setIsLoading(false);
-  }, [isConnected, wallet]);
+  }, []);
 
   if (authLoading) {
     return (
@@ -149,42 +144,22 @@ export default function WalletPage() {
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Wallet</h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your crypto assets</p>
               </div>
-              <WalletConnect />
+              <VideoCallButton
+                conversationId="demo-conversation"
+                otherUserName="Demo User"
+                variant="outline"
+              />
             </div>
           </div>
 
-          {/* Essential Balance & Actions */}
-          {isConnected && wallet && (
-            <Card className="mb-8 border-0 shadow-sm bg-gray-50 dark:bg-gray-800">
-              <CardContent className="p-8">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Total Balance</p>
-                    <div className="text-4xl font-bold text-gray-900 dark:text-white">
-                      {balance} <span className="text-xl text-blue-600">ETH</span>
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
-                      ≈ ${(parseFloat(balance) * 2500).toLocaleString()} USD
-                    </p>
-                  </div>
-                  <div className="flex gap-4">
-                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                      <ArrowUpRight className="w-4 h-4 mr-2" />
-                      Send
-                    </Button>
-                    <Button size="lg" variant="outline">
-                      <ArrowDownLeft className="w-4 h-4 mr-2" />
-                      Receive
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Clean Tabs */}
-          <Tabs defaultValue="transactions" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8 bg-gray-100 dark:bg-gray-800">
+          <Tabs defaultValue="wallet" className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-8 bg-gray-100 dark:bg-gray-800">
+              <TabsTrigger value="wallet" className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Crypto Wallet
+              </TabsTrigger>
               <TabsTrigger value="transactions" className="flex items-center gap-2">
                 <Activity className="w-4 h-4" />
                 Transactions
@@ -199,7 +174,11 @@ export default function WalletPage() {
               </TabsTrigger>
             </TabsList>
 
-           <TabsContent value="transactions" className="space-y-6">
+            <TabsContent value="wallet" className="space-y-6">
+              <CryptoWallet />
+            </TabsContent>
+
+            <TabsContent value="transactions" className="space-y-6">
              <Card className="border-0 shadow-sm bg-gray-50 dark:bg-gray-800">
                <CardContent className="p-8">
                  <div className="text-center py-12">
@@ -214,23 +193,36 @@ export default function WalletPage() {
            </TabsContent>
 
            <TabsContent value="portfolio" className="space-y-6">
-             <Card className="border-0 shadow-sm bg-gray-50 dark:bg-gray-800">
-               <CardContent className="p-8">
-                 <div className="text-center py-12">
-                   <Plus className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No investments yet</h3>
-                   <p className="text-gray-600 dark:text-gray-400 mb-6">
-                     Start investing in promising projects and ideas
-                   </p>
-                   <Link href="/offers">
-                     <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                       <Plus className="w-4 h-4 mr-2" />
-                       Explore Opportunities
-                     </Button>
-                   </Link>
-                 </div>
-               </CardContent>
-             </Card>
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+               {/* Sample Investment Opportunity */}
+               <InvestmentTransaction
+                 matchId="sample-match-1"
+                 amount={0.5}
+                 recipientAddress="0x742d35Cc6634C0532925a3b8D0C8B7b0B0C8B7b0"
+                 onTransactionComplete={(txHash) => {
+                   console.log('Investment completed:', txHash)
+                 }}
+               />
+
+               {/* Investment History */}
+               <Card className="border-0 shadow-sm bg-gray-50 dark:bg-gray-800">
+                 <CardContent className="p-8">
+                   <div className="text-center py-12">
+                     <Plus className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No investments yet</h3>
+                     <p className="text-gray-600 dark:text-gray-400 mb-6">
+                       Start investing in promising projects and ideas
+                     </p>
+                     <Link href="/offers">
+                       <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                         <Plus className="w-4 h-4 mr-2" />
+                         Explore Opportunities
+                       </Button>
+                     </Link>
+                   </div>
+                 </CardContent>
+               </Card>
+             </div>
            </TabsContent>
 
            <TabsContent value="babt" className="space-y-6">

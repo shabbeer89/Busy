@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { convex } from "@/lib/convex";
+import { createClient } from "@/lib/supabase-client";
 import { Toaster } from "@/components/toast-provider";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useAuthStore } from "@/stores/auth-store";
@@ -44,12 +43,10 @@ function AuthSync({ children }: { children: React.ReactNode }) {
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <ConvexProvider client={convex}>
-        <AuthSync>
-          {children}
-        </AuthSync>
-        <Toaster />
-      </ConvexProvider>
+      <AuthSync>
+        {children}
+      </AuthSync>
+      <Toaster />
     </SessionProvider>
   );
 }

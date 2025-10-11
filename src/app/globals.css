@@ -1,5 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+
+/* Import responsive styles */
+@import "../styles/mobile.css";
+@import "../styles/tablet.css";
+@import "../styles/desktop.css";
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -81,7 +86,62 @@
     * {
         @apply border-border outline-ring/50;
     }
+
+    html {
+        /* Mobile viewport fixes */
+        height: 100%;
+        height: -webkit-fill-available;
+        /* Improve font rendering on mobile */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
     body {
         @apply bg-background text-foreground;
+        /* Mobile optimizations */
+        overflow-x: hidden;
+        /* Fix for iOS Safari bottom bar */
+        padding-bottom: env(safe-area-inset-bottom);
+        /* Improve touch scrolling */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Mobile-friendly focus styles */
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+    }
+
+    /* Remove default touch highlights */
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Improve text selection on mobile */
+    ::selection {
+        background-color: oklch(from var(--primary) calc(l * 0.2) c h);
+    }
+
+    /* Mobile-optimized scrollbars */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--muted);
+        border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: oklch(from var(--muted-foreground) calc(l * 0.5) c h);
     }
 }

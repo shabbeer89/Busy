@@ -13,6 +13,8 @@ import { animations } from "@/lib/animations";
 import { useQuery } from "convex/react";
 import { api } from "@/lib/convex";
 import { IdeaCardSkeleton } from "@/components/ui/skeleton";
+import { AdvancedSearch, SearchResults } from "@/components/search/advanced-search";
+import { useAdvancedSearch } from "@/hooks/use-advanced-search";
 
 export default function IdeasPage() {
   const { user } = useAuth();
@@ -21,6 +23,17 @@ export default function IdeasPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  // Advanced search system
+  const {
+    filters,
+    setFilters,
+    results: searchResults,
+    searchStats,
+    isSearching,
+    isLoading: searchLoading,
+    clearFilters
+  } = useAdvancedSearch();
 
   // Use Convex query to get published business ideas (with fallback)
   const rawBusinessIdeas = useQuery(api.businessIdeas?.getPublishedIdeas) || [];
@@ -64,25 +77,6 @@ export default function IdeasPage() {
     }
   }, [businessIdeas, isLoading]);
 
-  useEffect(() => {
-    let filtered = ideas;
-
-    // Filter by category
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter(idea => idea.category === selectedCategory);
-    }
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(idea =>
-        idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        idea.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        idea.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-
-    setFilteredIdeas(filtered);
-  }, [ideas, selectedCategory, searchTerm]);
 
   // Combine "all" with dynamic categories from the database
   const categories = ["all", ...dynamicCategories];
@@ -135,119 +129,74 @@ export default function IdeasPage() {
           </div>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-8 dark:bg-slate-800 dark:border-slate-700">
-          <CardContent className="pt-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="search" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Search Ideas
-                </label>
-                <Input
-                  id="search"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by title, description, or tags..."
-                />
-              </div>
+        {/* Advanced Search */}
+        <AdvancedSearch
+          onFiltersChange={setFilters}
+          initialFilters={{
+            query: searchTerm,
+            category: selectedCategory !== "all" ? [selectedCategory] : []
+          }}
+          className="mb-8"
+        />
 
-              <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Filter by Category
-                </label>
-                <select
-                  id="category"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                >
-                  {categories.map(category => (
-                    <option key={category} value={category}>
-                      {category === "all" ? "All Categories" : category}
-                    </option>
-                  ))}
-                </select>
+        {/* Search Statistics */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <p className="text-gray-600 dark:text-gray-300">
+              {isSearching ? (
+                "Searching..."
+              ) : (
+                <>
+                  Found <span className="font-semibold">{searchResults.length}</span> results
+                  {searchStats.hasFilters && (
+                    <span className="text-sm text-blue-400">• Filtered</span>
+                  )}
+                </>
+              )}
+            </p>
+
+            {searchStats.avgRelevance > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Avg. Relevance:</span>
+                <Badge variant={searchStats.avgRelevance > 0.7 ? "default" : "secondary"}>
+                  {Math.round(searchStats.avgRelevance * 100)}%
+                </Badge>
               </div>
+            )}
+          </div>
+
+          {searchStats.topCategories.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Top categories:</span>
+              {searchStats.topCategories.slice(0, 2).map(([category, count]) => (
+                <Badge key={category} variant="outline" className="text-xs">
+                  {category} ({count})
+                </Badge>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-gray-600 dark:text-gray-300">
-            Showing {filteredIdeas.length} of {ideas.length} business ideas
-          </p>
+          )}
         </div>
 
-        {/* Ideas Grid */}
-        {filteredIdeas.length === 0 ? (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No ideas found</h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              {searchTerm || selectedCategory !== "all"
-                ? "Try adjusting your search criteria"
-                : "Be the first to submit a business idea!"
-              }
-            </p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredIdeas.map((idea) => (
-              <Card key={idea.id} className="">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                        {idea.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">{idea.category} • {idea.stage} stage</p>
-                    </div>
-                  </div>
-
-                  <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-                    {idea.description}
-                  </p>
-
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      {idea.tags.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {idea.tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{idea.tags.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Funding Goal</p>
-                      <p className="text-lg font-semibold text-green-400">
-                        ${idea.fundingGoal.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Equity</p>
-                      <p className="text-lg font-semibold text-blue-400">
-                        {idea.equityOffered}%
-                      </p>
-                    </div>
-                  </div>
-
-                  <Link href={`/ideas/${idea.id}`}>
-                    <Button className="w-full">
-                      View Details
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        {/* Search Results */}
+        <SearchResults
+          results={searchResults.map(result => ({
+            id: result.id,
+            title: result.title,
+            description: result.description,
+            category: result.category,
+            tags: result.tags,
+            fundingGoal: result.fundingGoal,
+            equityOffered: result.equityOffered,
+            stage: result.stage,
+            location: result.location,
+            isVerified: result.isVerified,
+            creatorName: result.creatorName,
+            createdAt: result.createdAt,
+            relevanceScore: result.relevanceScore
+          }))}
+          isLoading={isSearching || searchLoading}
+          totalResults={searchResults.length}
+        />
       </div>
     </div>
     </SidebarLayout>

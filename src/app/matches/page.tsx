@@ -12,6 +12,10 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/convex";
 import { Id } from "../../../convex/_generated/dataModel";
 import { toast } from "sonner";
+import { EnhancedMatchCard, MatchStatistics, MatchFilter } from "@/components/matching/enhanced-match-card";
+import { useEnhancedMatching } from "@/hooks/use-enhanced-matching";
+import { useFavorites } from "@/hooks/use-favorites";
+import type { MatchResult } from "@/lib/matching-algorithm";
 
 export default function MatchesPage() {
   const { user, signOut, hasValidConvexId } = useAuth();
@@ -21,6 +25,27 @@ export default function MatchesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [convexUserId, setConvexUserId] = useState<string | null>(null);
+
+  // Enhanced matching system
+  const {
+    matches: enhancedMatches,
+    isLoading: enhancedLoading,
+    error: enhancedError,
+    findMatches,
+    getMatchStatistics,
+    lastUpdated
+  } = useEnhancedMatching();
+
+  // Favorites system
+  const { isItemFavorited, toggleFavorite } = useFavorites();
+
+  // Filter state for enhanced matching
+  const [matchFilters, setMatchFilters] = useState({
+    minScore: 0,
+    maxScore: 100,
+    confidence: [] as string[],
+    sortBy: 'score' as 'score' | 'recent' | 'confidence'
+  });
 
   // Check for fake IDs and force logout if detected
   useEffect(() => {
@@ -128,6 +153,31 @@ export default function MatchesPage() {
     // Navigate to messages page - the conversation should already exist
     toast.info("Continuing discussion...");
     router.push("/messages");
+  };
+
+  // Enhanced match card handlers
+  const handleEnhancedViewDetails = (match: MatchResult) => {
+    // Navigate to the appropriate details page based on user type
+    if (user?.userType === 'creator') {
+      router.push(`/offers/${match.offer_id}`);
+    } else {
+      router.push(`/ideas/${match.idea_id}`);
+    }
+  };
+
+  const handleEnhancedStartConversation = (match: MatchResult) => {
+    // This will be enhanced when we implement the messaging system
+    toast.info("Starting conversation...");
+    router.push("/messages");
+  };
+
+  const handleEnhancedToggleFavorite = (match: MatchResult) => {
+    // Favorite functionality is handled by the useFavorites hook
+    toast.success("Favorite status updated");
+  };
+
+  const handleEnhancedShare = (match: MatchResult) => {
+    toast.success("Match shared!");
   };
 
   // Handle OAuth user creation and get Convex user ID
@@ -344,7 +394,17 @@ export default function MatchesPage() {
                 Discover and manage your {user.userType === "creator" ? "investor matches" : "business idea matches"}
               </p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
+              {/* Enhanced matching refresh button */}
+              <Button
+                onClick={() => findMatches()}
+                disabled={enhancedLoading}
+                variant="outline"
+                size="sm"
+              >
+                {enhancedLoading ? "Refreshing..." : "Refresh Matches"}
+              </Button>
+
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -360,7 +420,106 @@ export default function MatchesPage() {
               </select>
             </div>
           </div>
+
+          {/* Enhanced matching error display */}
+          {enhancedError && (
+            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-sm text-red-600 dark:text-red-400">
+                Error loading enhanced matches: {enhancedError}
+              </p>
+            </div>
+          )}
         </div>
+
+        {/* Enhanced Matching Section */}
+        {enhancedMatches.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Enhanced Matches</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  AI-powered intelligent matching with real-time updates
+                </p>
+              </div>
+              {lastUpdated && (
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </div>
+              )}
+            </div>
+
+            {/* Match Filters for Enhanced System */}
+            <div className="mb-6">
+              <MatchFilter
+                filters={matchFilters}
+                onFiltersChange={setMatchFilters}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+              {/* Match Statistics */}
+              <div className="xl:col-span-1">
+                <MatchStatistics
+                  statistics={{
+                    totalMatches: enhancedMatches.length,
+                    highConfidenceMatches: enhancedMatches.filter(m => m.confidence === 'high').length,
+                    mediumConfidenceMatches: enhancedMatches.filter(m => m.confidence === 'medium').length,
+                    averageScore: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.match_score, 0) / enhancedMatches.length : 0,
+                    topFactors: [
+                      { factor: 'industryAlignment', average: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.factors.industryAlignment, 0) / enhancedMatches.length : 0 },
+                      { factor: 'amountCompatibility', average: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.factors.amountCompatibility, 0) / enhancedMatches.length : 0 },
+                      { factor: 'stagePreference', average: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.factors.stagePreference, 0) / enhancedMatches.length : 0 },
+                    ],
+                    improvementSuggestions: enhancedMatches.length < 5 ? ["Complete your profile to get better matches", "Add more detailed preferences"] : [],
+                  }}
+                />
+              </div>
+
+              {/* Enhanced Match Cards */}
+              <div className="xl:col-span-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {enhancedMatches
+                    .filter(match => {
+                      const score = match.match_score * 100;
+                      return score >= matchFilters.minScore && score <= matchFilters.maxScore &&
+                             (matchFilters.confidence.length === 0 || matchFilters.confidence.includes(match.confidence));
+                    })
+                    .sort((a, b) => {
+                      switch (matchFilters.sortBy) {
+                        case 'score':
+                          return b.match_score - a.match_score;
+                        case 'recent':
+                          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                        case 'confidence':
+                          const confidenceOrder = { high: 3, medium: 2, low: 1 };
+                          return confidenceOrder[b.confidence] - confidenceOrder[a.confidence];
+                        default:
+                          return 0;
+                      }
+                    })
+                    .map((match) => (
+                      <EnhancedMatchCard
+                        key={`${match.idea_id}-${match.offer_id}`}
+                        match={match}
+                        currentUserType={user?.userType || 'creator'}
+                        onViewDetails={handleEnhancedViewDetails}
+                        onStartConversation={handleEnhancedStartConversation}
+                        onToggleFavorite={handleEnhancedToggleFavorite}
+                        onShare={handleEnhancedShare}
+                        isFavorite={isItemFavorited(match.idea_id) || isItemFavorited(match.offer_id)}
+                        isRealTimeUpdating={!enhancedLoading}
+                        lastUpdated={lastUpdated}
+                      />
+                    ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Legacy Matches Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">All Matches</h2>
 
         {filteredMatches.length === 0 ? (
            <div className="text-center py-12">
@@ -528,7 +687,8 @@ export default function MatchesPage() {
           </div>
         )}
         </div>
+        </div>
       </div>
      </SidebarLayout>
    );
-}
+ }

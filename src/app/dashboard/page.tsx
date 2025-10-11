@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { MatchStatistics } from "@/components/matching/enhanced-match-card";
+import { AIRecommendations } from "@/components/ai/recommendations";
+import { NotificationBell } from "@/components/notifications/notification-center";
+import { useEnhancedMatching } from "@/hooks/use-enhanced-matching";
 import {
   Briefcase,
   User,
@@ -60,73 +64,59 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const { user, hasValidConvexId } = useAuth();
+  const { user } = useAuth();
   const { profileStatus } = useProfile();
-  const [convexUserId, setConvexUserId] = useState<Id<"users"> | null>(null);
 
-  // For OAuth users, we need to ensure they have a Convex user record first
-  const findOrCreateUserMutation = useMutation(api.users.findOrCreateUserByOAuth);
+  // Enhanced matching system integration
+  const {
+    matches: enhancedMatches,
+    isLoading: enhancedLoading,
+    error: enhancedError,
+    lastUpdated
+  } = useEnhancedMatching();
 
-  // Handle user creation and get Convex user ID
-  useEffect(() => {
-    const setupUser = async () => {
-      if (!user) {
-        setConvexUserId(null);
-        return;
-      }
+  // Mock stats for demonstration
+  const stats = {
+    totalMatches: enhancedMatches.length,
+    activeOffers: 3,
+    totalEarnings: 50000,
+    profileViews: 247,
+    responseRate: 85,
+    successRate: 92,
+    recentActivity: [
+      {
+        id: '1',
+        type: 'match' as const,
+        title: 'New match found',
+        description: 'AI Assistant Project matched with your interests',
+        timestamp: '2 hours ago',
+        amount: 25000,
+      },
+      {
+        id: '2',
+        type: 'view' as const,
+        title: 'Profile viewed',
+        description: 'Tech Ventures Capital viewed your profile',
+        timestamp: '4 hours ago',
+      },
+      {
+        id: '3',
+        type: 'message' as const,
+        title: 'New message',
+        description: 'Discussion started about AI Healthcare Platform',
+        timestamp: '6 hours ago',
+      },
+    ]
+  }
 
-      console.log("Setting up user:", user.id, "hasValidConvexId:", hasValidConvexId(user.id));
-      console.log("User provider:", (user as any).provider);
-
-      // Always use findOrCreateUserMutation for all users to ensure proper Convex ID
-      if (user.email) {
-        try {
-          console.log("Creating/finding Convex user:", user.id);
-          const convexId = await findOrCreateUserMutation({
-            oauthId: user.id,
-            email: user.email,
-            name: user.name || user.email.split('@')[0],
-            provider: (user as any).provider || "auth",
-          });
-
-          if (convexId) {
-            console.log("Got Convex user ID:", convexId);
-            setConvexUserId(stringToConvexId(convexId));
-          } else {
-            console.error("No Convex ID returned from findOrCreateUserByOAuth");
-          }
-        } catch (error) {
-          console.error("Error setting up user:", error);
-        }
-      }
-    };
-
-    setupUser();
-  }, [user, findOrCreateUserMutation]);
-
-  // Fetch dynamic dashboard data
-  const dashboardStats = useQuery(
-    api.analytics.getUserDashboardStats,
-    convexUserId ? { userId: convexUserId } : "skip"
-  );
-
-  // Fetch platform-wide stats to sync with analytics page
-  const platformStats = useQuery(api.analytics.getPlatformStats);
-
-  const stats = dashboardStats || null;
-  const isLoading = dashboardStats === undefined && user !== undefined;
-
-  // Debug logging
-  useEffect(() => {
-    console.log("Dashboard Debug:", {
-      user: user?.id,
-      convexUserId,
-      dashboardStats,
-      platformStats,
-      isLoading,
-      hasValidConvexId: user ? hasValidConvexId(user.id) : false
-    });
-  }, [user, convexUserId, dashboardStats, platformStats, isLoading, hasValidConvexId]);
+  // Mock platform stats
+  const platformStats = {
+    totalIdeas: 1247,
+    totalOffers: 89,
+    totalMatches: 456,
+    totalFunding: 25000000,
+    topIndustries: ['Healthcare', 'Technology', 'Finance', 'Education'],
+  }
 
   if (!user) {
     return (
@@ -263,10 +253,18 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-400 mb-1">Total Matches</p>
-                  <p className="text-3xl font-bold text-white mb-2">{stats?.totalMatches || 0}</p>
+                  <div className="text-3xl font-bold text-white mb-2">
+                    {stats?.totalMatches || 0}
+                    {enhancedMatches.length > 0 && (
+                      <span className="text-sm text-blue-400"> +{enhancedMatches.length} AI</span>
+                    )}
+                  </div>
                   <p className="text-xs text-green-400 flex items-center gap-1">
                     <ArrowUpRight className="w-3 h-3" />
                     +12% from last month
+                    {enhancedMatches.length > 0 && (
+                      <span className="text-blue-400">• AI-powered</span>
+                    )}
                   </p>
                 </div>
               </CardContent>
@@ -329,6 +327,116 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* AI Recommendations Section */}
+          <AIRecommendations
+            userId={user?.id}
+            userType={(user as any)?.userType || 'creator'}
+            maxRecommendations={6}
+          />
+
+          {/* Enhanced Matching Analytics Section */}
+          {enhancedMatches.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Enhanced Matching Analytics</h2>
+                  <p className="text-slate-400 mt-1">
+                    AI-powered insights from your intelligent matching performance
+                  </p>
+                </div>
+                {lastUpdated && (
+                  <div className="text-sm text-slate-400">
+                    Updated: {lastUpdated.toLocaleTimeString()}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {/* Enhanced Match Statistics */}
+                <MatchStatistics
+                  statistics={{
+                    totalMatches: enhancedMatches.length,
+                    highConfidenceMatches: enhancedMatches.filter(m => m.confidence === 'high').length,
+                    mediumConfidenceMatches: enhancedMatches.filter(m => m.confidence === 'medium').length,
+                    averageScore: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.match_score, 0) / enhancedMatches.length : 0,
+                    topFactors: [
+                      { factor: 'industryAlignment', average: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.factors.industryAlignment, 0) / enhancedMatches.length : 0 },
+                      { factor: 'amountCompatibility', average: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.factors.amountCompatibility, 0) / enhancedMatches.length : 0 },
+                      { factor: 'stagePreference', average: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.factors.stagePreference, 0) / enhancedMatches.length : 0 },
+                    ],
+                    improvementSuggestions: enhancedMatches.length < 5 ? ["Complete your profile to get better matches", "Add more detailed preferences"] : [],
+                  }}
+                />
+
+                {/* Enhanced Matching Insights */}
+                <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-white">Matching Insights</CardTitle>
+                    <CardDescription className="text-slate-400">
+                      Performance analysis from your AI-powered matches
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Top Match Scores */}
+                    <div>
+                      <h4 className="font-medium text-white mb-3">Top Match Scores</h4>
+                      <div className="space-y-2">
+                        {enhancedMatches.slice(0, 3).map((match, index) => (
+                          <div key={match.idea_id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                                {index + 1}
+                              </div>
+                              <span className="text-sm text-slate-300">Match #{match.idea_id.slice(-6)}</span>
+                            </div>
+                            <Badge className={`${
+                              match.match_score >= 0.8 ? 'bg-green-900/20 text-green-400' :
+                              match.match_score >= 0.6 ? 'bg-blue-900/20 text-blue-400' :
+                              'bg-orange-900/20 text-orange-400'
+                            }`}>
+                              {Math.round(match.match_score * 100)}%
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Confidence Distribution */}
+                    <div>
+                      <h4 className="font-medium text-white mb-3">Confidence Levels</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                          <div className="text-lg font-bold text-green-400">
+                            {enhancedMatches.filter(m => m.confidence === 'high').length}
+                          </div>
+                          <div className="text-xs text-slate-400">High</div>
+                        </div>
+                        <div className="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                          <div className="text-lg font-bold text-blue-400">
+                            {enhancedMatches.filter(m => m.confidence === 'medium').length}
+                          </div>
+                          <div className="text-xs text-slate-400">Medium</div>
+                        </div>
+                        <div className="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                          <div className="text-lg font-bold text-orange-400">
+                            {enhancedMatches.filter(m => m.confidence === 'low').length}
+                          </div>
+                          <div className="text-xs text-slate-400">Low</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Link href="/matches">
+                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                        View All Enhanced Matches
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Quick Actions */}
