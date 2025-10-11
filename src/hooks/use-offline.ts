@@ -4,8 +4,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { offlineManager, type SyncStatus, type OfflineData } from '@/lib/offline/offline-manager'
 
 export function useOffline() {
+  // Check if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined' && typeof navigator !== 'undefined'
+
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
-    isOnline: navigator.onLine,
+    isOnline: isBrowser ? navigator.onLine : true,
     isSyncing: false,
     lastSync: null,
     pendingChanges: 0,
@@ -23,6 +26,8 @@ export function useOffline() {
 
   // Update online status
   useEffect(() => {
+    if (!isBrowser) return
+
     const updateOnlineStatus = () => {
       const newStatus = {
         ...syncStatus,
@@ -43,7 +48,7 @@ export function useOffline() {
       window.removeEventListener('online', updateOnlineStatus)
       window.removeEventListener('offline', updateOnlineStatus)
     }
-  }, [syncStatus])
+  }, [syncStatus, isBrowser])
 
   // Load offline data on mount
   useEffect(() => {
@@ -83,7 +88,7 @@ export function useOffline() {
   }, [])
 
   const syncWhenOnline = useCallback(async () => {
-    if (!navigator.onLine) return
+    if (!isBrowser || !navigator.onLine) return
 
     setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }))
 
@@ -99,7 +104,7 @@ export function useOffline() {
         isSyncing: false
       }))
     }
-  }, [loadSyncStatus, loadOfflineData])
+  }, [loadSyncStatus, loadOfflineData, isBrowser])
 
   const storeDataOffline = useCallback(async (
     type: 'matches' | 'ideas' | 'messages' | 'userProfile',

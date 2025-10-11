@@ -38,15 +38,9 @@ import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
 import { CardSkeleton, ProfileSkeleton } from "@/components/ui/skeleton";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/lib/convex";
-import { Id } from "../../../convex/_generated/dataModel";
+import { createClient } from "@/lib/supabase";
 
-// Helper function to properly convert string to Convex ID
-const stringToConvexId = (id: string): Id<"users"> => {
-  return id as Id<"users">;
-};
-
+// Dashboard statistics interface
 interface DashboardStats {
   totalMatches: number;
   activeOffers: number;
@@ -67,6 +61,8 @@ interface DashboardStats {
 export default function DashboardPage() {
   const { user } = useAuth();
   const { profileStatus } = useProfile();
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Enhanced matching system integration
   const {
@@ -75,6 +71,16 @@ export default function DashboardPage() {
     error: enhancedError,
     lastUpdated
   } = useEnhancedMatching();
+
+  // Set loading states
+  useEffect(() => {
+    if (user !== undefined) {
+      setAuthLoading(false);
+    }
+    if (!enhancedLoading) {
+      setIsLoading(false);
+    }
+  }, [user, enhancedLoading]);
 
   // Mock stats for demonstration
   const stats = {

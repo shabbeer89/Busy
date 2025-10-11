@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FavoritesButton } from "@/components/bookmarks/favorites-button";
 import Link from "next/link";
 import { BusinessIdea } from "@/types";
-import { Id } from "../../../../convex/_generated/dataModel";
 
 export default function IdeaDetailPage() {
   const params = useParams();
@@ -30,7 +29,7 @@ export default function IdeaDetailPage() {
         // Mock idea data
         const mockIdea: BusinessIdea = {
           id: params.id as string,
-          creatorId: "creator1" as Id<"users">,
+          creatorId: "creator1",
           title: "AI-Powered Personal Finance Assistant",
           description: `Revolutionizing personal finance management with artificial intelligence. Our platform provides personalized financial advice, automated budgeting, investment recommendations, and real-time spending insights.
 

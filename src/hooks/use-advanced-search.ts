@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useQuery } from 'convex/react'
-import { api } from '@/lib/convex'
+import { createClient } from '@/lib/supabase'
 
 export interface SearchFilters {
   query: string
@@ -71,26 +70,54 @@ export function useAdvancedSearch({
     return () => clearTimeout(timer)
   }, [filters.query, debounceMs, enabled])
 
-  // Get all business ideas from Convex
-  const rawIdeas = useQuery(api.businessIdeas?.getPublishedIdeas) || []
+  // State for business ideas from Supabase
+  const [rawIdeas, setRawIdeas] = useState<any[]>([])
+  const [isLoadingIdeas, setIsLoadingIdeas] = useState(true)
+  const supabase = createClient()
 
-  // Convert Convex data to SearchResult format
+  // Fetch business ideas from Supabase
+  useEffect(() => {
+    const fetchIdeas = async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from('business_ideas')
+          .select('*')
+          .eq('status', 'published')
+
+        if (error) throw error
+
+        if (data) {
+          setRawIdeas(data)
+        }
+      } catch (error) {
+        console.error('Error fetching business ideas:', error)
+      } finally {
+        setIsLoadingIdeas(false)
+      }
+    }
+
+    if (enabled) {
+      fetchIdeas()
+    }
+  }, [supabase, enabled])
+
+  // Convert Supabase data to SearchResult format
   const allResults: SearchResult[] = useMemo(() => {
-    if (!rawIdeas.length || !rawIdeas[0]._id) return []
+    if (!rawIdeas.length) return []
 
     return rawIdeas.map((idea: any) => ({
-      id: idea._id,
+      id: idea.id,
       title: idea.title,
       description: idea.description,
       category: idea.category,
       tags: idea.tags || [],
-      fundingGoal: idea.fundingGoal,
-      equityOffered: idea.equityOffered,
+      fundingGoal: idea.funding_goal,
+      equityOffered: idea.equity_offered,
       stage: idea.stage,
-      location: idea.creatorLocation || '',
-      isVerified: idea.creatorVerified || false,
-      creatorName: idea.creatorName || 'Anonymous',
-      createdAt: idea.createdAt || new Date().toISOString(),
+      location: '', // Not available in current schema
+      isVerified: false, // Not available in current schema
+      creatorName: 'Anonymous', // Not available in current schema
+      createdAt: idea.created_at || new Date().toISOString(),
       relevanceScore: calculateRelevanceScore(idea, filters)
     }))
   }, [rawIdeas, filters])

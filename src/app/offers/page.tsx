@@ -10,52 +10,43 @@ import { Input } from "@/components/ui/input";
 import { OfferCardSkeleton } from "@/components/ui/skeleton";
 import { animations } from "@/lib/animations";
 import { SidebarLayout } from "@/components/navigation/sidebar";
-import { useQuery } from "convex/react";
-import { api } from "@/lib/convex";
+import { createClient } from "@/lib/supabase";
 
-// Use Convex query to get active investment offers
+// Use Supabase to get active investment offers
 export default function OffersPage() {
   const { user } = useAuth();
-  const rawInvestmentOffers = useQuery(api.investmentOffers.getActiveOffers) || [];
   const [offers, setOffers] = useState<any[]>([]);
   const [filteredOffers, setFilteredOffers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [industryFilter, setIndustryFilter] = useState("all");
   const [stageFilter, setStageFilter] = useState("all");
   const [isLoadingOffers, setIsLoadingOffers] = useState(true);
+  const supabase = createClient();
 
-  // Memoize offers to prevent unnecessary re-renders
-  const investmentOffers = useMemo(() => {
-    if (rawInvestmentOffers && rawInvestmentOffers.length > 0 && rawInvestmentOffers[0]._id) {
-      return rawInvestmentOffers.map((offer: any) => ({
-        id: offer._id,
-        title: offer.title,
-        description: offer.description,
-        amountRange: offer.amountRange,
-        preferredEquity: offer.preferredEquity,
-        preferredStages: offer.preferredStages,
-        preferredIndustries: offer.preferredIndustries,
-        investmentType: offer.investmentType,
-        isActive: offer.isActive,
-        createdAt: offer.createdAt,
-      }));
-    }
-    return [];
-  }, [rawInvestmentOffers]);
-
-  // Convert Convex data format to component format
+  // Fetch offers from Supabase
   useEffect(() => {
-    if (investmentOffers.length > 0) {
-      setOffers(investmentOffers);
-      setFilteredOffers(investmentOffers);
-      setIsLoadingOffers(false);
-    } else if (investmentOffers.length === 0 && !isLoadingOffers) {
-      // Only update if not already loading to prevent infinite loop
-      setOffers([]);
-      setFilteredOffers([]);
-      setIsLoadingOffers(false);
-    }
-  }, [investmentOffers, isLoadingOffers]);
+    const fetchOffers = async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from('investment_offers')
+          .select('*')
+          .eq('is_active', true);
+
+        if (error) throw error;
+
+        if (data) {
+          setOffers(data);
+          setFilteredOffers(data);
+        }
+      } catch (error) {
+        console.error('Error fetching offers:', error);
+      } finally {
+        setIsLoadingOffers(false);
+      }
+    };
+
+    fetchOffers();
+  }, [supabase]);
 
   // Filter offers based on search and filters
   useEffect(() => {

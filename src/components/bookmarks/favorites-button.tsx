@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useToastFeedback } from "@/hooks/use-toast-feedback";
 import { Heart } from "lucide-react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/lib/convex";
+import { createClient } from "@/lib/supabase";
 
 interface FavoritesButtonProps {
   itemId: string;
@@ -26,17 +25,37 @@ interface FavoriteItem {
 export function FavoritesButton({ itemId, itemType, className }: FavoritesButtonProps) {
   const { user } = useAuth();
   const { showSuccess, showError } = useToastFeedback();
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const supabase = createClient();
 
-  // Convex queries and mutations
-  const isFavoritedQuery = useQuery(
-    api.favorites.isFavorited,
-    user ? { itemId, itemType } : "skip"
-  );
-  const addToFavoritesMutation = useMutation(api.favorites.addToFavorites);
-  const removeFromFavoritesMutation = useMutation(api.favorites.removeFromFavorites);
+  // Check if item is favorited
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (!user) return;
 
-  const isFavorited = isFavoritedQuery ?? false;
-  const isLoading = addToFavoritesMutation === undefined || removeFromFavoritesMutation === undefined;
+      try {
+        const { data, error } = await (supabase as any)
+          .from('favorites')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('item_id', itemId)
+          .eq('item_type', itemType)
+          .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+          console.error('Error checking favorite status:', error);
+          return;
+        }
+
+        setIsFavorited(!!data);
+      } catch (error) {
+        console.error('Error checking favorite status:', error);
+      }
+    };
+
+    checkFavoriteStatus();
+  }, [user, itemId, itemType, supabase]);
 
   const toggleFavorite = async () => {
     if (!user) {
@@ -44,18 +63,41 @@ export function FavoritesButton({ itemId, itemType, className }: FavoritesButton
       return;
     }
 
+    setIsLoading(true);
+
     try {
       if (isFavorited) {
         // Remove from favorites
-        await removeFromFavoritesMutation({ itemId, itemType });
+        const { error } = await (supabase as any)
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('item_id', itemId)
+          .eq('item_type', itemType);
+
+        if (error) throw error;
+        setIsFavorited(false);
         showSuccess("Removed from favorites");
       } else {
         // Add to favorites
-        await addToFavoritesMutation({ itemId, itemType });
+        const { error } = await (supabase as any)
+          .from('favorites')
+          .insert([
+            {
+              user_id: user.id,
+              item_id: itemId,
+              item_type: itemType,
+            }
+          ]);
+
+        if (error) throw error;
+        setIsFavorited(true);
         showSuccess("Added to favorites");
       }
     } catch (error) {
       showError("Failed to update favorites");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,34 +127,104 @@ export function FavoritesButton({ itemId, itemType, className }: FavoritesButton
 // Hook for managing favorites
 export function useFavorites() {
   const { user } = useAuth();
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [favoritedOffers, setFavoritedOffers] = useState<any[]>([]);
+  const [favoritedIdeas, setFavoritedIdeas] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
 
-  // Convex queries
-  const favorites = useQuery(
-    api.favorites.getUserFavorites,
-    user ? "skip" : "skip" // This query doesn't take args, it uses auth
-  ) || [];
+  // Fetch favorites from Supabase
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!user) {
+        setFavorites([]);
+        setFavoritedOffers([]);
+        setFavoritedIdeas([]);
+        setIsLoading(false);
+        return;
+      }
 
-  const favoritedOffers = useQuery(
-    api.favorites.getFavoritedOffers,
-    user ? "skip" : "skip"
-  ) || [];
+      try {
+        // Get all user favorites
+        const { data: favoritesData, error: favoritesError } = await (supabase as any)
+          .from('favorites')
+          .select('*')
+          .eq('user_id', user.id);
 
-  const favoritedIdeas = useQuery(
-    api.favorites.getFavoritedIdeas,
-    user ? "skip" : "skip"
-  ) || [];
+        if (favoritesError) throw favoritesError;
 
-  // Mutations
-  const addToFavoritesMutation = useMutation(api.favorites.addToFavorites);
-  const removeFromFavoritesMutation = useMutation(api.favorites.removeFromFavorites);
+        if (favoritesData) {
+          setFavorites(favoritesData);
 
-  const isLoading = favorites === undefined || favoritedOffers === undefined || favoritedIdeas === undefined;
+          // Get favorited offers with offer details
+          const offerIds = favoritesData
+            .filter((fav: any) => fav.item_type === 'offer')
+            .map((fav: any) => fav.item_id);
+
+          if (offerIds.length > 0) {
+            const { data: offersData, error: offersError } = await (supabase as any)
+              .from('investment_offers')
+              .select('*')
+              .in('id', offerIds);
+
+            if (offersError) throw offersError;
+            setFavoritedOffers(offersData || []);
+          } else {
+            setFavoritedOffers([]);
+          }
+
+          // Get favorited ideas with idea details
+          const ideaIds = favoritesData
+            .filter((fav: any) => fav.item_type === 'idea')
+            .map((fav: any) => fav.item_id);
+
+          if (ideaIds.length > 0) {
+            const { data: ideasData, error: ideasError } = await (supabase as any)
+              .from('business_ideas')
+              .select('*')
+              .in('id', ideaIds);
+
+            if (ideasError) throw ideasError;
+            setFavoritedIdeas(ideasData || []);
+          } else {
+            setFavoritedIdeas([]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching favorites:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFavorites();
+  }, [user, supabase]);
 
   const addToFavorites = async (itemId: string, itemType: "offer" | "idea") => {
     if (!user) throw new Error("User not authenticated");
 
     try {
-      await addToFavoritesMutation({ itemId, itemType });
+      const { error } = await (supabase as any)
+        .from('favorites')
+        .insert([
+          {
+            user_id: user.id,
+            item_id: itemId,
+            item_type: itemType,
+          }
+        ]);
+
+      if (error) throw error;
+
+      // Refresh favorites
+      const { data: updatedFavorites } = await (supabase as any)
+        .from('favorites')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (updatedFavorites) {
+        setFavorites(updatedFavorites);
+      }
     } catch (error) {
       throw new Error("Failed to add to favorites");
     }
@@ -122,18 +234,35 @@ export function useFavorites() {
     if (!user) throw new Error("User not authenticated");
 
     try {
-      await removeFromFavoritesMutation({ itemId, itemType });
+      const { error } = await (supabase as any)
+        .from('favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('item_id', itemId)
+        .eq('item_type', itemType);
+
+      if (error) throw error;
+
+      // Refresh favorites
+      const { data: updatedFavorites } = await (supabase as any)
+        .from('favorites')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (updatedFavorites) {
+        setFavorites(updatedFavorites);
+      }
     } catch (error) {
       throw new Error("Failed to remove from favorites");
     }
   };
 
   const isFavorite = (itemId: string, itemType: "offer" | "idea") => {
-    return favorites.some(fav => fav.itemId === itemId && fav.itemType === itemType);
+    return favorites.some((fav: any) => fav.item_id === itemId && fav.item_type === itemType);
   };
 
   const getFavoritesByType = (itemType: "offer" | "idea") => {
-    return favorites.filter(fav => fav.itemType === itemType);
+    return favorites.filter((fav: any) => fav.item_type === itemType);
   };
 
   return {

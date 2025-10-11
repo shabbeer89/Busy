@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { OfferForm } from "@/components/offers/offer-form";
 import { CreateInvestmentOfferData } from "@/types";
-import { useMutation } from "convex/react";
-import { api } from "@/lib/convex";
+import { createClient } from "@/lib/supabase";
 
 export default function CreateOfferPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,7 +13,7 @@ export default function CreateOfferPage() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const createOfferMutation = useMutation(api.investmentOffers.createInvestmentOffer);
+  const supabase = createClient();
 
   if (!user) {
     return (
@@ -43,10 +42,25 @@ export default function CreateOfferPage() {
     setError(null);
 
     try {
-      await createOfferMutation({
-        investorId: user.id as any,
-        ...data,
-      });
+      const { error } = await (supabase as any)
+        .from('investment_offers')
+        .insert([
+          {
+            investor_id: user.id,
+            title: data.title,
+            description: data.description,
+            amount_range: data.amountRange,
+            preferred_equity: data.preferredEquity,
+            preferred_stages: data.preferredStages,
+            preferred_industries: data.preferredIndustries,
+            geographic_preference: data.geographicPreference,
+            investment_type: data.investmentType,
+            timeline: data.timeline,
+            is_active: true,
+          }
+        ]);
+
+      if (error) throw error;
 
       router.push("/offers");
     } catch (err) {

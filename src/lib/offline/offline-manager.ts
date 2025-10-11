@@ -22,13 +22,24 @@ export class OfflineManager {
   private dbVersion = 1
   private db: IDBDatabase | null = null
   private syncInProgress = false
+  private isBrowser: boolean
 
   constructor() {
-    this.initializeDB()
-    this.setupOnlineStatusListener()
+    // Check if we're in a browser environment
+    this.isBrowser = typeof window !== 'undefined' && typeof indexedDB !== 'undefined'
+
+    if (this.isBrowser) {
+      this.initializeDB()
+      this.setupOnlineStatusListener()
+    }
   }
 
   private async initializeDB(): Promise<void> {
+    if (!this.isBrowser) {
+      console.warn('OfflineManager: IndexedDB not available in this environment')
+      return
+    }
+
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.dbVersion)
 
@@ -75,6 +86,10 @@ export class OfflineManager {
   }
 
   private setupOnlineStatusListener(): void {
+    if (!this.isBrowser) {
+      return // Don't set up listeners if not in browser environment
+    }
+
     // Listen for online/offline status changes
     window.addEventListener('online', () => {
       console.log('🔌 Back online - starting sync...')
@@ -88,11 +103,19 @@ export class OfflineManager {
 
   // Check if browser is online
   isOnline(): boolean {
+    if (!this.isBrowser) {
+      return true // Assume online if not in browser environment
+    }
     return navigator.onLine
   }
 
   // Store data for offline access
   async storeData<T>(storeName: string, data: T | T[]): Promise<void> {
+    if (!this.isBrowser) {
+      console.warn(`OfflineManager: Cannot store data in ${storeName} - not in browser environment`)
+      return
+    }
+
     if (!this.db) await this.initializeDB()
 
     return new Promise((resolve, reject) => {
@@ -114,6 +137,11 @@ export class OfflineManager {
 
   // Retrieve data from offline storage
   async getData<T>(storeName: string, id?: string): Promise<T | T[]> {
+    if (!this.isBrowser) {
+      console.warn(`OfflineManager: Cannot get data from ${storeName} - not in browser environment`)
+      return id ? null as T : [] as T[]
+    }
+
     if (!this.db) await this.initializeDB()
 
     return new Promise((resolve, reject) => {
@@ -209,6 +237,11 @@ export class OfflineManager {
 
   // Clear pending changes after successful sync
   async clearPendingChanges(): Promise<void> {
+    if (!this.isBrowser) {
+      console.warn('OfflineManager: Cannot clear pending changes - not in browser environment')
+      return
+    }
+
     if (!this.db) return
 
     return new Promise((resolve, reject) => {
@@ -288,6 +321,11 @@ export class OfflineManager {
 
   // Cache management
   async clearCache(storeName?: string): Promise<void> {
+    if (!this.isBrowser) {
+      console.warn('OfflineManager: Cannot clear cache - not in browser environment')
+      return
+    }
+
     if (!this.db) return
 
     const storesToClear = storeName ? [storeName] : ['matches', 'ideas', 'messages', 'userProfile']
@@ -312,6 +350,11 @@ export class OfflineManager {
     available: number
     percentage: number
   }> {
+    if (!this.isBrowser) {
+      console.warn('OfflineManager: Cannot get storage info - not in browser environment')
+      return { used: 0, available: 0, percentage: 0 }
+    }
+
     if ('storage' in navigator && 'estimate' in navigator.storage) {
       try {
         const estimate = await navigator.storage.estimate()
@@ -332,6 +375,11 @@ export class OfflineManager {
 
   // Cleanup old cached data
   async cleanupOldData(maxAge: number = 7 * 24 * 60 * 60 * 1000): Promise<void> {
+    if (!this.isBrowser) {
+      console.warn('OfflineManager: Cannot cleanup old data - not in browser environment')
+      return
+    }
+
     if (!this.db) return
 
     const cutoffTime = Date.now() - maxAge

@@ -33,8 +33,7 @@ export interface WalletConnection {
   provider: any; // ethers provider type
 }
 
-// Import Convex types
-import { Id } from "../../convex/_generated/dataModel";
+// Supabase types - using string IDs instead of Convex IDs
 
 // NFT Validation types
 export interface NFTValidationResult {
@@ -57,7 +56,7 @@ export interface ContractAddressInfo {
 
 // User profile interfaces
 export interface User {
-  id: Id<"users">;
+  id: string;
   email: string;
   name: string;
   phoneNumber?: string;
@@ -94,7 +93,7 @@ export interface User {
 // Business idea interfaces
 export interface BusinessIdea {
   id: string;
-  creatorId: Id<"users">;
+  creatorId: string;
   title: string;
   description: string;
   category: string;
@@ -113,7 +112,7 @@ export interface BusinessIdea {
 
   // Media
   images?: string[];
-  documents?: string[];
+  documents?: string[][];
   videoUrl?: string;
 
   // Status
@@ -125,7 +124,7 @@ export interface BusinessIdea {
 // Investment offer interfaces
 export interface InvestmentOffer {
   id: string;
-  investorId: Id<"users">;
+  investorId: string;
   title: string;
   description: string;
 
@@ -165,8 +164,8 @@ export interface MatchingFactors {
 export interface Match {
   id: string;
   ideaId: string;
-  investorId: Id<"users">;
-  creatorId: Id<"users">;
+  investorId: string;
+  creatorId: string;
   offerId: string;
 
   // Match details
@@ -185,8 +184,8 @@ export interface Match {
 export interface Transaction {
   id: string;
   matchId: string;
-  investorId: Id<"users">;
-  creatorId: Id<"users">;
+  investorId: string;
+  creatorId: string;
 
   // Transaction details
   amount: number;
