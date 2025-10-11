@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase-client";
 import { Toaster } from "@/components/toast-provider";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useAuthStore } from "@/stores/auth-store";
+import { TenantProvider } from "@/contexts/tenant-context";
 
 // Internal component to sync NextAuth session with Zustand store
 function AuthSync({ children }: { children: React.ReactNode }) {
@@ -44,7 +45,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <AuthSync>
-        {children}
+        <TenantProvider>
+          {children}
+        </TenantProvider>
       </AuthSync>
       <Toaster />
     </SessionProvider>

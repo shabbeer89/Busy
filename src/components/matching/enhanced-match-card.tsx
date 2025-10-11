@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { MobileCard } from '@/components/responsive/mobile-layout'
 import { useFavorites } from '@/hooks/use-favorites'
 import { cn } from '@/lib/utils'
@@ -266,21 +266,20 @@ export function EnhancedMatchCard({
 
         {/* Match Reasoning */}
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="ghost"
-              className="w-full justify-between p-0 h-auto"
-              aria-expanded={isExpanded}
-              aria-controls={`match-reasoning-${match.idea_id}`}
-            >
-              <span className="text-sm font-medium">Why this match?</span>
-              {isExpanded ? (
-                <ChevronUp className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <ChevronDown className="h-4 w-4" aria-hidden="true" />
-              )}
-            </Button>
-          </CollapsibleTrigger>
+          <Button
+            variant="ghost"
+            className="w-full justify-between p-0 h-auto"
+            onClick={() => setIsExpanded(!isExpanded)}
+            aria-expanded={isExpanded}
+            aria-controls={`match-reasoning-${match.idea_id}`}
+          >
+            <span className="text-sm font-medium">Why this match?</span>
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            )}
+          </Button>
 
           <CollapsibleContent
             className="mt-3 space-y-2"

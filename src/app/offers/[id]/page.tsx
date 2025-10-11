@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FavoritesButton } from "@/components/bookmarks/favorites-button";
 import Link from "next/link";
 import { InvestmentOffer } from "@/types";
-import { Id } from "../../../../convex/_generated/dataModel";
 
 export default function OfferDetailPage() {
   const params = useParams();
@@ -20,49 +19,33 @@ export default function OfferDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // In a real app, this would fetch from Convex
-    // For now, using mock data
     const fetchOffer = async () => {
+      if (!params.id) return;
+
       try {
-        // Mock API call - replace with actual Convex query
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading
+        setIsLoading(true);
+        setError(null);
 
-        // Mock offer data
-        const mockOffer: InvestmentOffer = {
-          id: params.id as string,
-          investorId: "investor1" as Id<"users">,
-          title: "Tech-Focused Growth Capital",
-          description: `Strategic investment fund focused on technology startups with proven market traction and scalable business models.
+        // Fetch real offer data from API
+        const response = await fetch(`/api/offers/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch offer');
+        }
 
-Investment Philosophy:
-• Partner with exceptional entrepreneurs building category-defining companies
-• Focus on product-market fit and sustainable unit economics
-• Support companies through growth challenges with strategic guidance
-• Long-term partnership approach beyond just capital
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Offer not found');
+        }
 
-Preferred sectors include SaaS, AI/ML, Fintech, Healthtech, and Enterprise Software. We look for founders with deep domain expertise and clear vision for market disruption.`,
-          amountRange: { min: 250000, max: 2000000 },
-          preferredEquity: { min: 10, max: 25 },
-          preferredStages: ["early", "growth"],
-          preferredIndustries: ["Technology", "SaaS", "AI/ML", "Fintech"],
-          investmentType: "equity",
-          timeline: "Looking to deploy capital within 6 months, flexible on timeline for exceptional opportunities",
-          isActive: true,
-          createdAt: Date.now() - 86400000 * 14, // 14 days ago
-          updatedAt: Date.now() - 86400000 * 3, // 3 days ago
-        };
-
-        setOffer(mockOffer);
+        setOffer(data.data);
       } catch (err) {
-        setError("Failed to load offer details");
+        setError(err instanceof Error ? err.message : "Failed to load offer details");
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (params.id) {
-      fetchOffer();
-    }
+    fetchOffer();
   }, [params.id]);
 
   if (isLoading) {

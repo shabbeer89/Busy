@@ -50,6 +50,24 @@ export function RealtimeMessage({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Handle file selection from hidden input
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      // Determine file type based on MIME type
+      let fileType: 'image' | 'video' | 'document' = 'document'
+      if (file.type.startsWith('image/')) {
+        fileType = 'image'
+      } else if (file.type.startsWith('video/')) {
+        fileType = 'video'
+      }
+
+      handleFileUpload(file, fileType)
+    }
+    // Reset the input value so the same file can be selected again
+    event.target.value = ''
+  }
+
   const {
     messages,
     isLoading,
@@ -149,6 +167,14 @@ export function RealtimeMessage({
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept="image/*,video/*,application/*"
+        onChange={handleFileSelect}
+      />
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center space-x-3">
@@ -292,7 +318,10 @@ export function RealtimeMessage({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleAttachmentAction('image')}
+                onClick={() => {
+                  setShowAttachmentMenu(false)
+                  fileInputRef.current?.click()
+                }}
                 className="flex items-center space-x-1"
               >
                 <ImageIcon className="h-4 w-4" />
@@ -301,7 +330,10 @@ export function RealtimeMessage({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleAttachmentAction('document')}
+                onClick={() => {
+                  setShowAttachmentMenu(false)
+                  fileInputRef.current?.click()
+                }}
                 className="flex items-center space-x-1"
               >
                 <File className="h-4 w-4" />
@@ -310,7 +342,10 @@ export function RealtimeMessage({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleAttachmentAction('file')}
+                onClick={() => {
+                  setShowAttachmentMenu(false)
+                  fileInputRef.current?.click()
+                }}
                 className="flex items-center space-x-1"
               >
                 <Paperclip className="h-4 w-4" />

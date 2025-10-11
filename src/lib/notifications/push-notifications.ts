@@ -128,9 +128,9 @@ export class PushNotificationManager {
       // Create subscription for push notifications
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(
+        applicationServerKey: new Uint8Array(this.urlBase64ToUint8Array(
           process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
-        )
+        )) as BufferSource
       })
 
       // Send subscription to backend
@@ -192,7 +192,6 @@ export class PushNotificationManager {
       const browserNotification = new Notification(notification.title, {
         body: notification.body,
         icon: notification.icon || '/icons/notification-icon.png',
-        image: notification.image,
         tag: notification.id,
         requireInteraction: notification.urgent || false,
         silent: !this.preferences.sound,

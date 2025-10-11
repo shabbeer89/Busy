@@ -6,10 +6,19 @@ const nextConfig: NextConfig = {
   // Optimize for Docker deployment
   poweredByHeader: false,
   compress: true,
+
+  // Optimize CSS loading to prevent preload warnings
+  experimental: {
+    optimizeCss: {
+      preload: false, // Disable CSS preloading to prevent unused preload warnings
+    },
+  },
+
   // Disable ESLint during build to avoid build failures
   eslint: {
     ignoreDuringBuilds: true,
   },
+
   // Security headers
   async headers() {
     return [

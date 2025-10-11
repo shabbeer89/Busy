@@ -2,44 +2,77 @@
 
 import { useAuthStore } from "@/stores/auth-store";
 import { CreateUserData, User } from "@/types";
+import { useRouter } from "next/navigation";
+import { signIn as nextAuthSignIn, signOut as nextAuthSignOut, getSession } from "next-auth/react";
+import { createClient } from "@/lib/supabase-client";
+import { useEffect } from "react";
 
 export function useAuth() {
   const { user, isAuthenticated, isLoading, setUser, setLoading, logout } = useAuthStore();
+  const router = useRouter();
+  const supabase = createClient();
+
+  // Sync with NextAuth session on mount
+  useEffect(() => {
+    const syncSession = async () => {
+      try {
+        const session = await getSession();
+        if (session?.user) {
+          const userData: User = {
+            id: (session.user as any).id || `oauth_${Date.now()}`,
+            email: session.user.email!,
+            name: session.user.name || session.user.email?.split('@')[0] || 'User',
+            avatar: session.user.image || undefined,
+            userType: (session.user as any).user_type || 'creator',
+            isVerified: (session.user as any).is_verified || true,
+            phoneVerified: (session.user as any).phone_verified || false,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error('Error syncing session:', error);
+      }
+    };
+
+    syncSession();
+  }, []);
 
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setLoading(true);
 
     try {
-      // For demo purposes, we'll use a simplified authentication
-      // In production, this would integrate with NextAuth or Supabase Auth
+      // Use NextAuth sign in for email/password authentication
+      const result = await nextAuthSignIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (result?.error) {
+        return { success: false, error: "Invalid email or password" };
+      }
 
-      // First, logout any existing user to clear state
-      logout();
-
-      if (email && password) {
-        // For demo, accept any email/password combination
-        // In production, this would verify against Supabase Auth
-        const userName = email.split("@")[0].split(".")[0].charAt(0).toUpperCase() + email.split("@")[0].split(".")[0].slice(1);
-        const userType = email.includes("investor") || email.includes("arjun") || email.includes("suresh") || email.includes("ravi") ? "investor" : "creator";
-
-        const user: User = {
-          id: `demo_${Date.now()}`,
-          email,
-          name: userName,
-          userType,
-          isVerified: true,
+      // If successful, get the session and update store
+      const session = await getSession();
+      if (session?.user) {
+        const userData: User = {
+          id: (session.user as any).id || `oauth_${Date.now()}`,
+          email: session.user.email!,
+          name: session.user.name || session.user.email?.split('@')[0] || 'User',
+          avatar: session.user.image || undefined,
+          userType: (session.user as any).user_type || 'creator',
+          isVerified: (session.user as any).is_verified || true,
+          phoneVerified: (session.user as any).phone_verified || false,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
-
-        setUser(user);
+        setUser(userData);
         return { success: true };
-      } else {
-        return { success: false, error: "Please enter email and password" };
       }
+
+      return { success: false, error: "Authentication failed" };
 
     } catch (error) {
       console.error("Sign in error:", error);
@@ -58,23 +91,57 @@ export function useAuth() {
         return { success: false, error: "Please fill in all required fields" };
       }
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Create user object (in production, this would integrate with Supabase Auth)
-      const newUser: User = {
-        id: `demo_${Date.now()}`,
+      // Use Supabase Auth for sign up
+      const { data, error } = await supabase.auth.signUp({
         email: userData.email,
-        name: userData.name,
-        phoneNumber: userData.phoneNumber,
-        userType: userData.userType,
-        isVerified: false,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
+        password: userData.password,
+        options: {
+          data: {
+            name: userData.name,
+            phone_number: userData.phoneNumber,
+            user_type: userData.userType,
+          }
+        }
+      });
 
-      setUser(newUser);
-      return { success: true };
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (data.user) {
+        // Create user profile in our users table
+        const { error: profileError } = await (supabase as any)
+          .from('users')
+          .insert({
+            id: data.user.id,
+            email: userData.email,
+            name: userData.name,
+            phone_number: userData.phoneNumber,
+            user_type: userData.userType,
+            is_verified: false,
+            phone_verified: false,
+          });
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+        }
+
+        const newUser: User = {
+          id: data.user.id,
+          email: userData.email,
+          name: userData.name,
+          phoneNumber: userData.phoneNumber,
+          userType: userData.userType,
+          isVerified: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        setUser(newUser);
+        return { success: true };
+      }
+
+      return { success: false, error: "Failed to create account" };
 
     } catch (error) {
       console.error("Sign up error:", error);
@@ -93,24 +160,48 @@ export function useAuth() {
         return { success: false, error: "Please enter a valid 6-digit OTP" };
       }
 
-      // Simulate API delay for better UX
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // For demo purposes, accept any 6-digit OTP
-      // In production, this would verify against Supabase stored OTP
-      if (otp === "123456") {
-        // If we have a user, update their phone verification status
-        if (user) {
-          setUser({
-            ...user,
-            phoneVerified: true,
-            updatedAt: Date.now(),
-          });
-        }
-        return { success: true };
-      } else {
-        return { success: false, error: "Invalid OTP. Please try again." };
+      if (!user) {
+        return { success: false, error: "No user found. Please sign in again." };
       }
+
+      // Verify OTP with Supabase
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: phoneNumber,
+        token: otp,
+        type: 'sms',
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (data.user) {
+        // Update phone verification status in users table
+        const { error: updateError } = await (supabase as any)
+          .from('users')
+          .update({
+            phone_verified: true,
+            phone_number: phoneNumber,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', user.id);
+
+        if (updateError) {
+          console.error('Error updating phone verification:', updateError);
+        }
+
+        // Update local user state
+        setUser({
+          ...user,
+          phoneVerified: true,
+          phoneNumber,
+          updatedAt: Date.now(),
+        });
+
+        return { success: true };
+      }
+
+      return { success: false, error: "Invalid OTP. Please try again." };
 
     } catch (error) {
       console.error("Phone verification error:", error);
@@ -120,8 +211,90 @@ export function useAuth() {
     }
   };
 
-  const signOut = () => {
-    logout();
+  const signOut = async () => {
+    setLoading(true);
+    try {
+      // Sign out from NextAuth
+      await nextAuthSignOut({ redirect: false });
+
+      // Also sign out from Supabase
+      await supabase.auth.signOut();
+
+      // Clear local state
+      logout();
+    } catch (error) {
+      console.error("Sign out error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    setLoading(true);
+    try {
+      const result = await nextAuthSignIn('google', { redirect: false });
+      if (result?.error) {
+        return { success: false, error: result.error };
+      }
+
+      // Sync session after successful sign in
+      const session = await getSession();
+      if (session?.user) {
+        const userData: User = {
+          id: (session.user as any).id || `oauth_${Date.now()}`,
+          email: session.user.email!,
+          name: session.user.name || session.user.email?.split('@')[0] || 'User',
+          avatar: session.user.image || undefined,
+          userType: (session.user as any).user_type || 'creator',
+          isVerified: (session.user as any).is_verified || true,
+          phoneVerified: (session.user as any).phone_verified || false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+        setUser(userData);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("Google sign in error:", error);
+      return { success: false, error: "Failed to sign in with Google" };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signInWithLinkedIn = async () => {
+    setLoading(true);
+    try {
+      const result = await nextAuthSignIn('linkedin', { redirect: false });
+      if (result?.error) {
+        return { success: false, error: result.error };
+      }
+
+      // Sync session after successful sign in
+      const session = await getSession();
+      if (session?.user) {
+        const userData: User = {
+          id: (session.user as any).id || `oauth_${Date.now()}`,
+          email: session.user.email!,
+          name: session.user.name || session.user.email?.split('@')[0] || 'User',
+          avatar: session.user.image || undefined,
+          userType: (session.user as any).user_type || 'creator',
+          isVerified: (session.user as any).is_verified || true,
+          phoneVerified: (session.user as any).phone_verified || false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+        setUser(userData);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("LinkedIn sign in error:", error);
+      return { success: false, error: "Failed to sign in with LinkedIn" };
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Helper function to check if user has valid ID
@@ -129,7 +302,7 @@ export function useAuth() {
     if (!userId) return false;
 
     // Accept demo IDs and OAuth-style IDs
-    if (userId.startsWith("demo_") || userId.length >= 10) {
+    if (userId.startsWith("demo_") || userId.startsWith("oauth_") || userId.length >= 10) {
       return true;
     }
 
@@ -146,6 +319,8 @@ export function useAuth() {
     signUp,
     signOut,
     verifyPhoneNumber,
+    signInWithGoogle,
+    signInWithLinkedIn,
     hasValidId,
   };
 }

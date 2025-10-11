@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
+import { useDashboard } from "@/hooks/use-dashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -32,13 +33,13 @@ import {
   Award,
   Calendar,
   MessageSquare,
-  Eye
+  Eye,
+  RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
 import { CardSkeleton, ProfileSkeleton } from "@/components/ui/skeleton";
-import { createClient } from "@/lib/supabase";
 
 // Dashboard statistics interface
 interface DashboardStats {
@@ -62,14 +63,22 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { profileStatus } = useProfile();
   const [authLoading, setAuthLoading] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+
+  // Real-time dashboard data integration
+  const {
+    dashboardStats,
+    platformStats,
+    isLoading: dashboardLoading,
+    error: dashboardError,
+    lastUpdated,
+    refreshDashboard
+  } = useDashboard();
 
   // Enhanced matching system integration
   const {
     matches: enhancedMatches,
     isLoading: enhancedLoading,
     error: enhancedError,
-    lastUpdated
   } = useEnhancedMatching();
 
   // Set loading states
@@ -77,53 +86,9 @@ export default function DashboardPage() {
     if (user !== undefined) {
       setAuthLoading(false);
     }
-    if (!enhancedLoading) {
-      setIsLoading(false);
-    }
-  }, [user, enhancedLoading]);
+  }, [user]);
 
-  // Mock stats for demonstration
-  const stats = {
-    totalMatches: enhancedMatches.length,
-    activeOffers: 3,
-    totalEarnings: 50000,
-    profileViews: 247,
-    responseRate: 85,
-    successRate: 92,
-    recentActivity: [
-      {
-        id: '1',
-        type: 'match' as const,
-        title: 'New match found',
-        description: 'AI Assistant Project matched with your interests',
-        timestamp: '2 hours ago',
-        amount: 25000,
-      },
-      {
-        id: '2',
-        type: 'view' as const,
-        title: 'Profile viewed',
-        description: 'Tech Ventures Capital viewed your profile',
-        timestamp: '4 hours ago',
-      },
-      {
-        id: '3',
-        type: 'message' as const,
-        title: 'New message',
-        description: 'Discussion started about AI Healthcare Platform',
-        timestamp: '6 hours ago',
-      },
-    ]
-  }
-
-  // Mock platform stats
-  const platformStats = {
-    totalIdeas: 1247,
-    totalOffers: 89,
-    totalMatches: 456,
-    totalFunding: 25000000,
-    topIndustries: ['Healthcare', 'Technology', 'Finance', 'Education'],
-  }
+  const isLoading = dashboardLoading || enhancedLoading;
 
   // Show loading while checking authentication
   if (authLoading) {
@@ -161,6 +126,26 @@ export default function DashboardPage() {
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <ProfileSkeleton />
+          </div>
+        </div>
+      </SidebarLayout>
+    );
+  }
+
+  // Handle dashboard errors
+  if (dashboardError) {
+    return (
+      <SidebarLayout>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-white mb-4">Error Loading Dashboard</h1>
+              <p className="text-gray-300 mb-4">{dashboardError}</p>
+              <Button onClick={refreshDashboard} className="bg-blue-600 hover:bg-blue-700">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Try Again
+              </Button>
+            </div>
           </div>
         </div>
       </SidebarLayout>
@@ -241,7 +226,7 @@ export default function DashboardPage() {
                       </Badge>
                       <div className="flex items-center gap-2 text-sm text-slate-300">
                         <Star className="w-4 h-4 text-yellow-400" />
-                        <span>{stats?.successRate}% Success Rate</span>
+                        <span>{dashboardStats?.successRate}% Success Rate</span>
                       </div>
                     </div>
                   </div>
@@ -250,11 +235,11 @@ export default function DashboardPage() {
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
-                    <div className="text-2xl font-bold text-white mb-1">{stats?.totalMatches || 0}</div>
+                    <div className="text-2xl font-bold text-white mb-1">{dashboardStats?.totalMatches || 0}</div>
                     <div className="text-sm text-slate-300">Total Matches</div>
                   </div>
                   <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
-                    <div className="text-2xl font-bold text-white mb-1">{stats?.profileViews || 0}</div>
+                    <div className="text-2xl font-bold text-white mb-1">{dashboardStats?.profileViews || 0}</div>
                     <div className="text-sm text-slate-300">Profile Views</div>
                   </div>
                 </div>
@@ -275,7 +260,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm font-medium text-slate-400 mb-1">Total Matches</p>
                   <div className="text-3xl font-bold text-white mb-2">
-                    {stats?.totalMatches || 0}
+                    {dashboardStats?.totalMatches || 0}
                     {enhancedMatches.length > 0 && (
                       <span className="text-sm text-blue-400"> +{enhancedMatches.length} AI</span>
                     )}
@@ -301,7 +286,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-400 mb-1">Total Earnings</p>
-                  <p className="text-3xl font-bold text-white mb-2">{formatCurrency(stats?.totalEarnings || 0)}</p>
+                  <p className="text-3xl font-bold text-white mb-2">{formatCurrency(dashboardStats?.totalEarnings || 0)}</p>
                   <p className="text-xs text-green-400 flex items-center gap-1">
                     <ArrowUpRight className="w-3 h-3" />
                     +8% from last month
@@ -320,7 +305,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-400 mb-1">Response Rate</p>
-                  <p className="text-3xl font-bold text-white mb-2">{stats?.responseRate || 0}%</p>
+                  <p className="text-3xl font-bold text-white mb-2">{dashboardStats?.responseRate || 0}%</p>
                   <p className="text-xs text-red-400 flex items-center gap-1">
                     <ArrowDownRight className="w-3 h-3" />
                     -3% from last month
@@ -339,7 +324,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-400 mb-1">Profile Views</p>
-                  <p className="text-3xl font-bold text-white mb-2">{stats?.profileViews || 0}</p>
+                  <p className="text-3xl font-bold text-white mb-2">{dashboardStats?.profileViews || 0}</p>
                   <p className="text-xs text-green-400 flex items-center gap-1">
                     <ArrowUpRight className="w-3 h-3" />
                     +24% from last month
@@ -580,7 +565,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {stats?.recentActivity.slice(0, 4).map((activity) => (
+                  {dashboardStats?.recentActivity.slice(0, 4).map((activity) => (
                     <div key={activity.id} className={`p-3 rounded-lg border ${getActivityColor(activity.type)}`}>
                       <div className="flex items-start gap-3">
                         <div className="mt-0.5">
@@ -649,16 +634,16 @@ export default function DashboardPage() {
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm text-slate-300">Success Rate</span>
-                        <span className="text-sm text-slate-400">{stats?.successRate}%</span>
+                        <span className="text-sm text-slate-400">{dashboardStats?.successRate}%</span>
                       </div>
-                      <Progress value={stats?.successRate} className="h-2 bg-slate-700" />
+                      <Progress value={dashboardStats?.successRate} className="h-2 bg-slate-700" />
                     </div>
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm text-slate-300">Response Rate</span>
-                        <span className="text-sm text-slate-400">{stats?.responseRate}%</span>
-                      </div>
-                      <Progress value={stats?.responseRate} className="h-2 bg-slate-700" />
+                        <span className="text-sm text-slate-400">{dashboardStats?.responseRate}%</span>
+                       </div>
+                       <Progress value={dashboardStats?.responseRate} className="h-2 bg-slate-700" />
                     </div>
                   </div>
                 </div>
