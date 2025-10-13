@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { MobileCard } from '@/components/responsive/mobile-layout'
+import { Layout } from '@/components/responsive/layout'
 import { useAIRecommendations } from '@/hooks/use-ai-recommendations'
 import { cn } from '@/lib/utils'
 import {
@@ -131,7 +131,7 @@ export function AIRecommendations({
       {isLoading && (
         <div className="grid gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <MobileCard key={i} className="animate-pulse">
+            <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 bg-muted rounded-lg"></div>
@@ -142,7 +142,7 @@ export function AIRecommendations({
                   </div>
                 </div>
               </CardContent>
-            </MobileCard>
+            </Card>
           ))}
         </div>
       )}
@@ -151,7 +151,7 @@ export function AIRecommendations({
       {!isLoading && recommendations.length > 0 && (
         <div className="grid gap-4">
           {recommendations.map((rec, index) => (
-            <MobileCard key={rec.id}>
+            <Card key={rec.id}>
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   {/* Recommendation Icon */}
@@ -237,14 +237,14 @@ export function AIRecommendations({
                   </div>
                 </div>
               </CardContent>
-            </MobileCard>
+            </Card>
           ))}
         </div>
       )}
 
       {/* Empty State */}
       {!isLoading && recommendations.length === 0 && !error && (
-        <MobileCard>
+        <Card>
           <CardContent className="text-center py-12">
             <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-semibold mb-2">No recommendations yet</h3>
@@ -256,7 +256,7 @@ export function AIRecommendations({
               Generate Recommendations
             </Button>
           </CardContent>
-        </MobileCard>
+        </Card>
       )}
 
       {/* AI Insights */}
@@ -355,7 +355,7 @@ export function RecommendationsFilter({
   }, [selectedType, minConfidence, selectedCategory, onFilterChange])
 
   return (
-    <MobileCard className={className}>
+    <Card className={className}>
       <CardContent className="p-4">
         <div className="flex flex-wrap gap-4 items-center">
           {/* Filter by Type */}
@@ -406,6 +406,6 @@ export function RecommendationsFilter({
           </div>
         </div>
       </CardContent>
-    </MobileCard>
+    </Card>
   )
 }

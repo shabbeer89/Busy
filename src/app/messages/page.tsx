@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { MobileLayout, MobileCard } from "@/components/responsive/mobile-layout";
+import { Layout, Card } from "@/components/responsive/layout";
 import { RealtimeMessage, MessageList } from "@/components/messaging/realtime-message";
 import { createClient } from "@/lib/supabase-client";
 
@@ -117,19 +117,19 @@ export default function MessagesPage() {
 
   if (!user) {
     return (
-      <MobileLayout>
+      <Layout>
         <div className="flex items-center justify-center min-h-full p-4">
-          <MobileCard className="text-center">
+          <Card className="text-center">
             <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
             <p className="text-muted-foreground mb-4">Please sign in to view your messages.</p>
-          </MobileCard>
+          </Card>
         </div>
-      </MobileLayout>
+      </Layout>
     );
   }
 
   return (
-    <MobileLayout>
+    <Layout>
       <div className="flex h-full">
         {/* Conversations List - Hidden on mobile when conversation is selected */}
         {(!selectedConversationId) && (
@@ -145,7 +145,7 @@ export default function MessagesPage() {
               {isLoading ? (
                 <div className="p-4 space-y-4">
                   {[...Array(3)].map((_, i) => (
-                    <MobileCard key={i} className="animate-pulse">
+                    <Card key={i} className="animate-pulse">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-muted rounded-full"></div>
                         <div className="flex-1 space-y-2">
@@ -153,7 +153,7 @@ export default function MessagesPage() {
                           <div className="h-3 bg-muted rounded w-1/2"></div>
                         </div>
                       </div>
-                    </MobileCard>
+                    </Card>
                   ))}
                 </div>
               ) : conversations.length === 0 ? (
@@ -197,6 +197,6 @@ export default function MessagesPage() {
           </div>
         )}
       </div>
-    </MobileLayout>
+    </Layout>
   );
 }

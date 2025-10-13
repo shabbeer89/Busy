@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRealtimeMessaging } from '@/hooks/use-realtime-messaging'
-import { MobileCard, MobileButton, MobileInput } from '@/components/responsive/mobile-layout'
+import { Card, CustomInput } from '@/components/responsive/layout'
 import { createClient } from '@/lib/supabase-client'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -356,7 +356,7 @@ export function RealtimeMessage({
 
           <div className="flex space-x-2">
             <div className="flex-1">
-              <MobileInput
+              <CustomInput
                 type="text"
                 placeholder="Type a message..."
                 value={messageText}
@@ -383,14 +383,14 @@ export function RealtimeMessage({
               <Smile className="h-4 w-4" />
             </Button>
 
-            <MobileButton
-              variant="primary"
-              size="md"
+            <Button
+              variant="default"
+              size="default"
               onClick={handleSendMessage}
               disabled={!messageText.trim() || isUploading}
             >
               <Send className="h-4 w-4" />
-            </MobileButton>
+            </Button>
           </div>
         </div>
 
@@ -422,7 +422,7 @@ export function MessageList({
   return (
     <div className="space-y-2">
       {conversations.map((conversation) => (
-        <MobileCard
+        <Card
           key={conversation.id}
           className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
           onClick={() => onConversationSelect(conversation.id)}
@@ -470,7 +470,7 @@ export function MessageList({
               </Badge>
             )}
           </div>
-        </MobileCard>
+        </Card>
       ))}
     </div>
   )

@@ -40,6 +40,8 @@ import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
 import { CardSkeleton, ProfileSkeleton } from "@/components/ui/skeleton";
+import { DashboardSkeleton } from "@/components/ui/loading-state";
+import { LoadingSpinner } from "@/components/ui/error-boundary";
 
 // Dashboard statistics interface
 interface DashboardStats {
@@ -125,7 +127,7 @@ export default function DashboardPage() {
       <SidebarLayout>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <ProfileSkeleton />
+            <DashboardSkeleton />
           </div>
         </div>
       </SidebarLayout>
@@ -138,13 +140,42 @@ export default function DashboardPage() {
       <SidebarLayout>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-white mb-4">Error Loading Dashboard</h1>
-              <p className="text-gray-300 mb-4">{dashboardError}</p>
-              <Button onClick={refreshDashboard} className="bg-blue-600 hover:bg-blue-700">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Try Again
-              </Button>
+            <div className="flex items-center justify-center">
+              <div className="max-w-md w-full">
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h1 className="text-2xl font-bold text-white mb-2">Dashboard Unavailable</h1>
+                  <p className="text-gray-300">{dashboardError}</p>
+                </div>
+
+                <div className="space-y-3">
+                  <Button
+                    onClick={refreshDashboard}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Retry Loading
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => window.location.reload()}
+                    className="w-full border-gray-600 text-gray-300 hover:bg-gray-700"
+                  >
+                    Refresh Page
+                  </Button>
+                </div>
+
+                {lastUpdated && (
+                  <p className="text-xs text-gray-500 mt-4 text-center">
+                    Last successful update: {lastUpdated.toLocaleTimeString()}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

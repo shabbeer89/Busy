@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { MobileCard } from '@/components/responsive/mobile-layout'
+import { Layout } from '@/components/responsive/layout'
 import { cn } from '@/lib/utils'
 import { walletUtils, type WalletInfo } from '@/lib/crypto/wallet-manager'
 import {
@@ -130,16 +131,16 @@ export function CryptoWallet({ className }: CryptoWalletProps) {
   }
 
   const getNetworkColor = (chainId: number) => {
-    const colors: Record<number, string> = {
-      1: 'text-blue-400 bg-blue-900/20',
-      137: 'text-purple-400 bg-purple-900/20',
-      56: 'text-yellow-400 bg-yellow-900/20',
+    switch (chainId) {
+      case 1: return 'text-blue-400 bg-blue-900/20'
+      case 137: return 'text-purple-400 bg-purple-900/20'
+      case 56: return 'text-yellow-400 bg-yellow-900/20'
+      default: return 'text-gray-400 bg-gray-900/20'
     }
-    return colors[chainId] || 'text-gray-400 bg-gray-900/20'
   }
 
   return (
-    <MobileCard className={className}>
+    <Card className={className}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Wallet className="h-5 w-5" />
@@ -288,10 +289,12 @@ export function CryptoWallet({ className }: CryptoWalletProps) {
 
         {/* Error Display */}
         {walletState.error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" />
-            <span className="text-sm text-red-600 dark:text-red-400">{walletState.error}</span>
-          </div>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {walletState.error}
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Setup Instructions */}
@@ -356,7 +359,7 @@ export function CryptoWallet({ className }: CryptoWalletProps) {
           </div>
         )}
       </CardContent>
-    </MobileCard>
+    </Card>
   )
 }
 
@@ -412,7 +415,7 @@ export function InvestmentTransaction({
   }
 
   return (
-    <MobileCard className={className}>
+    <Card className={className}>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Investment Transaction</h3>
@@ -439,29 +442,29 @@ export function InvestmentTransaction({
         </div>
 
         {txHash && (
-          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <span className="text-sm text-green-600 dark:text-green-400">Transaction successful!</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.open(`https://etherscan.io/tx/${txHash}`, '_blank')}
-              className="mt-2 text-xs"
-            >
-              View on Etherscan
-            </Button>
-          </div>
+          <Alert>
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>
+              Transaction successful!
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.open(`https://etherscan.io/tx/${txHash}`, '_blank')}
+                className="mt-2 text-xs"
+              >
+                View on Etherscan
+              </Button>
+            </AlertDescription>
+          </Alert>
         )}
 
         {error && (
-          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-              <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
-            </div>
-          </div>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {error}
+            </AlertDescription>
+          </Alert>
         )}
 
         <Button
@@ -484,6 +487,6 @@ export function InvestmentTransaction({
           )}
         </Button>
       </CardContent>
-    </MobileCard>
+    </Card>
   )
 }

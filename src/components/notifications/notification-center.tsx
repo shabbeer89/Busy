@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
-import { MobileCard } from '@/components/responsive/mobile-layout'
+import { Layout } from '@/components/responsive/layout'
 import { useNotifications } from '@/hooks/use-notifications'
 import { cn } from '@/lib/utils'
 import {
@@ -75,7 +75,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
 
   if (!isSupported) {
     return (
-      <MobileCard className={className}>
+      <Card className={className}>
         <CardContent className="text-center py-8">
           <BellOff className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="font-semibold mb-2">Notifications Not Supported</h3>
@@ -83,7 +83,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
             Your browser doesn't support push notifications.
           </p>
         </CardContent>
-      </MobileCard>
+      </Card>
     )
   }
 

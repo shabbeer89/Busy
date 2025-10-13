@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { requireAuth } from '@/lib/auth'
 import { apiCORSMiddleware, addCORSHeaders } from '@/lib/cors'
+import {
+  validateRequest,
+  createApiResponse,
+  handleApiError,
+  API_ERRORS,
+  withErrorHandler
+} from '@/lib/api-utils'
 
 // GET /api/ideas - List business ideas with filtering and pagination
 export async function GET(request: NextRequest) {
@@ -11,7 +18,7 @@ export async function GET(request: NextRequest) {
     return corsResponse // Preflight request
   }
 
-  try {
+  return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
@@ -53,12 +60,11 @@ export async function GET(request: NextRequest) {
     const { data: ideas, error, count } = await query
 
     if (error) {
-      throw new Error(`Failed to fetch ideas: ${error.message}`)
+      throw API_ERRORS.DATABASE_ERROR(error)
     }
 
-    const response = NextResponse.json({
-      success: true,
-      data: ideas || [],
+    return createApiResponse({
+      ideas: ideas || [],
       pagination: {
         page,
         limit,
@@ -66,23 +72,7 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil((count || 0) / limit)
       }
     })
-
-    addCORSHeaders(response, request)
-    return response
-
-  } catch (error) {
-    console.error('Error fetching ideas:', error)
-    const response = NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch business ideas',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    )
-    addCORSHeaders(response, request)
-    return response
-  }
+  })().catch(error => handleApiError(error, request, 'GET /api/ideas'))
 }
 
 // POST /api/ideas - Create a new business idea
@@ -93,7 +83,7 @@ export async function POST(request: NextRequest) {
     return corsResponse // Preflight request
   }
 
-  try {
+  return withErrorHandler(async () => {
     const user = await requireAuth()
     const body = await request.json()
 
@@ -114,14 +104,9 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!title || !description || !category || !funding_goal) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Missing required fields',
-          message: 'Title, description, category, and funding goal are required'
-        },
-        { status: 400 }
-      )
+      throw API_ERRORS.VALIDATION_ERROR({
+        message: 'Title, description, category, and funding goal are required'
+      })
     }
 
     const supabase = await createServerSupabaseClient()
@@ -129,28 +114,18 @@ export async function POST(request: NextRequest) {
     // Validate funding goal
     const fundingGoalNum = parseFloat(funding_goal)
     if (isNaN(fundingGoalNum) || fundingGoalNum <= 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid funding goal',
-          message: 'Funding goal must be a positive number'
-        },
-        { status: 400 }
-      )
+      throw API_ERRORS.VALIDATION_ERROR({
+        message: 'Funding goal must be a positive number'
+      })
     }
 
     // Validate equity offered if provided
     if (equity_offered) {
       const equityNum = parseFloat(equity_offered)
       if (isNaN(equityNum) || equityNum < 0 || equityNum > 100) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Invalid equity offered',
-            message: 'Equity offered must be between 0 and 100'
-          },
-          { status: 400 }
-        )
+        throw API_ERRORS.VALIDATION_ERROR({
+          message: 'Equity offered must be between 0 and 100'
+        })
       }
     }
 
@@ -176,29 +151,9 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      throw new Error(`Failed to create idea: ${error.message}`)
+      throw API_ERRORS.DATABASE_ERROR(error)
     }
 
-    const response = NextResponse.json({
-      success: true,
-      data: idea,
-      message: 'Business idea created successfully'
-    })
-
-    addCORSHeaders(response, request)
-    return response
-
-  } catch (error) {
-    console.error('Error creating idea:', error)
-    const response = NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to create business idea',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    )
-    addCORSHeaders(response, request)
-    return response
-  }
+    return createApiResponse(idea, 'Business idea created successfully')
+  })().catch(error => handleApiError(error, request, 'POST /api/ideas'))
 }

@@ -2,33 +2,7 @@ import { createServerSupabaseClient } from './supabase-server'
 import { createClient } from './supabase-client'
 import { NextAuthOptions } from 'next-auth'
 import { SupabaseAdapter } from '@next-auth/supabase-adapter'
-import GoogleProvider from 'next-auth/providers/google'
 
-// Custom LinkedIn Provider function for NextAuth v4
-function LinkedInProvider(options: any) {
-  return {
-    id: "linkedin",
-    name: "LinkedIn",
-    type: "oauth" as const,
-    version: "2.0",
-    scope: "openid profile email",
-    params: { grant_type: "authorization_code" },
-    accessTokenUrl: "https://www.linkedin.com/oauth/v2/accessToken",
-    authorizationUrl: "https://www.linkedin.com/oauth/v2/authorization?response_type=code",
-    profileUrl: "https://api.linkedin.com/v2/people/~:(id,firstName,lastName,emailAddress,profilePicture(displayImage~:playableStreams))",
-    profile: (profile: any) => {
-      return {
-        id: profile.id,
-        name: `${profile.firstName} ${profile.lastName}`,
-        email: profile.emailAddress,
-        image: profile.profilePicture?.displayImage?.elements?.[0]?.identifiers?.[0]?.identifier || null,
-      }
-    },
-    clientId: process.env.LINKEDIN_CLIENT_ID,
-    clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-    ...options,
-  }
-}
 
 // Helper function to get the current user from Supabase
 export async function getCurrentUser() {
@@ -167,22 +141,66 @@ export async function upsertUserProfile(userData: {
 // NextAuth.js configuration
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
+    {
+      id: "google",
+      name: "Google",
+      type: "oauth",
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
+        url: "https://accounts.google.com/o/oauth2/v2/auth",
         params: {
           prompt: "consent",
           access_type: "offline",
-          response_type: "code",
-          scope: "openid email profile"
+          response_type: "code"
         }
-      }
-    }),
-    LinkedInProvider({
+      },
+      token: "https://oauth2.googleapis.com/token",
+      userinfo: "https://www.googleapis.com/oauth2/v2/userinfo",
+      profile: (profile: any) => {
+        return {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        }
+      },
+    },
+    {
+      id: "linkedin",
+      name: "LinkedIn",
+      type: "oauth",
+      version: "2.0",
       clientId: process.env.LINKEDIN_CLIENT_ID!,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
-    }),
+      authorization: {
+        url: "https://www.linkedin.com/oauth/v2/authorization",
+        params: {
+          response_type: "code",
+          scope: "openid profile email"
+        }
+      },
+      token: {
+        url: "https://www.linkedin.com/oauth/v2/accessToken",
+        params: {
+          grant_type: "authorization_code"
+        }
+      },
+      userinfo: {
+        url: "https://api.linkedin.com/v2/people/~",
+        params: {
+          format: "json"
+        }
+      },
+      profile: (profile: any) => {
+        return {
+          id: profile.id,
+          name: `${profile.firstName} ${profile.lastName}`,
+          email: profile.emailAddress,
+          image: profile.profilePicture?.displayImage?.elements?.[0]?.identifiers?.[0]?.identifier,
+        }
+      },
+    },
   ],
   secret: process.env.NEXTAUTH_SECRET,
   pages: {

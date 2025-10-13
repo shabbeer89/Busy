@@ -6,8 +6,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { MobileCard } from '@/components/responsive/mobile-layout'
+import { Layout } from '@/components/responsive/layout'
 import { useFavorites } from '@/hooks/use-favorites'
 import { cn } from '@/lib/utils'
 import {
@@ -132,16 +133,16 @@ export function EnhancedMatchCard({
   }
 
   const getConfidenceBadge = (confidence: string) => {
-    const variants = {
-      high: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
-      medium: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300',
-      low: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
+    switch (confidence) {
+      case 'high': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+      case 'medium': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
+      case 'low': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300'
     }
-    return variants[confidence as keyof typeof variants] || variants.medium
   }
 
   return (
-    <MobileCard className={cn("overflow-hidden", className)}>
+    <Card className={cn("overflow-hidden", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
@@ -163,21 +164,21 @@ export function EnhancedMatchCard({
             <div>
               <CardTitle
                 id={`match-title-${match.idea_id}`}
-                className="text-base"
+                className="text-base font-medium"
               >
                 Match #{match.idea_id.slice(-6)}
               </CardTitle>
-              <CardDescription className="flex items-center gap-2">
+              <CardDescription className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Badge className={getConfidenceBadge(match.confidence)}>
                   {match.confidence} confidence
                 </Badge>
-                <span className="text-xs text-muted-foreground">
+                <span>
                   {new Date(match.created_at).toLocaleDateString()}
                 </span>
                 {isRealTimeUpdating && (
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true" />
-                    <span className="text-xs text-green-600 dark:text-green-400">Live</span>
+                    <span className="text-green-600 dark:text-green-400">Live</span>
                   </div>
                 )}
               </CardDescription>
@@ -295,14 +296,12 @@ export function EnhancedMatchCard({
 
         {/* Error Display */}
         {operationError && (
-          <div
-            className="flex items-center gap-2 mt-3 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"
-            role="alert"
-            aria-live="polite"
-          >
-            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" aria-hidden="true" />
-            <span className="text-sm text-red-600 dark:text-red-400">{operationError}</span>
-          </div>
+          <Alert variant="destructive" className="mt-3">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {operationError}
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Action Buttons */}
@@ -387,7 +386,7 @@ export function EnhancedMatchCard({
           </div>
         )}
       </CardContent>
-    </MobileCard>
+    </Card>
   )
 }
 
@@ -429,7 +428,7 @@ export function MatchStatistics({
   }
 
   return (
-    <MobileCard className={className}>
+    <Card className={className}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
@@ -503,7 +502,7 @@ export function MatchStatistics({
           </div>
         )}
       </CardContent>
-    </MobileCard>
+    </Card>
   )
 }
 
@@ -525,7 +524,7 @@ export function MatchFilter({
   className,
 }: MatchFilterProps) {
   return (
-    <MobileCard className={className}>
+    <Card className={className}>
       <CardContent className="p-4">
         <div className="flex flex-wrap gap-4 items-center">
           {/* Score Range */}
@@ -587,6 +586,6 @@ export function MatchFilter({
           </div>
         </div>
       </CardContent>
-    </MobileCard>
+    </Card>
   )
 }

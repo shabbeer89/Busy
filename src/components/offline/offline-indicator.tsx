@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { MobileCard } from '@/components/responsive/mobile-layout'
+import { Layout } from '@/components/responsive/layout'
 import { useOffline } from '@/hooks/use-offline'
 import { cn } from '@/lib/utils'
 import {
@@ -70,7 +70,7 @@ export function OfflineIndicator({ className, showDetails = false }: OfflineIndi
   return (
     <div className={cn("space-y-4", className)}>
       {/* Connection Status */}
-      <MobileCard>
+      <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -213,11 +213,11 @@ export function OfflineIndicator({ className, showDetails = false }: OfflineIndi
             </div>
           )}
         </CardContent>
-      </MobileCard>
+      </Card>
 
       {/* Offline Mode Benefits */}
       {isOffline && (
-        <MobileCard>
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
@@ -243,12 +243,12 @@ export function OfflineIndicator({ className, showDetails = false }: OfflineIndi
               </div>
             </div>
           </CardContent>
-        </MobileCard>
+        </Card>
       )}
 
       {/* Sync Error */}
       {syncStatus.error && (
-        <MobileCard>
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
@@ -271,7 +271,7 @@ export function OfflineIndicator({ className, showDetails = false }: OfflineIndi
               </div>
             </div>
           </CardContent>
-        </MobileCard>
+        </Card>
       )}
     </div>
   )

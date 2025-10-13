@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { MobileCard } from '@/components/responsive/mobile-layout'
+import { Layout } from '@/components/responsive/layout'
 import { cn } from '@/lib/utils'
 import {
   Video,
@@ -242,7 +242,7 @@ export function VideoCalling({
   // If not in a call, show call interface
   if (!callState.isActive) {
     return (
-      <MobileCard className={cn("text-center", className)}>
+      <Card className={cn("text-center", className)}>
         <CardContent className="p-8">
           <div className="mb-6">
             <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -302,7 +302,7 @@ export function VideoCalling({
             <p>✓ End-to-end encrypted</p>
           </div>
         </CardContent>
-      </MobileCard>
+      </Card>
     )
   }
 

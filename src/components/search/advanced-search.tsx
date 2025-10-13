@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { MobileCard } from '@/components/responsive/mobile-layout'
+import { Layout } from '@/components/responsive/layout'
 import { cn } from '@/lib/utils'
 import {
   Search,
@@ -146,7 +146,7 @@ export function AdvancedSearch({
     filters.fundingRange.max < 10000000
 
   return (
-    <MobileCard className={cn("mb-6", className)}>
+    <Card className={cn("mb-6", className)}>
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -412,7 +412,7 @@ export function AdvancedSearch({
           </div>
         </div>
       </CardContent>
-    </MobileCard>
+    </Card>
   )
 }
 
@@ -438,7 +438,7 @@ export function SearchResults({
 }: SearchResultsProps) {
   if (error) {
     return (
-      <MobileCard className={className}>
+      <Card className={className}>
         <CardContent className="text-center py-8">
           <div className="text-red-600 dark:text-red-400 mb-2">
             <Target className="h-8 w-8 mx-auto mb-2" />
@@ -446,7 +446,7 @@ export function SearchResults({
           </div>
           <p className="text-sm text-muted-foreground">{error}</p>
         </CardContent>
-      </MobileCard>
+      </Card>
     )
   }
 
@@ -469,7 +469,7 @@ export function SearchResults({
       {isLoading && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, index) => (
-            <MobileCard key={index} className="animate-pulse">
+            <Card key={index} className="animate-pulse">
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div className="h-4 bg-muted rounded w-3/4"></div>
@@ -478,7 +478,7 @@ export function SearchResults({
                   <div className="h-8 bg-muted rounded w-full"></div>
                 </div>
               </CardContent>
-            </MobileCard>
+            </Card>
           ))}
         </div>
       )}
@@ -487,7 +487,7 @@ export function SearchResults({
       {!isLoading && results.length > 0 && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {results.map((result, index) => (
-            <MobileCard key={result.id || index}>
+            <Card key={result.id || index}>
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div>
@@ -528,14 +528,14 @@ export function SearchResults({
                   </Button>
                 </div>
               </CardContent>
-            </MobileCard>
+            </Card>
           ))}
         </div>
       )}
 
       {/* Empty State */}
       {!isLoading && results.length === 0 && !error && (
-        <MobileCard>
+        <Card>
           <CardContent className="text-center py-12">
             <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-semibold mb-2">No results found</h3>
@@ -546,7 +546,7 @@ export function SearchResults({
               Browse All Ideas
             </Button>
           </CardContent>
-        </MobileCard>
+        </Card>
       )}
     </div>
   )

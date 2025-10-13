@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { FloatingOfflineIndicator } from "@/components/offline/offline-indicator";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,10 +37,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          {children}
-          <FloatingOfflineIndicator />
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            {children}
+            <FloatingOfflineIndicator />
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );

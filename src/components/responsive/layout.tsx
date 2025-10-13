@@ -1,106 +1,50 @@
 "use client"
 
-import { useDeviceInfo, useViewportHeight } from "@/utils/device"
-import { useResponsive } from "@/utils/responsive"
 import { cn } from "@/lib/utils"
 import { ReactNode } from "react"
 import { Input } from "@/components/ui/input"
 
-interface MobileLayoutProps {
+interface LayoutProps {
   children: ReactNode
   className?: string
   header?: ReactNode
   footer?: ReactNode
   sidebar?: ReactNode
-  fullHeight?: boolean
 }
 
-export function MobileLayout({
+export function Layout({
   children,
   className,
   header,
   footer,
   sidebar,
-  fullHeight = true,
-}: MobileLayoutProps) {
-  const deviceInfo = useDeviceInfo()
-  const { isMobile, isTablet } = useResponsive()
-  useViewportHeight()
-
-  if (isMobile || isTablet) {
-    return (
-      <div className={cn(
-        "mobile-layout",
-        fullHeight && "min-h-screen",
-        className
-      )}>
-        {/* Mobile Header */}
-        {header && (
-          <header className="fixed-mobile-top bg-background border-b border-border z-50">
-            {header}
-          </header>
-        )}
-
-        {/* Main Content */}
-        <main className={cn(
-          "flex-1",
-          header && "pt-safe", // Padding for fixed header with safe area
-          footer && "pb-safe", // Padding for fixed footer with safe area
-          sidebar && "pl-safe" // Padding for fixed sidebar with safe area
-        )}>
-          {children}
-        </main>
-
-        {/* Mobile Footer */}
-        {footer && (
-          <footer className="fixed-mobile-bottom bg-background border-t border-border z-50">
-            {footer}
-          </footer>
-        )}
-
-        {/* Mobile Sidebar (overlay on mobile, static on tablet) */}
-        {sidebar && (
-          <aside className={cn(
-            "bg-background border-r border-border z-40",
-            isMobile ? "fixed-mobile-top w-80 h-full transform -translate-x-full transition-transform duration-300 ease-in-out" : "sidebar-tablet"
-          )}>
-            {sidebar}
-          </aside>
-        )}
-      </div>
-    )
-  }
-
-  // Desktop Layout
+}: LayoutProps) {
   return (
-    <div className={cn(
-      "desktop-layout min-h-screen bg-background",
-      className
-    )}>
-      {/* Desktop Header */}
+    <div className={cn("min-h-screen bg-background", className)}>
+      {/* Header */}
       {header && (
-        <header className="nav-desktop">
+        <header className="sticky top-0 bg-background border-b border-border z-50 md:static">
           {header}
         </header>
       )}
 
       <div className="flex">
-        {/* Desktop Sidebar */}
+        {/* Sidebar */}
         {sidebar && (
-          <aside className="sidebar-desktop">
+          <aside className="hidden md:block md:w-64 bg-background border-r border-border">
             {sidebar}
           </aside>
         )}
 
-        {/* Desktop Main Content */}
-        <main className="flex-1 p-8">
+        {/* Main Content */}
+        <main className="flex-1 p-4 md:p-8">
           {children}
         </main>
       </div>
 
-      {/* Desktop Footer */}
+      {/* Footer */}
       {footer && (
-        <footer className="border-t border-border p-8 mt-auto">
+        <footer className="bg-background border-t border-border p-4 md:p-8 mt-auto">
           {footer}
         </footer>
       )}
@@ -118,7 +62,7 @@ interface MobileCardProps {
   onClick?: () => void
 }
 
-export function MobileCard({
+export function Card({
   children,
   className,
   padding = "md",
@@ -126,8 +70,6 @@ export function MobileCard({
   shadow = true,
   onClick,
 }: MobileCardProps) {
-  const { isMobile } = useResponsive()
-
   return (
     <div
       className={cn(
@@ -140,7 +82,7 @@ export function MobileCard({
         rounded === "sm" && "rounded-md",
         rounded === "md" && "rounded-lg",
         rounded === "lg" && "rounded-xl",
-        shadow && (isMobile ? "shadow-sm" : "shadow-md"),
+        shadow && "shadow-sm md:shadow-md",
         onClick && "cursor-pointer transition-colors hover:bg-accent/50",
         className
       )}
@@ -155,7 +97,7 @@ export function MobileCard({
 interface MobileButtonProps {
   children: ReactNode
   className?: string
-  variant?: "primary" | "secondary" | "outline" | "ghost"
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "default" | "destructive"
   size?: "sm" | "md" | "lg"
   fullWidth?: boolean
   onClick?: () => void
@@ -165,7 +107,7 @@ interface MobileButtonProps {
 }
 
 // Mobile-optimized input component
-interface MobileInputProps {
+interface InputProps {
   className?: string
   type?: string
   placeholder?: string
@@ -176,7 +118,7 @@ interface MobileInputProps {
   disabled?: boolean
 }
 
-export function MobileInput({
+export function CustomInput({
   className,
   type = "text",
   placeholder,
@@ -185,7 +127,7 @@ export function MobileInput({
   onKeyPress,
   required = false,
   disabled = false,
-}: MobileInputProps) {
+}: InputProps) {
   return (
     <Input
       type={type}
@@ -200,7 +142,7 @@ export function MobileInput({
   )
 }
 
-export function MobileButton({
+export function Button({
   children,
   className,
   variant = "primary",
@@ -211,8 +153,6 @@ export function MobileButton({
   loading = false,
   type = "button",
 }: MobileButtonProps) {
-  const { isMobile } = useResponsive()
-
   return (
     <button
       type={type || "button"}
@@ -227,15 +167,15 @@ export function MobileButton({
         size === "lg" && "h-12 px-6 text-base",
 
         // Mobile touch targets (minimum 44px)
-        isMobile && size === "sm" && "min-h-11 min-w-11",
-        isMobile && size === "md" && "min-h-12 min-w-12",
-        isMobile && size === "lg" && "min-h-14 min-w-14",
+        "min-h-11 min-w-11 md:min-h-0 md:min-w-0",
 
         // Variant styles
         variant === "primary" && "bg-primary text-primary-foreground hover:bg-primary/90",
         variant === "secondary" && "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         variant === "outline" && "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         variant === "ghost" && "hover:bg-accent hover:text-accent-foreground",
+        variant === "default" && "bg-primary text-primary-foreground hover:bg-primary/90",
+        variant === "destructive" && "bg-destructive text-destructive-foreground hover:bg-destructive/90",
 
         // Shape
         "rounded-md",
