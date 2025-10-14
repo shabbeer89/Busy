@@ -10,7 +10,7 @@ export interface SecurityHeadersConfig {
 }
 
 const DEFAULT_SECURITY_HEADERS: SecurityHeadersConfig = {
-  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud https://challenges.cloudflare.com; trusted-types *;",
+  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud https://*.supabase.co https://challenges.cloudflare.com; trusted-types *;",
   xFrameOptions: 'DENY',
   xContentTypeOptions: 'nosniff',
   referrerPolicy: 'strict-origin-when-cross-origin',
@@ -58,14 +58,14 @@ export function createSecurityHeadersMiddleware(config: SecurityHeadersConfig = 
 
 // Pre-configured middleware for different route types
 export const apiSecurityHeaders = createSecurityHeadersMiddleware({
-  contentSecurityPolicy: "default-src 'self'; connect-src 'self' ws://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud; script-src 'self'; trusted-types *;",
+  contentSecurityPolicy: "default-src 'self'; connect-src 'self' ws://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud https://*.supabase.co; script-src 'self'; trusted-types *;",
   xFrameOptions: 'DENY',
   xContentTypeOptions: 'nosniff',
   referrerPolicy: 'strict-origin-when-cross-origin'
 });
 
 export const pageSecurityHeaders = createSecurityHeadersMiddleware({
-  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ws://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud https://challenges.cloudflare.com; trusted-types *;",
+  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ws://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud https://*.supabase.co https://challenges.cloudflare.com; trusted-types *;",
   xFrameOptions: 'SAMEORIGIN',
   xContentTypeOptions: 'nosniff',
   referrerPolicy: 'strict-origin-when-cross-origin',

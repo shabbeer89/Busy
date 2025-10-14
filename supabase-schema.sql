@@ -272,6 +272,72 @@ CREATE INDEX idx_analytics_events_type ON analytics_events(event_type);
 CREATE INDEX idx_analytics_events_timestamp ON analytics_events(timestamp);
 
 -- ========================================
+-- TENANTS TABLE
+-- ========================================
+
+CREATE TABLE tenants (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'suspended')),
+  settings JSONB NOT NULL DEFAULT '{
+    "branding": {
+      "primary_color": "#007bff",
+      "secondary_color": "#6c757d",
+      "accent_color": "#28a745"
+    },
+    "features": {
+      "ai_recommendations": false,
+      "advanced_analytics": false,
+      "custom_branding": false,
+      "api_access": false
+    },
+    "limits": {
+      "max_users": 100,
+      "max_projects": 50,
+      "storage_limit": 1073741824
+    }
+  }'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for tenants table
+CREATE UNIQUE INDEX idx_tenants_slug ON tenants(slug);
+CREATE INDEX idx_tenants_status ON tenants(status);
+CREATE INDEX idx_tenants_created ON tenants(created_at);
+
+-- ========================================
+-- TENANT SUBSCRIPTIONS TABLE
+-- ========================================
+
+CREATE TABLE tenant_subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'starter', 'professional', 'enterprise')),
+  features JSONB NOT NULL DEFAULT '{
+    "ai_recommendations": false,
+    "advanced_analytics": false,
+    "custom_branding": false,
+    "api_access": false
+  }'::jsonb,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'past_due', 'cancelled', 'trialing')),
+  current_period_start TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  current_period_end TIMESTAMPTZ,
+  cancel_at_period_end BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  -- Ensure unique active subscription per tenant
+  UNIQUE(tenant_id, status) DEFERRABLE INITIALLY DEFERRED
+);
+
+-- Indexes for tenant_subscriptions table
+CREATE INDEX idx_tenant_subscriptions_tenant ON tenant_subscriptions(tenant_id);
+CREATE INDEX idx_tenant_subscriptions_status ON tenant_subscriptions(status);
+CREATE INDEX idx_tenant_subscriptions_plan ON tenant_subscriptions(plan);
+
+-- ========================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ========================================
 
@@ -285,6 +351,8 @@ ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tenant_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- ========================================
 -- USERS TABLE POLICIES
@@ -447,6 +515,48 @@ CREATE POLICY "System can insert analytics" ON analytics_events
   FOR INSERT WITH CHECK (true);
 
 -- ========================================
+-- TENANTS POLICIES
+-- ========================================
+
+-- Anyone can view active tenants (for tenant selection)
+CREATE POLICY "Anyone can view active tenants" ON tenants
+  FOR SELECT USING (status = 'active');
+
+-- Super admin can manage all tenants
+CREATE POLICY "Super admin can manage tenants" ON tenants
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid()
+      AND users.user_type = 'super_admin'
+    )
+  );
+
+-- ========================================
+-- TENANT SUBSCRIPTIONS POLICIES
+-- ========================================
+
+-- Tenants can view their own subscriptions
+CREATE POLICY "Tenants can view own subscriptions" ON tenant_subscriptions
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM tenants
+      WHERE tenants.id = tenant_subscriptions.tenant_id
+      AND tenants.status = 'active'
+    )
+  );
+
+-- Super admin can manage all subscriptions
+CREATE POLICY "Super admin can manage subscriptions" ON tenant_subscriptions
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid()
+      AND users.user_type = 'super_admin'
+    )
+  );
+
+-- ========================================
 -- FUNCTIONS AND TRIGGERS
 -- ========================================
 
@@ -478,6 +588,12 @@ CREATE TRIGGER update_conversations_updated_at BEFORE UPDATE ON conversations
 CREATE TRIGGER update_messages_updated_at BEFORE UPDATE ON messages
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_tenants_updated_at BEFORE UPDATE ON tenants
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_tenant_subscriptions_updated_at BEFORE UPDATE ON tenant_subscriptions
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Function to update conversation last_message_at
 CREATE OR REPLACE FUNCTION update_conversation_last_message()
 RETURNS TRIGGER AS $$
@@ -503,3 +619,37 @@ INSERT INTO business_ideas (creator_id, title, description, category, tags, fund
 VALUES
   ('00000000-0000-0000-0000-000000000000', 'Sample Tech Startup', 'A sample business idea for testing', 'Technology', ARRAY['tech', 'startup'], 100000, 0, 10, 'concept', '6 months', 'published')
 ON CONFLICT DO NOTHING;
+
+-- Insert sample tenant for testing
+INSERT INTO tenants (id, name, slug, status, settings)
+VALUES
+  ('550e8400-e29b-41d4-a716-446655440000', 'Default Tenant', 'default', 'active', '{
+    "branding": {
+      "primary_color": "#007bff",
+      "secondary_color": "#6c757d",
+      "accent_color": "#28a745"
+    },
+    "features": {
+      "ai_recommendations": true,
+      "advanced_analytics": true,
+      "custom_branding": false,
+      "api_access": false
+    },
+    "limits": {
+      "max_users": 100,
+      "max_projects": 50,
+      "storage_limit": 1073741824
+    }
+  }'::jsonb)
+ON CONFLICT (slug) DO NOTHING;
+
+-- Insert sample tenant subscription
+INSERT INTO tenant_subscriptions (tenant_id, plan, features, status, current_period_start, current_period_end)
+VALUES
+  ('550e8400-e29b-41d4-a716-446655440000', 'starter', '{
+    "ai_recommendations": true,
+    "advanced_analytics": true,
+    "custom_branding": false,
+    "api_access": false
+  }'::jsonb, 'active', NOW(), NOW() + INTERVAL '1 month')
+ON CONFLICT (tenant_id, status) DO NOTHING;

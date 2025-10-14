@@ -79,7 +79,27 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     };
 
     loadInitialTenant();
-  }, [tenants.length]); // Add dependency to re-run when tenants load
+  }, []); // Remove dependency to prevent infinite re-renders
+
+  // Separate effect to handle tenant selection when tenants are loaded
+  useEffect(() => {
+    if (tenants.length > 0 && !tenant && !isLoading) {
+      const storedTenantId = localStorage.getItem('selectedTenantId');
+      const urlTenantSlug = window.location.pathname.split('/')[1];
+
+      if (urlTenantSlug && urlTenantSlug !== 'admin' && urlTenantSlug !== 'auth') {
+        const urlTenant = tenants.find(t => t.slug === urlTenantSlug);
+        if (urlTenant) {
+          setTenant(urlTenant);
+        }
+      } else if (storedTenantId) {
+        const storedTenant = tenants.find(t => t.id === storedTenantId);
+        if (storedTenant) {
+          setTenant(storedTenant);
+        }
+      }
+    }
+  }, [tenants, tenant, isLoading]);
 
   const loadTenants = async () => {
     try {

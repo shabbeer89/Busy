@@ -557,6 +557,75 @@ export interface Database {
           timestamp?: string
         }
       }
+
+      tenants: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          status: 'active' | 'inactive' | 'suspended'
+          settings: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          status?: 'active' | 'inactive' | 'suspended'
+          settings?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          status?: 'active' | 'inactive' | 'suspended'
+          settings?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+
+      tenant_subscriptions: {
+        Row: {
+          id: string
+          tenant_id: string
+          plan: 'free' | 'starter' | 'professional' | 'enterprise'
+          features: Json
+          status: 'active' | 'past_due' | 'cancelled' | 'trialing'
+          current_period_start: string
+          current_period_end: string | null
+          cancel_at_period_end: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          plan?: 'free' | 'starter' | 'professional' | 'enterprise'
+          features?: Json
+          status?: 'active' | 'past_due' | 'cancelled' | 'trialing'
+          current_period_start?: string
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          plan?: 'free' | 'starter' | 'professional' | 'enterprise'
+          features?: Json
+          status?: 'active' | 'past_due' | 'cancelled' | 'trialing'
+          current_period_start?: string
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
