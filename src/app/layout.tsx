@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { FloatingOfflineIndicator } from "@/components/offline/offline-indicator";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <Script src="/trusted-types-policy.js" strategy="beforeInteractive" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

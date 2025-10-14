@@ -29,7 +29,7 @@ export function ShareButton({
   const { showSuccess } = useToastFeedback();
   const [isOpen, setIsOpen] = useState(false);
 
-  const shareUrl = url || (typeof window !== "undefined" ? window.location.href : "");
+  const shareUrl = url || (window?.location.href ?? "");
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
   const encodedDescription = encodeURIComponent(description);
@@ -178,7 +178,7 @@ export function SocialShareMeta({
   image?: string;
   url?: string;
 }) {
-  const fullUrl = url || (typeof window !== "undefined" ? window.location.href : "");
+  const fullUrl = url || (window?.location.href ?? "");
 
   return (
     <>

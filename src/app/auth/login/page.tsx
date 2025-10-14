@@ -49,6 +49,9 @@ export default function LoginPage() {
         case "server_error":
           errorMessage = "Server error occurred. Please try again later.";
           break;
+        case "OAuthCallback":
+          errorMessage = "OAuth authentication failed. Please try signing in with a different account.";
+          break;
         default:
           errorMessage = `Authentication error: ${urlError}`;
       }

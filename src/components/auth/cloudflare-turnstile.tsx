@@ -64,7 +64,7 @@ export default function CloudflareTurnstile({
 
     return () => {
       // Cleanup widget on unmount
-      if (typeof window !== 'undefined' && widgetIdRef.current && window.turnstile) {
+      if (widgetIdRef.current && window?.turnstile) {
         try {
           window.turnstile.remove(widgetIdRef.current);
         } catch (error) {
@@ -75,7 +75,7 @@ export default function CloudflareTurnstile({
   }, [onError]);
 
   useEffect(() => {
-    if (isLoaded && containerRef.current && !widgetIdRef.current && typeof window !== 'undefined' && window.turnstile) {
+    if (isLoaded && containerRef.current && !widgetIdRef.current && window?.turnstile) {
       // Add a small delay to ensure script is fully initialized
       const timeoutId = setTimeout(() => {
         try {
@@ -109,8 +109,8 @@ export default function CloudflareTurnstile({
   }, [isLoaded, siteKey, theme, size, onVerify, onError, onExpire]);
 
   const reset = () => {
-    if (widgetIdRef.current) {
-      window.turnstile?.reset(widgetIdRef.current);
+    if (widgetIdRef.current && window?.turnstile) {
+      window.turnstile.reset(widgetIdRef.current);
     }
   };
 

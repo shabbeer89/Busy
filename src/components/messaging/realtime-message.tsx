@@ -147,7 +147,7 @@ export function RealtimeMessage({
     } catch (error) {
       console.error('Error uploading file:', error)
       // Use the error state from the hook if available
-      if (typeof window !== 'undefined') {
+      if (window) {
         // Fallback error handling
         console.error('Upload failed')
       }
