@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase-client";
 import { signIn } from "next-auth/react";
+import { useTenant } from "@/contexts/tenant-context";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Layout, Button, CustomInput } from "@/components/responsive/layout";
-import { Loader2, Lock, Eye, EyeOff, User } from "lucide-react";
+import { Loader2, Lock, Eye, EyeOff, User, Building2 } from "lucide-react";
 import CloudflareTurnstile from "@/components/auth/cloudflare-turnstile";
 
 export default function LoginPage() {
@@ -22,7 +23,8 @@ export default function LoginPage() {
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const { tenant } = useTenant();
+  const redirectTo = searchParams.get("redirect") || (tenant ? `/${tenant.slug}/dashboard` : "/dashboard");
   const urlError = searchParams.get("error");
 
   // Handle URL error parameters
@@ -144,6 +146,25 @@ export default function LoginPage() {
           }),
         });
 
+        // Add tenant context to user profile if tenant is selected
+        const profileData: any = {
+          email: data.user.email,
+          name: data.user.user_metadata?.name || username || data.user.email?.split("@")[0] || "User",
+          user_type: "creator", // Default, can be changed in profile
+        };
+
+        if (tenant) {
+          profileData.tenant_id = tenant.id;
+        }
+
+        await fetch("/api/auth/profile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(profileData),
+        });
+
         router.push(redirectTo);
       }
     } catch (err) {
@@ -162,7 +183,15 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <Card className="mx-auto shadow-lg border-border">
             <CardHeader className="space-y-1 text-center pb-2">
-              <CardTitle className="text-3xl font-semibold text-foreground">Sign In</CardTitle>
+              <CardTitle className="text-3xl font-semibold text-foreground">
+                {tenant ? `Sign In to ${tenant.settings?.branding?.name || tenant.name}` : "Sign In"}
+              </CardTitle>
+              {tenant && (
+                <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
+                  <Building2 className="h-4 w-4" />
+                  <span>{tenant.slug}</span>
+                </div>
+              )}
               <div className="text-sm">
                 <span className="text-muted-foreground">Don't have an account? </span>
                 <a
@@ -351,7 +380,17 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-
+              {!tenant && (
+                <div className="text-center pt-4">
+                  <Button
+                    onClick={() => router.push("/tenant-select")}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    Select Organization
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

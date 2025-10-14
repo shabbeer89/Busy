@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, name, phone_number, user_type, avatar } = body;
+    const { email, name, phone_number, user_type, avatar, tenant_id } = body;
 
     if (!email || !name || !user_type) {
       return NextResponse.json(
@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
           phone_number,
           user_type,
           avatar,
+          tenant_id,
           updated_at: new Date().toISOString(),
         })
         .eq('email', email)
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
           phone_number,
           user_type,
           avatar,
+          tenant_id,
           is_verified: user.email_confirmed_at ? true : false,
           phone_verified: false,
         })
