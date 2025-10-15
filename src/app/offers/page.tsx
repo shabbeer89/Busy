@@ -55,18 +55,18 @@ export default function OffersPage() {
     // Search filter
     if (searchQuery) {
       filtered = filtered.filter(offer =>
-        offer.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        offer.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        offer.preferredIndustries.some((industry: string) =>
+        offer.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        offer.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (offer.preferredIndustries && offer.preferredIndustries.some((industry: string) =>
           industry.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        ))
       );
     }
 
     // Industry filter
     if (industryFilter !== "all") {
       filtered = filtered.filter(offer =>
-        offer.preferredIndustries.some((industry: string) =>
+        offer.preferredIndustries && offer.preferredIndustries.some((industry: string) =>
           industry.toLowerCase() === industryFilter.toLowerCase()
         )
       );
@@ -84,7 +84,7 @@ export default function OffersPage() {
 
   // Get unique industries for filter
   const industries = Array.from(
-    new Set(offers.flatMap(offer => offer.preferredIndustries))
+    new Set(offers.flatMap(offer => offer.preferredIndustries || []))
   );
 
   const formatCurrency = (amount: number) => {
@@ -168,8 +168,8 @@ export default function OffersPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                 >
                   <option value="all">All Industries</option>
-                  {industries.map(industry => (
-                    <option key={industry} value={industry}>
+                  {industries.map((industry, index) => (
+                    <option key={`${industry}-${index}`} value={industry}>
                       {industry}
                     </option>
                   ))}
@@ -234,7 +234,7 @@ export default function OffersPage() {
                           {offer.title}
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">
-                          {offer.investmentType} • {offer.preferredStages.join(", ")} stage
+                          {offer.investmentType} • {offer.preferredStages?.join(", ") || "All"} stages
                         </p>
                       </div>
                       <Badge variant={offer.isActive ? "default" : "secondary"}>
@@ -248,12 +248,12 @@ export default function OffersPage() {
 
                     <div className="mb-4">
                       <div className="flex flex-wrap gap-1 mb-2">
-                        {offer.preferredIndustries.slice(0, 3).map((industry: string) => (
+                        {offer.preferredIndustries?.slice(0, 3).map((industry: string) => (
                           <Badge key={industry} variant="outline" className="text-xs">
                             {industry}
                           </Badge>
                         ))}
-                        {offer.preferredIndustries.length > 3 && (
+                        {offer.preferredIndustries && offer.preferredIndustries.length > 3 && (
                           <Badge variant="outline" className="text-xs">
                             +{offer.preferredIndustries.length - 3} more
                           </Badge>
@@ -265,13 +265,13 @@ export default function OffersPage() {
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-300">Investment Range</p>
                         <p className="text-lg font-semibold text-green-400">
-                          {formatCurrency(offer.amountRange.min)} - {formatCurrency(offer.amountRange.max)}
+                          {offer.amountRange ? `${formatCurrency(offer.amountRange.min)} - ${formatCurrency(offer.amountRange.max)}` : "Range not specified"}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-600 dark:text-gray-300">Equity</p>
                         <p className="text-lg font-semibold text-blue-400">
-                          {offer.preferredEquity.min}% - {offer.preferredEquity.max}%
+                          {offer.preferredEquity ? `${offer.preferredEquity.min}% - ${offer.preferredEquity.max}%` : "Equity not specified"}
                         </p>
                       </div>
                     </div>

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Layout, Card } from "@/components/responsive/layout";
+import { Card } from "@/components/responsive/layout";
 import { RealtimeMessage, MessageList } from "@/components/messaging/realtime-message";
+import { SidebarLayout } from "@/components/navigation/sidebar";
 import { createClient } from "@/lib/supabase-client";
 
 interface ConversationData {
@@ -46,7 +47,7 @@ export default function MessagesPage() {
           .from('conversations')
           .select(`
             *,
-            messages(*),
+            messages!messages_conversation_id_fkey(*),
             matches(*)
           `)
           .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
@@ -117,19 +118,19 @@ export default function MessagesPage() {
 
   if (!user) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-full p-4">
-          <Card className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-            <p className="text-muted-foreground mb-4">Please sign in to view your messages.</p>
-          </Card>
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+            <p className="text-gray-600 mb-4">Please sign in to view your messages.</p>
+          </div>
         </div>
-      </Layout>
+      </SidebarLayout>
     );
   }
 
   return (
-    <Layout>
+    <SidebarLayout>
       <div className="flex h-full">
         {/* Conversations List - Hidden on mobile when conversation is selected */}
         {(!selectedConversationId) && (
@@ -197,6 +198,6 @@ export default function MessagesPage() {
           </div>
         )}
       </div>
-    </Layout>
+    </SidebarLayout>
   );
 }

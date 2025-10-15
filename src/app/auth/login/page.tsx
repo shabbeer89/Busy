@@ -120,48 +120,21 @@ export default function LoginPage() {
     }
 
     try {
-      const supabase = createClient();
-
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Use NextAuth sign in which will properly create a session
+      const result = await signIn("credentials", {
         email: username,
         password,
+        redirect: false,
       });
 
-      if (error) {
-        setError(error.message);
+      if (result?.error) {
+        setError("Invalid email or password");
         return;
       }
 
-      if (data.user) {
-        // Create or update user profile in our users table
-        await fetch("/api/auth/profile", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: data.user.email,
-            name: data.user.user_metadata?.name || username || data.user.email?.split("@")[0] || "User",
-            user_type: "creator", // Default, can be changed in profile
-          }),
-        });
-
-        // Add tenant context to user profile if tenant is selected
-        const profileData: any = {
-          email: data.user.email,
-          name: data.user.user_metadata?.name || username || data.user.email?.split("@")[0] || "User",
-          user_type: "creator", // Default, can be changed in profile
-          tenant_id: tenant?.id || null, // Properly handle tenant_id with null fallback
-        };
-
-        await fetch("/api/auth/profile", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(profileData),
-        });
-
+      if (result?.url) {
+        router.push(result.url);
+      } else {
         router.push(redirectTo);
       }
     } catch (err) {
