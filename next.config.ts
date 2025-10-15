@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'X-Frame-Options',
-            value: 'DENY',
+            value: 'SAMEORIGIN',
           },
           {
             key: 'Referrer-Policy',
@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud https://*.supabase.co https://challenges.cloudflare.com; trusted-types *;",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com chrome-extension://* moz-extension://* safari-extension://*; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: chrome-extension://* moz-extension://* safari-extension://*; font-src 'self' data:; connect-src 'self' ws://127.0.0.1:* wss://127.0.0.1:* https://bsc-dataseed.binance.org https://*.convex.cloud wss://*.convex.cloud https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'self' https://accounts.google.com https://www.linkedin.com; trusted-types *;",
           },
         ],
       },

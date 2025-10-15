@@ -18,8 +18,16 @@ export function useAuth() {
       try {
         const session = await getSession();
         if (session?.user) {
+          const sessionUserId = (session.user as any).id;
+          const fallbackId = crypto.randomUUID();
+          console.log('🔍 [DEBUG] Session sync user ID check:', {
+            sessionUserId,
+            fallbackId: fallbackId,
+            usingFallback: !sessionUserId
+          });
+
           const userData: User = {
-            id: (session.user as any).id || `oauth_${Date.now()}`,
+            id: sessionUserId || fallbackId,
             email: session.user.email!,
             name: session.user.name || session.user.email?.split('@')[0] || 'User',
             avatar: session.user.image || undefined,
@@ -57,8 +65,16 @@ export function useAuth() {
       // If successful, get the session and update store
       const session = await getSession();
       if (session?.user) {
+        const sessionUserId = (session.user as any).id;
+        const fallbackId = crypto.randomUUID();
+        console.log('🔍 [DEBUG] SignIn user ID check:', {
+          sessionUserId,
+          fallbackId: fallbackId,
+          usingFallback: !sessionUserId
+        });
+
         const userData: User = {
-          id: (session.user as any).id || `oauth_${Date.now()}`,
+          id: sessionUserId || fallbackId,
           email: session.user.email!,
           name: session.user.name || session.user.email?.split('@')[0] || 'User',
           avatar: session.user.image || undefined,
@@ -240,8 +256,16 @@ export function useAuth() {
       // Sync session after successful sign in
       const session = await getSession();
       if (session?.user) {
+        const sessionUserId = (session.user as any).id;
+        const fallbackId = crypto.randomUUID();
+        console.log('🔍 [DEBUG] Google signIn user ID check:', {
+          sessionUserId,
+          fallbackId: fallbackId,
+          usingFallback: !sessionUserId
+        });
+
         const userData: User = {
-          id: (session.user as any).id || `oauth_${Date.now()}`,
+          id: sessionUserId || fallbackId,
           email: session.user.email!,
           name: session.user.name || session.user.email?.split('@')[0] || 'User',
           avatar: session.user.image || undefined,
@@ -274,8 +298,16 @@ export function useAuth() {
       // Sync session after successful sign in
       const session = await getSession();
       if (session?.user) {
+        const sessionUserId = (session.user as any).id;
+        const fallbackId = crypto.randomUUID();
+        console.log('🔍 [DEBUG] LinkedIn signIn user ID check:', {
+          sessionUserId,
+          fallbackId: fallbackId,
+          usingFallback: !sessionUserId
+        });
+
         const userData: User = {
-          id: (session.user as any).id || `oauth_${Date.now()}`,
+          id: sessionUserId || fallbackId,
           email: session.user.email!,
           name: session.user.name || session.user.email?.split('@')[0] || 'User',
           avatar: session.user.image || undefined,
@@ -301,8 +333,8 @@ export function useAuth() {
   const hasValidId = (userId: string | undefined): boolean => {
     if (!userId) return false;
 
-    // Accept demo IDs and OAuth-style IDs
-    if (userId.startsWith("demo_") || userId.startsWith("oauth_") || userId.length >= 10) {
+    // Accept demo IDs and proper UUIDs (36 characters with hyphens)
+    if (userId.startsWith("demo_") || userId.length === 36) {
       return true;
     }
 

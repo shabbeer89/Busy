@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from './supabase-server'
 import { createClient } from './supabase-client'
 import { NextAuthOptions } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
 import { SupabaseAdapter } from '@next-auth/supabase-adapter'
 
 
@@ -114,6 +115,7 @@ export async function upsertUserProfile(userData: {
       const { data, error } = await (supabase as any)
         .from('users')
         .insert({
+          id: crypto.randomUUID(), // Generate proper UUID
           email: userData.email,
           name: userData.name,
           phone_number: userData.phone_number,
@@ -147,19 +149,17 @@ export const authOptions: NextAuthOptions = {
       type: "oauth",
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      wellKnown: "https://accounts.google.com/.well-known/openid_configuration",
       authorization: {
-        url: "https://accounts.google.com/o/oauth2/v2/auth",
         params: {
           prompt: "consent",
           access_type: "offline",
           response_type: "code"
         }
       },
-      token: "https://oauth2.googleapis.com/token",
-      userinfo: "https://www.googleapis.com/oauth2/v2/userinfo",
       profile: (profile: any) => {
         return {
-          id: profile.id,
+          id: profile.sub,
           name: profile.name,
           email: profile.email,
           image: profile.picture,
@@ -170,37 +170,71 @@ export const authOptions: NextAuthOptions = {
       id: "linkedin",
       name: "LinkedIn",
       type: "oauth",
-      version: "2.0",
       clientId: process.env.LINKEDIN_CLIENT_ID!,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
+      wellKnown: "https://www.linkedin.com/oauth/.well-known/openid_configuration",
       authorization: {
-        url: "https://www.linkedin.com/oauth/v2/authorization",
         params: {
           response_type: "code",
           scope: "openid profile email"
         }
       },
-      token: {
-        url: "https://www.linkedin.com/oauth/v2/accessToken",
-        params: {
-          grant_type: "authorization_code"
-        }
-      },
-      userinfo: {
-        url: "https://api.linkedin.com/v2/people/~",
-        params: {
-          format: "json"
-        }
-      },
       profile: (profile: any) => {
         return {
-          id: profile.id,
-          name: `${profile.firstName} ${profile.lastName}`,
-          email: profile.emailAddress,
-          image: profile.profilePicture?.displayImage?.elements?.[0]?.identifiers?.[0]?.identifier,
+          id: profile.sub || profile.id,
+          name: profile.name || `${profile.given_name || ''} ${profile.family_name || ''}`.trim() || profile.email,
+          email: profile.email,
+          image: profile.picture,
         }
       },
     },
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        try {
+          const supabase = await createServerSupabaseClient();
+
+          // Sign in with Supabase Auth
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: credentials.email,
+            password: credentials.password,
+          });
+
+          if (error || !data.user) {
+            console.error('Credentials auth error:', error?.message);
+            return null;
+          }
+
+          // Get user profile from our users table
+          const { data: profile } = await (supabase as any)
+            .from('users')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+
+          return {
+            id: data.user.id,
+            email: data.user.email,
+            name: profile?.name || data.user.email?.split('@')[0] || 'User',
+            image: profile?.avatar,
+            user_type: profile?.user_type || 'creator',
+            is_verified: profile?.is_verified || false,
+            phone_verified: profile?.phone_verified || false,
+          };
+        } catch (error) {
+          console.error('Error in credentials authorize:', error);
+          return null;
+        }
+      }
+    }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
@@ -222,10 +256,11 @@ export const authOptions: NextAuthOptions = {
             .single()
 
           if (!existingUser) {
-            // Create new user profile
-            await (supabase as any)
+            // Create new user profile with proper UUID
+            const { data, error } = await (supabase as any)
               .from('users')
               .insert({
+                id: crypto.randomUUID(), // Generate proper UUID
                 email: user.email,
                 name: user.name,
                 avatar: user.image,
@@ -233,6 +268,13 @@ export const authOptions: NextAuthOptions = {
                 phone_verified: false,
                 user_type: 'creator', // Default, can be changed later
               })
+              .select()
+              .single()
+
+            if (error) {
+              console.error('Error creating OAuth user profile:', error)
+              return false
+            }
           } else {
             // Update existing user with latest info
             await (supabase as any)
@@ -260,29 +302,30 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      if (session.user && session.user.email) {
-        try {
-          // Get additional user data from our users table
-          const supabase = await createServerSupabaseClient()
-          const { data: profile } = await (supabase as any)
-            .from('users')
-            .select('*')
-            .eq('email', session.user.email)
-            .single()
+       if (session.user && session.user.email) {
+         try {
+           // Get additional user data from our users table
+           const supabase = await createServerSupabaseClient()
+           const { data: profile } = await (supabase as any)
+             .from('users')
+             .select('*')
+             .eq('email', session.user.email)
+             .single()
 
-          if (profile) {
-            session.user.name = profile.name
-            session.user.image = profile.avatar
-            ;(session.user as any).user_type = profile.user_type
-            ;(session.user as any).is_verified = profile.is_verified
-            ;(session.user as any).phone_verified = profile.phone_verified
-            ;(session.user as any).id = profile.id
-          }
-        } catch (error) {
-          console.error('Error fetching user profile in session callback:', error)
-        }
-      }
-      return session
-    },
+           if (profile) {
+             session.user.name = profile.name
+             session.user.image = profile.avatar
+             ;(session.user as any).user_type = profile.user_type
+             ;(session.user as any).is_verified = profile.is_verified
+             ;(session.user as any).phone_verified = profile.phone_verified
+             ;(session.user as any).id = profile.id
+             ;(session.user as any).tenant_id = profile.tenant_id
+           }
+         } catch (error) {
+           console.error('Error fetching user profile in session callback:', error)
+         }
+       }
+       return session
+     },
   },
 }

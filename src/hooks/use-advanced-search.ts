@@ -101,27 +101,6 @@ export function useAdvancedSearch({
     }
   }, [supabase, enabled])
 
-  // Convert Supabase data to SearchResult format
-  const allResults: SearchResult[] = useMemo(() => {
-    if (!rawIdeas.length) return []
-
-    return rawIdeas.map((idea: any) => ({
-      id: idea.id,
-      title: idea.title,
-      description: idea.description,
-      category: idea.category,
-      tags: idea.tags || [],
-      fundingGoal: idea.funding_goal,
-      equityOffered: idea.equity_offered,
-      stage: idea.stage,
-      location: '', // Not available in current schema
-      isVerified: false, // Not available in current schema
-      creatorName: 'Anonymous', // Not available in current schema
-      createdAt: idea.created_at || new Date().toISOString(),
-      relevanceScore: calculateRelevanceScore(idea, filters)
-    }))
-  }, [rawIdeas, filters])
-
   // Calculate relevance score for an idea
   const calculateRelevanceScore = useCallback((idea: any, searchFilters: SearchFilters): number => {
     let score = 0
@@ -192,6 +171,27 @@ export function useAdvancedSearch({
 
     return Math.min(1.0, Math.max(0.0, score))
   }, [])
+
+  // Convert Supabase data to SearchResult format
+  const allResults: SearchResult[] = useMemo(() => {
+    if (!rawIdeas.length) return []
+
+    return rawIdeas.map((idea: any) => ({
+      id: idea.id,
+      title: idea.title,
+      description: idea.description,
+      category: idea.category,
+      tags: idea.tags || [],
+      fundingGoal: idea.funding_goal,
+      equityOffered: idea.equity_offered,
+      stage: idea.stage,
+      location: '', // Not available in current schema
+      isVerified: false, // Not available in current schema
+      creatorName: 'Anonymous', // Not available in current schema
+      createdAt: idea.created_at || new Date().toISOString(),
+      relevanceScore: calculateRelevanceScore(idea, filters)
+    }))
+  }, [rawIdeas, filters, calculateRelevanceScore])
 
   // Filter and sort results
   const filteredResults = useMemo(() => {

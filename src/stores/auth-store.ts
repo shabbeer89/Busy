@@ -41,8 +41,16 @@ export const useAuthStore = create<AuthState>()(
       syncWithNextAuth: (sessionUser) => {
         if (sessionUser && sessionUser.email) {
           // Create a User object from NextAuth session
+          const sessionUserId = sessionUser.id;
+          const fallbackId = crypto.randomUUID();
+          console.log('🔍 [DEBUG] Auth store user ID check:', {
+            sessionUserId,
+            fallbackId: fallbackId,
+            usingFallback: !sessionUserId
+          });
+
           const user: User = {
-            id: sessionUser.id || `oauth_${Date.now()}`,
+            id: sessionUserId || fallbackId,
             email: sessionUser.email,
             name: sessionUser.name || sessionUser.email?.split('@')[0] || 'User',
             userType: get().user?.userType || 'creator', // Default to creator, should be updated via profile

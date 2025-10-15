@@ -25,6 +25,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate tenant_id if provided
+    if (tenant_id) {
+      // Verify the tenant exists and is active
+      const { data: tenant, error: tenantError } = await supabase
+        .from('tenants')
+        .select('id, status')
+        .eq('id', tenant_id)
+        .eq('status', 'active')
+        .single();
+
+      if (tenantError || !tenant) {
+        return NextResponse.json(
+          { error: 'Invalid or inactive tenant' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Check if profile already exists
     const { data: existingProfile } = await (supabase as any)
       .from('users')

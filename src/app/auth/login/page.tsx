@@ -151,11 +151,8 @@ export default function LoginPage() {
           email: data.user.email,
           name: data.user.user_metadata?.name || username || data.user.email?.split("@")[0] || "User",
           user_type: "creator", // Default, can be changed in profile
+          tenant_id: tenant?.id || null, // Properly handle tenant_id with null fallback
         };
-
-        if (tenant) {
-          profileData.tenant_id = tenant.id;
-        }
 
         await fetch("/api/auth/profile", {
           method: "POST",

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { getToken } from 'next-auth/jwt';
 
 // Define protected routes and their requirements
 const protectedRoutes = [
@@ -53,33 +53,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Create Supabase client
+  // Create response object for cookie handling
   const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          response.cookies.set(name, value, options);
-        },
-        remove(name: string, options: any) {
-          response.cookies.set(name, '', { ...options, maxAge: 0 });
-        },
-      },
-    }
-  );
+  // Get NextAuth session token
+  const token = await getToken({
+    req: request as any,
+    secret: process.env.NEXTAUTH_SECRET!
+  });
 
-  // Get user session
-  const { data: { session } } = await supabase.auth.getSession();
+  const session = token ? { user: token } : null;
 
   // Check if route requires authentication
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
@@ -100,24 +87,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // Handle tenant validation for tenant-scoped routes
-  if (tenantSlug && isTenantRoute) {
-    try {
-      // Validate tenant exists and is active
-      const { data: tenant, error } = await supabase
-        .from('tenants')
-        .select('id, slug, status')
-        .eq('slug', tenantSlug)
-        .eq('status', 'active')
-        .single();
-
-      if (error || !tenant) {
-        // Tenant doesn't exist or inactive - redirect to tenant selection
-        return NextResponse.redirect(new URL('/tenant-select', request.url));
-      }
-    } catch (error) {
-      console.error('Tenant validation error:', error);
-      return NextResponse.redirect(new URL('/tenant-select', request.url));
-    }
+  if (tenantSlug && isTenantRoute && session) {
+    // TODO: Implement tenant validation with NextAuth session
+    // For now, allow access if user is authenticated
+    console.log('Tenant route access:', tenantSlug);
   }
 
   // Handle authentication requirements
