@@ -149,24 +149,24 @@ export default function LoginPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <Card className="mx-auto shadow-lg border-border">
+          <Card className="mx-auto shadow-xl bg-slate-800/50 border-slate-700 backdrop-blur-sm">
             <CardHeader className="space-y-1 text-center pb-2">
-              <CardTitle className="text-3xl font-semibold text-foreground">
+              <CardTitle className="text-3xl font-semibold text-white">
                 {tenant ? `Sign In to ${tenant.settings?.branding?.name || tenant.name}` : "Sign In"}
               </CardTitle>
               {tenant && (
-                <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
+                <div className="flex items-center justify-center space-x-2 text-sm text-slate-400">
                   <Building2 className="h-4 w-4" />
                   <span>{tenant.slug}</span>
                 </div>
               )}
               <div className="text-sm">
-                <span className="text-muted-foreground">Don't have an account? </span>
+                <span className="text-slate-400">Don't have an account? </span>
                 <a
                   href="/auth/register"
-                  className="font-bold text-lg text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-200 px-2 py-1 rounded-md hover:bg-blue-50"
+                  className="font-bold text-lg text-blue-400 hover:text-blue-300 hover:underline transition-colors duration-200 px-2 py-1 rounded-md hover:bg-blue-900/20"
                 >
                   Sign Up
                 </a>
@@ -196,7 +196,7 @@ export default function LoginPage() {
 
               <form onSubmit={handleLogin} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-sm font-medium text-foreground">Username</Label>
+                  <Label htmlFor="username" className="text-sm font-medium text-white">Username</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                     <CustomInput
@@ -212,8 +212,8 @@ export default function LoginPage() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm font-medium text-foreground">Password</Label>
-                    <a href="#" className="text-sm text-primary hover:text-primary/80">
+                    <Label htmlFor="password" className="text-sm font-medium text-white">Password</Label>
+                    <a href="#" className="text-sm text-blue-400 hover:text-blue-300">
                       Forgot your password?
                     </a>
                   </div>

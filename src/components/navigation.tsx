@@ -24,7 +24,7 @@ export function Navigation() {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <span className="text-gray-200">
+                <span className="text-slate-300">
                   Welcome, {user?.name || "User"}
                 </span>
                 <Button variant="outline" onClick={handleLogout}>

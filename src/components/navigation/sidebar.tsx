@@ -154,7 +154,7 @@ export function Sidebar({ className }: SidebarProps) {
                   "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 cursor-pointer",
                   isActive
                     ? "bg-slate-700 text-blue-300"
-                    : "text-gray-300 hover:bg-slate-700 hover:text-white",
+                    : "text-slate-300 hover:bg-slate-700 hover:text-white",
                   isExpanded ? (hasSubmenu ? "justify-between" : "justify-start") : "justify-center"
                 )}
                 onClick={() => {
@@ -227,7 +227,7 @@ export function Sidebar({ className }: SidebarProps) {
                     <p className="text-sm font-medium text-white truncate">
                       {user.name}
                     </p>
-                    <p className="text-xs text-gray-400 capitalize">
+                    <p className="text-xs text-slate-400 capitalize">
                       {user.userType}
                     </p>
                   </div>
@@ -241,7 +241,7 @@ export function Sidebar({ className }: SidebarProps) {
                   router.push('/');
                 }}
                 className={cn(
-                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 text-gray-400 hover:bg-slate-700 hover:text-white w-full text-left",
+                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 text-slate-400 hover:bg-slate-700 hover:text-white w-full text-left",
                   (!isExpanded && !isHovered) ? "justify-center" : "justify-start"
                 )}
                 title="Logout"

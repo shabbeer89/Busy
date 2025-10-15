@@ -69,12 +69,12 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto">
       {/* Basic Information */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Business Idea Details</h2>
+      <div className="bg-slate-800/60 p-6 rounded-lg shadow border border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
+        <h2 className="text-2xl font-bold text-white mb-6">Business Idea Details</h2>
 
         <div className="grid md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="title" className="block text-sm font-medium text-white mb-2">
               Idea Title *
             </label>
             <input
@@ -84,13 +84,13 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
               required
               value={formData.title}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter a compelling title for your business idea"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="description" className="block text-sm font-medium text-white mb-2">
               Description *
             </label>
             <textarea
@@ -100,13 +100,13 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
               rows={6}
               value={formData.description}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Describe your business idea in detail. Include the problem you're solving, your solution, target market, and unique value proposition."
             />
           </div>
 
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="category" className="block text-sm font-medium text-white mb-2">
               Category *
             </label>
             <select
@@ -115,7 +115,7 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
               required
               value={formData.category}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select a category</option>
               {categories.map(category => (
@@ -125,7 +125,7 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
           </div>
 
           <div>
-            <label htmlFor="stage" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="stage" className="block text-sm font-medium text-white mb-2">
               Development Stage *
             </label>
             <select
@@ -134,7 +134,7 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
               required
               value={formData.stage}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="concept">Concept Stage</option>
               <option value="mvp">MVP (Minimum Viable Product)</option>
@@ -146,12 +146,12 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
       </div>
 
       {/* Financial Information */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Financial Requirements</h2>
+      <div className="bg-slate-800/60 p-6 rounded-lg shadow border border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
+        <h2 className="text-2xl font-bold text-white mb-6">Financial Requirements</h2>
 
         <div className="grid md:grid-cols-3 gap-6">
           <div>
-            <label htmlFor="fundingGoal" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="fundingGoal" className="block text-sm font-medium text-white mb-2">
               Funding Goal ($) *
             </label>
             <input
@@ -163,13 +163,13 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
               step="1000"
               value={formData.fundingGoal || ""}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               placeholder="50000"
             />
           </div>
 
           <div>
-            <label htmlFor="equityOffered" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="equityOffered" className="block text-sm font-medium text-white mb-2">
               Equity Offered (%)
             </label>
             <input
@@ -182,13 +182,13 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
               step="0.1"
               value={formData.equityOffered || ""}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="10"
             />
           </div>
 
           <div>
-            <label htmlFor="teamSize" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="teamSize" className="block text-sm font-medium text-white mb-2">
               Team Size
             </label>
             <input
@@ -198,7 +198,7 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
               min="1"
               value={formData.teamSize || ""}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               placeholder="1"
             />
           </div>
@@ -206,12 +206,12 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
       </div>
 
       {/* Timeline and Tags */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Timeline & Tags</h2>
+      <div className="bg-slate-800/60 p-6 rounded-lg shadow border border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
+        <h2 className="text-2xl font-bold text-white mb-6">Timeline & Tags</h2>
 
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="timeline" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="timeline" className="block text-sm font-medium text-white mb-2">
               Timeline
             </label>
             <input
@@ -220,13 +220,13 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
               name="timeline"
               value={formData.timeline}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="e.g., 6-12 months to launch, 2 years to profitability"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-white mb-2">
               Tags
             </label>
             <div className="flex gap-2 mb-2">
@@ -234,11 +234,11 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
                 type="text"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                 placeholder="Add a tag"
                 onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
               />
-              <Button type="button" onClick={addTag} variant="outline">
+              <Button type="button" onClick={addTag} variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                 Add
               </Button>
             </div>
@@ -247,13 +247,13 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
                 {formData.tags.map(tag => (
                   <span
                     key={tag}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800"
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-pink-900/20 border border-pink-500/30 text-pink-300"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
-                      className="ml-1 text-blue-600 hover:text-blue-800"
+                      className="ml-1 text-pink-300 hover:text-pink-200"
                     >
                       ×
                     </button>
@@ -270,7 +270,7 @@ export function IdeaForm({ onSubmit, isLoading = false, initialData, mode = "cre
         <Button
           type="submit"
           disabled={isLoading}
-          className="px-8 py-2"
+          className="px-8 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
         >
           {isLoading ? "Saving..." : mode === "create" ? "Submit Idea" : "Update Idea"}
         </Button>

@@ -70,10 +70,10 @@ We're seeking strategic partners who share our vision of democratizing financial
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading idea details...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-slate-300">Loading idea details...</p>
         </div>
       </div>
     );
@@ -81,11 +81,11 @@ We're seeking strategic partners who share our vision of democratizing financial
 
   if (error || !idea) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
-          <p className="text-gray-600 mb-4">{error || "Idea not found"}</p>
-          <Button onClick={() => router.back()}>Go Back</Button>
+          <h1 className="text-2xl font-bold text-white mb-4">Error</h1>
+          <p className="text-slate-300 mb-4">{error || "Idea not found"}</p>
+          <Button onClick={() => router.back()} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Go Back</Button>
         </div>
       </div>
     );
@@ -111,15 +111,15 @@ We're seeking strategic partners who share our vision of democratizing financial
   const fundingProgress = (idea.currentFunding / idea.fundingGoal) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <Button variant="outline" onClick={() => router.back()}>
+            <Button variant="outline" onClick={() => router.back()} className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
               ← Back to Ideas
             </Button>
-            <Badge variant="outline" className="capitalize">
+            <Badge variant="outline" className="capitalize border-slate-500 text-slate-300 hover:bg-slate-700">
               {idea.stage} Stage
             </Badge>
           </div>
@@ -129,22 +129,22 @@ We're seeking strategic partners who share our vision of democratizing financial
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Basic Information */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-3xl">{idea.title}</CardTitle>
-                <CardDescription className="text-lg">
-                  Category: <span className="font-medium text-gray-900">{idea.category}</span>
+                <CardTitle className="text-3xl text-white">{idea.title}</CardTitle>
+                <CardDescription className="text-lg text-slate-300">
+                  Category: <span className="font-medium text-white">{idea.category}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 leading-relaxed mb-6">{idea.description}</p>
+                <p className="text-slate-300 leading-relaxed mb-6">{idea.description}</p>
 
                 {/* Tags */}
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Tags</h3>
+                  <h3 className="text-sm font-medium text-slate-300 mb-3">Tags</h3>
                   <div className="flex flex-wrap gap-2">
                     {idea.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary">
+                      <Badge key={tag} variant="secondary" className="bg-slate-700 border-slate-600 text-slate-300">
                         {tag}
                       </Badge>
                     ))}
@@ -154,54 +154,54 @@ We're seeking strategic partners who share our vision of democratizing financial
                 {/* Team Information */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Team Size</h3>
-                    <p className="text-lg font-semibold">{idea.teamSize} people</p>
+                    <h3 className="text-sm font-medium text-slate-300 mb-2">Team Size</h3>
+                    <p className="text-lg font-semibold text-white">{idea.teamSize} people</p>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Timeline</h3>
-                    <p className="text-gray-600">{idea.timeline}</p>
+                    <h3 className="text-sm font-medium text-slate-300 mb-2">Timeline</h3>
+                    <p className="text-slate-400">{idea.timeline}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Funding Information */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle>Funding Information</CardTitle>
+                <CardTitle className="text-white">Funding Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">Funding Progress</span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm font-medium text-slate-300">Funding Progress</span>
+                    <span className="text-sm text-slate-400">
                       {formatCurrency(idea.currentFunding)} of {formatCurrency(idea.fundingGoal)}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div className="w-full bg-slate-700 rounded-full h-3">
                     <div
-                      className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                      className="bg-gradient-to-r from-blue-600 to-blue-400 h-3 rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(fundingProgress, 100)}%` }}
                     />
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-slate-400 mt-1">
                     {fundingProgress.toFixed(1)}% funded
                   </p>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Funding Goal</p>
-                    <p className="text-xl font-bold text-gray-900">{formatCurrency(idea.fundingGoal)}</p>
+                  <div className="text-center p-4 bg-slate-800/50 rounded-lg border border-slate-600">
+                    <p className="text-sm text-slate-400">Funding Goal</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(idea.fundingGoal)}</p>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Equity Offered</p>
-                    <p className="text-xl font-bold text-gray-900">{idea.equityOffered}%</p>
+                  <div className="text-center p-4 bg-slate-800/50 rounded-lg border border-slate-600">
+                    <p className="text-sm text-slate-400">Equity Offered</p>
+                    <p className="text-xl font-bold text-white">{idea.equityOffered}%</p>
                   </div>
                   {idea.valuation && (
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">Pre-money Valuation</p>
-                      <p className="text-xl font-bold text-gray-900">{formatCurrency(idea.valuation)}</p>
+                    <div className="text-center p-4 bg-slate-800/50 rounded-lg border border-slate-600">
+                      <p className="text-sm text-slate-400">Pre-money Valuation</p>
+                      <p className="text-xl font-bold text-white">{formatCurrency(idea.valuation)}</p>
                     </div>
                   )}
                 </div>
@@ -212,19 +212,19 @@ We're seeking strategic partners who share our vision of democratizing financial
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Action Buttons */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle>Take Action</CardTitle>
+                <CardTitle className="text-white">Take Action</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {user?.userType === "investor" && (
                   <>
                     <FavoritesButton itemId={idea.id} itemType="idea" />
-                    <Button className="w-full">Express Interest</Button>
-                    <Button variant="outline" className="w-full">
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Express Interest</Button>
+                    <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                       Request Meeting
                     </Button>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                       View Similar Ideas
                     </Button>
                   </>
@@ -233,9 +233,9 @@ We're seeking strategic partners who share our vision of democratizing financial
                 {user?.userType === "creator" && idea.creatorId === user.id && (
                   <>
                     <Link href={`/ideas/${idea.id}/edit`}>
-                      <Button className="w-full">Edit Idea</Button>
+                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Edit Idea</Button>
                     </Link>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                       View Applications
                     </Button>
                   </>
@@ -243,61 +243,61 @@ We're seeking strategic partners who share our vision of democratizing financial
 
                 {!user && (
                   <Link href="/auth/login">
-                    <Button className="w-full">Sign In to Connect</Button>
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Sign In to Connect</Button>
                   </Link>
                 )}
               </CardContent>
             </Card>
 
             {/* Idea Stats */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle>Project Details</CardTitle>
+                <CardTitle className="text-white">Project Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <Badge variant="outline" className="capitalize">
+                  <span className="text-slate-400">Status:</span>
+                  <Badge variant="outline" className="capitalize border-slate-500 text-slate-300 hover:bg-slate-700">
                     {idea.status}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Posted:</span>
-                  <span className="text-sm">{formatDate(idea.createdAt)}</span>
+                  <span className="text-slate-400">Posted:</span>
+                  <span className="text-sm text-slate-300">{formatDate(idea.createdAt)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Updated:</span>
-                  <span className="text-sm">{formatDate(idea.updatedAt)}</span>
+                  <span className="text-slate-400">Updated:</span>
+                  <span className="text-sm text-slate-300">{formatDate(idea.updatedAt)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Views:</span>
-                  <span className="font-medium">247</span>
+                  <span className="text-slate-400">Views:</span>
+                  <span className="font-medium text-white">247</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Interests:</span>
-                  <span className="font-medium">12</span>
+                  <span className="text-slate-400">Interests:</span>
+                  <span className="font-medium text-white">12</span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Similar Ideas */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle>Similar Ideas</CardTitle>
+                <CardTitle className="text-white">Similar Ideas</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <Link href="/ideas/2" className="block p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                    <h4 className="font-medium text-sm">Blockchain-based Supply Chain</h4>
-                    <p className="text-xs text-gray-600">Technology • Early Stage</p>
+                  <Link href="/ideas/2" className="block p-3 hover:bg-slate-800/50 rounded-lg transition-colors border border-slate-700">
+                    <h4 className="font-medium text-sm text-white">Blockchain-based Supply Chain</h4>
+                    <p className="text-xs text-slate-400">Technology • Early Stage</p>
                   </Link>
-                  <Link href="/ideas/3" className="block p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                    <h4 className="font-medium text-sm">Sustainable Fashion Platform</h4>
-                    <p className="text-xs text-gray-600">E-commerce • MVP</p>
+                  <Link href="/ideas/3" className="block p-3 hover:bg-slate-800/50 rounded-lg transition-colors border border-slate-700">
+                    <h4 className="font-medium text-sm text-white">Sustainable Fashion Platform</h4>
+                    <p className="text-xs text-slate-400">E-commerce • MVP</p>
                   </Link>
-                  <Link href="/ideas/4" className="block p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                    <h4 className="font-medium text-sm">Telemedicine for Rural Areas</h4>
-                    <p className="text-xs text-gray-600">Healthcare • Growth</p>
+                  <Link href="/ideas/4" className="block p-3 hover:bg-slate-800/50 rounded-lg transition-colors border border-slate-700">
+                    <h4 className="font-medium text-sm text-white">Telemedicine for Rural Areas</h4>
+                    <p className="text-xs text-slate-400">Healthcare • Growth</p>
                   </Link>
                 </div>
               </CardContent>

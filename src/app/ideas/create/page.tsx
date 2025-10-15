@@ -17,10 +17,10 @@ export default function CreateIdeaPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">Please sign in to submit business ideas.</p>
+          <h1 className="text-2xl font-bold text-white mb-4">Access Denied</h1>
+          <p className="text-slate-300 mb-4">Please sign in to submit business ideas.</p>
         </div>
       </div>
     );
@@ -28,10 +28,10 @@ export default function CreateIdeaPage() {
 
   if (user.userType !== "creator") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">Only creators can submit business ideas.</p>
+          <h1 className="text-2xl font-bold text-white mb-4">Access Denied</h1>
+          <p className="text-slate-300 mb-4">Only creators can submit business ideas.</p>
         </div>
       </div>
     );
@@ -61,17 +61,17 @@ export default function CreateIdeaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Submit Your Business Idea</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-white">Submit Your Business Idea</h1>
+          <p className="text-slate-300 mt-2">
             Share your innovative business concept with our network of investors and get matched with the right funding opportunities.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 text-red-400 rounded-lg">
             {error}
           </div>
         )}

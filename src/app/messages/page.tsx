@@ -127,8 +127,8 @@ export default function MessagesPage() {
       <SidebarLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-            <p className="text-gray-600 mb-4">Please sign in to view your messages.</p>
+            <h1 className="text-2xl font-bold text-white mb-4">Access Denied</h1>
+            <p className="text-slate-300 mb-4">Please sign in to view your messages.</p>
           </div>
         </div>
       </SidebarLayout>
@@ -140,10 +140,10 @@ export default function MessagesPage() {
       <div className="flex h-full">
         {/* Conversations List - Hidden on mobile when conversation is selected */}
         {(!selectedConversationId) && (
-          <div className="w-full lg:w-1/3 border-r border-border">
-            <div className="p-4 border-b border-border">
-              <h1 className="text-xl font-bold">Messages</h1>
-              <p className="text-sm text-muted-foreground mt-1">
+          <div className="w-full lg:w-1/3 border-r border-slate-700">
+            <div className="p-4 border-b border-slate-700">
+              <h1 className="text-xl font-bold text-white">Messages</h1>
+              <p className="text-sm text-slate-400 mt-1">
                 Communicate with matched {user.userType === "creator" ? "investors" : "creators"}
               </p>
             </div>
@@ -165,8 +165,8 @@ export default function MessagesPage() {
                 </div>
               ) : conversations.length === 0 ? (
                 <div className="p-8 text-center">
-                  <p className="text-muted-foreground">No conversations yet</p>
-                  <p className="text-sm text-muted-foreground/70 mt-2">
+                  <p className="text-slate-400">No conversations yet</p>
+                  <p className="text-sm text-slate-500 mt-2">
                     Start a conversation from your matches
                   </p>
                 </div>
@@ -196,10 +196,10 @@ export default function MessagesPage() {
         ) : (
           <div className="hidden lg:flex flex-1 items-center justify-center">
             <div className="text-center">
-              <svg className="w-12 h-12 mx-auto mb-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-12 h-12 mx-auto mb-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              <p className="text-muted-foreground">Select a conversation to start messaging</p>
+              <p className="text-slate-400">Select a conversation to start messaging</p>
             </div>
           </div>
         )}

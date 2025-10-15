@@ -103,7 +103,7 @@ export function FavoritesButton({ itemId, itemType, className }: FavoritesButton
 
   if (!user) {
     return (
-      <Button variant="outline" size="sm" className={className} disabled>
+      <Button variant="outline" size="sm" className={`${className} border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white`} disabled>
         <Heart className="w-4 h-4 mr-2" />
         Sign in to save
       </Button>
@@ -116,9 +116,9 @@ export function FavoritesButton({ itemId, itemType, className }: FavoritesButton
       size="sm"
       onClick={toggleFavorite}
       disabled={isLoading}
-      className={className}
+      className={`${className} ${isFavorited ? "bg-red-600 hover:bg-red-700 text-white" : "border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"}`}
     >
-      <Heart className={`w-4 h-4 mr-2 ${isFavorited ? "fill-current" : ""}`} />
+      <Heart className={`w-4 h-4 mr-2 ${isFavorited ? "fill-current text-white" : ""}`} />
       {isFavorited ? "Saved" : "Save"}
     </Button>
   );

@@ -88,13 +88,13 @@ export default function IdeasPage() {
   if (isLoading) {
     return (
       <SidebarLayout>
-        <div className="min-h-screen bg-slate-900">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8">
               <div className="flex justify-between items-center">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Business Ideas</h1>
-                  <p className="text-gray-600 dark:text-gray-300 mt-2">
+                  <h1 className="text-3xl font-bold text-white">Business Ideas</h1>
+                  <p className="text-slate-300 mt-2">
                     Discover innovative business opportunities from entrepreneurs worldwide
                   </p>
                 </div>
@@ -115,19 +115,19 @@ export default function IdeasPage() {
   return (
           <SidebarLayout>
 
-    <div className="min-h-screen bg-slate-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-gradient-to-br from-slate-900/50 via-slate-800/30 to-slate-900/50">
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Business Ideas</h1>
-              <p className="text-gray-600 dark:text-gray-300 mt-2">
+              <h1 className="text-3xl font-bold text-white">Business Ideas</h1>
+              <p className="text-slate-300 mt-2">
                 Discover innovative business opportunities from entrepreneurs worldwide
               </p>
             </div>
             {user?.userType === "creator" && (
               <Link href="/ideas/create">
-                <Button>Submit Your Idea</Button>
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Submit Your Idea</Button>
               </Link>
             )}
           </div>
@@ -146,12 +146,12 @@ export default function IdeasPage() {
         {/* Search Statistics */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-slate-300">
               {isSearching ? (
                 "Searching..."
               ) : (
                 <>
-                  Found <span className="font-semibold">{searchResults.length}</span> results
+                  Found <span className="font-semibold text-white">{searchResults.length}</span> results
                   {searchStats.hasFilters && (
                     <span className="text-sm text-blue-400">• Filtered</span>
                   )}
@@ -161,8 +161,8 @@ export default function IdeasPage() {
 
             {searchStats.avgRelevance > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Avg. Relevance:</span>
-                <Badge variant={searchStats.avgRelevance > 0.7 ? "default" : "secondary"}>
+                <span className="text-sm text-slate-400">Avg. Relevance:</span>
+                <Badge variant={searchStats.avgRelevance > 0.7 ? "default" : "secondary"} className={searchStats.avgRelevance > 0.7 ? "bg-green-600 hover:bg-green-700 text-white" : "bg-slate-600 hover:bg-slate-500 text-slate-200"}>
                   {Math.round(searchStats.avgRelevance * 100)}%
                 </Badge>
               </div>
@@ -171,9 +171,9 @@ export default function IdeasPage() {
 
           {searchStats.topCategories.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Top categories:</span>
+              <span className="text-sm text-slate-400">Top categories:</span>
               {searchStats.topCategories.slice(0, 2).map(([category, count]) => (
-                <Badge key={category} variant="outline" className="text-xs">
+                <Badge key={category} variant="outline" className="text-xs border-slate-500 text-slate-300 hover:bg-slate-700">
                   {category} ({count})
                 </Badge>
               ))}
