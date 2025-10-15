@@ -338,7 +338,7 @@ export class AuditLogger {
 
   // Export audit logs (for compliance/archiving)
   exportLogs(query?: AuditQuery, format: 'json' | 'csv' = 'json'): string {
-    const logs = this.query(query);
+    const logs = this.query(query || {});
 
     if (format === 'csv') {
       const headers = ['id', 'timestamp', 'userId', 'userName', 'tenantId', 'event', 'resource', 'severity', 'success'];
@@ -372,7 +372,7 @@ export const auditLogger = AuditLogger.getInstance();
 
 // Convenience functions for common audit events
 export const audit = {
-  userLogin: (userId: string, userName: string, tenantId?: string, ipAddress: string, userAgent: string, success: boolean) =>
+  userLogin: (userId: string, userName: string, ipAddress: string, userAgent: string, success: boolean, tenantId?: string) =>
     auditLogger.log({
       userId,
       userName,
@@ -386,9 +386,10 @@ export const audit = {
       ipAddress,
       userAgent,
       success,
+      metadata: {},
     }),
 
-  userLogout: (userId: string, userName: string, tenantId?: string, ipAddress: string, userAgent: string) =>
+  userLogout: (userId: string, userName: string, ipAddress: string, userAgent: string, tenantId?: string) =>
     auditLogger.log({
       userId,
       userName,
@@ -402,20 +403,21 @@ export const audit = {
       ipAddress,
       userAgent,
       success: true,
+      metadata: {},
     }),
 
   businessAction: (
     userId: string,
     userName: string,
-    tenantId: string,
     event: AuditEvent,
     resource: string,
     resourceId: string,
     action: string,
     details: Record<string, any>,
-    severity: AuditSeverity = AuditSeverity.MEDIUM,
     ipAddress: string,
-    userAgent: string
+    userAgent: string,
+    severity: AuditSeverity = AuditSeverity.MEDIUM,
+    tenantId?: string
   ) =>
     auditLogger.log({
       userId,
@@ -431,6 +433,7 @@ export const audit = {
       ipAddress,
       userAgent,
       success: true,
+      metadata: {},
     }),
 
   adminAction: (
@@ -457,6 +460,7 @@ export const audit = {
       ipAddress,
       userAgent,
       success: true,
+      metadata: {},
     }),
 
   securityEvent: (
@@ -480,5 +484,6 @@ export const audit = {
       ipAddress,
       userAgent,
       success: false,
+      metadata: {},
     }),
 };

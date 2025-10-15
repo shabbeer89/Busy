@@ -44,21 +44,22 @@ export function useRealtimeMessaging({
     setError(null)
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('messages')
         .select('*')
         .eq('conversation_id', convId)
         .order('created_at', { ascending: true })
 
       if (error) {
+        console.error('Error loading messages:', error)
         setError(error.message)
         return
       }
 
       setMessages(data || [])
     } catch (err) {
-      setError('Failed to load messages')
       console.error('Error loading messages:', err)
+      setError('Failed to load messages')
     } finally {
       setIsLoading(false)
     }

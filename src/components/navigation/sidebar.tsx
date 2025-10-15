@@ -36,6 +36,7 @@ export function Sidebar({ className }: SidebarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, signOut } = useAuth();
@@ -167,7 +168,7 @@ export function Sidebar({ className }: SidebarProps) {
                   {isExpanded && (
                     <span className="truncate">{item.name}</span>
                   )}
-                  {!isExpanded && (
+                  {(!isExpanded && !isHovered) && (
                     <div className="absolute left-full ml-6 hidden rounded-md bg-slate-800 px-2 py-1 text-xs text-white group-hover:block">
                       {item.name}
                     </div>
@@ -212,43 +213,45 @@ export function Sidebar({ className }: SidebarProps) {
       </nav>
 
       {/* User Section */}
-       {isAuthenticated && user && (
-         <div className="border-t border-slate-700 p-4">
-           <div className="space-y-3">
-             <div className="flex items-center space-x-3">
-               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-600">
-                 <span className="text-sm font-medium text-gray-300">
-                   {user.name.charAt(0).toUpperCase()}
-                 </span>
-               </div>
-               {isExpanded && (
-                 <div className="flex-1 min-w-0">
-                   <p className="text-sm font-medium text-white truncate">
-                     {user.name}
-                   </p>
-                   <p className="text-xs text-gray-400 capitalize">
-                     {user.userType}
-                   </p>
-                 </div>
-               )}
-             </div>
+        {isAuthenticated && user && (
+          <div className="border-t border-slate-700 p-4">
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-600">
+                  <span className="text-sm font-medium text-gray-300">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                {(isExpanded || isHovered) && (
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-gray-400 capitalize">
+                      {user.userType}
+                    </p>
+                  </div>
+                )}
+              </div>
 
-             {/* Logout button - always visible when expanded */}
-             {isExpanded && (
-               <button
-                 onClick={() => {
-                   signOut();
-                   router.push('/');
-                 }}
-                 className="group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 text-gray-400 hover:bg-slate-700 hover:text-white w-full text-left"
-               >
-                 <LogOut className="h-4 w-4 mr-3 flex-shrink-0" />
-                 <span className="truncate">Logout</span>
-               </button>
-             )}
-           </div>
-         </div>
-       )}
+              {/* Logout button - always visible */}
+              <button
+                onClick={() => {
+                  signOut();
+                  router.push('/');
+                }}
+                className={cn(
+                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 text-gray-400 hover:bg-slate-700 hover:text-white w-full text-left",
+                  (!isExpanded && !isHovered) ? "justify-center" : "justify-start"
+                )}
+                title="Logout"
+              >
+                <LogOut className={cn("h-4 w-4 flex-shrink-0", (isExpanded || isHovered) ? "mr-3" : "")} />
+                {(isExpanded || isHovered) && <span className="truncate">Logout</span>}
+              </button>
+            </div>
+          </div>
+        )}
 
     </div>
   );
@@ -283,9 +286,11 @@ export function Sidebar({ className }: SidebarProps) {
       <div
         className={cn(
           "fixed inset-y-0 left-0 z-20 bg-slate-900 shadow-lg transition-all duration-300 border-r border-slate-700",
-          isExpanded ? "w-64" : "w-16",
+          (isExpanded || isHovered) ? "w-64" : "w-16",
           "hidden lg:block"
         )}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <SidebarContent />
       </div>
@@ -307,7 +312,7 @@ export function Sidebar({ className }: SidebarProps) {
       <div
         className={cn(
           "transition-all duration-300",
-          isExpanded ? "lg:ml-64" : "lg:ml-16"
+          (isExpanded || isHovered) ? "lg:ml-64" : "lg:ml-16"
         )}
       />
     </>

@@ -130,7 +130,7 @@ export function AuditLogTable({
             onValueChange={(value) => setFilters(prev => ({ ...prev, action: value || undefined }))}
           >
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Action" />
+              <SelectValue placeholder="Action" selectedValue={filters.action} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">All Actions</SelectItem>

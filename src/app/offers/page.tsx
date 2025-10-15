@@ -75,7 +75,7 @@ export default function OffersPage() {
     // Stage filter
     if (stageFilter !== "all") {
       filtered = filtered.filter(offer =>
-        offer.preferredStages.includes(stageFilter)
+        offer.preferredStages && offer.preferredStages.includes(stageFilter)
       );
     }
 

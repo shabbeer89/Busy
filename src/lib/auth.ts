@@ -78,6 +78,7 @@ export async function upsertUserProfile(userData: {
   phone_number?: string
   user_type: 'creator' | 'investor'
   avatar?: string
+  authUserId: string // Require the Supabase Auth user ID
 }) {
   try {
     const supabase = await createServerSupabaseClient()
@@ -89,7 +90,7 @@ export async function upsertUserProfile(userData: {
       .eq('email', userData.email)
       .single()
 
-    let result
+    let result: any
 
     if (existingUser) {
       // Update existing user - use type assertion for now
@@ -111,11 +112,11 @@ export async function upsertUserProfile(userData: {
       }
       result = data
     } else {
-      // Create new user profile - use type assertion for now
+      // Create new user profile using the Supabase Auth user ID
       const { data, error } = await (supabase as any)
         .from('users')
         .insert({
-          id: crypto.randomUUID(), // Generate proper UUID
+          id: userData.authUserId, // Use Supabase Auth user ID
           email: userData.email,
           name: userData.name,
           phone_number: userData.phone_number,
@@ -256,11 +257,19 @@ export const authOptions: NextAuthOptions = {
             .single()
 
           if (!existingUser) {
-            // Create new user profile with proper UUID
+            // Create new user profile with current user's auth ID
+            // Get the current authenticated user from the session context
+            const { data: { user: currentAuthUser }, error: authError } = await supabase.auth.getUser()
+
+            if (authError || !currentAuthUser) {
+              console.error('Error getting current auth user for profile creation:', authError)
+              return false
+            }
+
             const { data, error } = await (supabase as any)
               .from('users')
               .insert({
-                id: crypto.randomUUID(), // Generate proper UUID
+                id: currentAuthUser.id, // Use current authenticated user's ID
                 email: user.email,
                 name: user.name,
                 avatar: user.image,

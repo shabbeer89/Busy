@@ -22,7 +22,7 @@ export function useDashboard({
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const { user } = useAuth()
-  const { currentTenant } = useTenant()
+  const { tenant } = useTenant()
   const supabase = createClient()
 
   // Load dashboard data
@@ -56,7 +56,7 @@ export function useDashboard({
 
   // Set up real-time subscriptions for data changes
   useEffect(() => {
-    if (!user || !autoRefresh || !currentTenant) return
+    if (!user || !autoRefresh || !tenant) return
 
     // Initial load
     loadDashboardData()
@@ -125,7 +125,7 @@ export function useDashboard({
       subscriptions.forEach(sub => sub.unsubscribe())
       clearInterval(refreshIntervalId)
     }
-  }, [user, autoRefresh, refreshInterval, currentTenant, supabase, loadDashboardData])
+  }, [user, autoRefresh, refreshInterval, tenant, supabase, loadDashboardData])
 
   // Manual refresh function
   const refreshDashboard = useCallback(() => {

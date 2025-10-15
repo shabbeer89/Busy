@@ -47,7 +47,6 @@ export default function MessagesPage() {
           .from('conversations')
           .select(`
             *,
-            messages!messages_conversation_id_fkey(*),
             matches(*)
           `)
           .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
@@ -81,7 +80,14 @@ export default function MessagesPage() {
               .eq('read', false)
               .neq('sender_id', user.id);
 
-            const lastMessage = conv.messages?.[conv.messages.length - 1];
+            // Get last message for this conversation
+            const { data: lastMessageData } = await (supabase as any)
+              .from('messages')
+              .select('*')
+              .eq('conversation_id', conv.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .single();
 
             return {
               id: conv.id,
@@ -89,16 +95,16 @@ export default function MessagesPage() {
                 name: otherUserProfile?.name || 'Unknown User',
                 avatar: otherUserProfile?.avatar,
               },
-              lastMessage: lastMessage ? {
-                id: lastMessage.id,
-                conversation_id: lastMessage.conversation_id,
-                sender_id: lastMessage.sender_id,
-                content: lastMessage.content,
-                type: lastMessage.type,
-                read: lastMessage.read,
-                read_at: lastMessage.read_at,
-                created_at: lastMessage.created_at,
-                updated_at: lastMessage.updated_at,
+              lastMessage: lastMessageData ? {
+                id: lastMessageData.id,
+                conversation_id: lastMessageData.conversation_id,
+                sender_id: lastMessageData.sender_id,
+                content: lastMessageData.content,
+                type: lastMessageData.type,
+                read: lastMessageData.read,
+                read_at: lastMessageData.read_at,
+                created_at: lastMessageData.created_at,
+                updated_at: lastMessageData.updated_at,
               } : undefined,
               unreadCount: unreadCount || 0,
             };

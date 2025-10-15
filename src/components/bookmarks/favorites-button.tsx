@@ -168,7 +168,17 @@ export function useFavorites() {
               .in('id', offerIds);
 
             if (offersError) throw offersError;
-            setFavoritedOffers(offersData || []);
+
+            // Transform offers data to include favorited date
+            const offersWithFavoriteDate = offersData.map((offer: any) => {
+              const favorite = favoritesData.find((fav: any) => fav.item_id === offer.id && fav.item_type === 'offer');
+              return {
+                ...offer,
+                favoritedAt: favorite ? new Date(favorite.created_at).getTime() : Date.now(),
+              };
+            });
+
+            setFavoritedOffers(offersWithFavoriteDate || []);
           } else {
             setFavoritedOffers([]);
           }
@@ -185,7 +195,17 @@ export function useFavorites() {
               .in('id', ideaIds);
 
             if (ideasError) throw ideasError;
-            setFavoritedIdeas(ideasData || []);
+
+            // Transform ideas data to include favorited date
+            const ideasWithFavoriteDate = ideasData.map((idea: any) => {
+              const favorite = favoritesData.find((fav: any) => fav.item_id === idea.id && fav.item_type === 'idea');
+              return {
+                ...idea,
+                favoritedAt: favorite ? new Date(favorite.created_at).getTime() : Date.now(),
+              };
+            });
+
+            setFavoritedIdeas(ideasWithFavoriteDate || []);
           } else {
             setFavoritedIdeas([]);
           }

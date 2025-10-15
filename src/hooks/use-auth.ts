@@ -334,7 +334,7 @@ export function useAuth() {
     if (!userId) return false;
 
     // Accept demo IDs and proper UUIDs (36 characters with hyphens)
-    if (userId.startsWith("demo_") || userId.length === 36) {
+    if (userId && (userId.startsWith("demo_") || userId.length === 36)) {
       return true;
     }
 

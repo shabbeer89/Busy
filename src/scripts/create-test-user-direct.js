@@ -31,22 +31,110 @@ async function createTestUser() {
     // Load environment variables first
     loadEnvFile();
 
-    console.log('🚀 Creating test user directly via Supabase REST API...');
+    console.log('🚀 Creating test user properly with Supabase Auth integration...');
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       console.error('❌ Missing Supabase environment variables');
-      console.log('🔍 Checked for NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY');
+      console.log('🔍 Checked for NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
       return;
     }
 
     console.log('✅ Environment variables loaded successfully');
 
-    const testUser = {
-      id: '550e8400-e29b-41d4-a716-446655440001',
-      email: 'test@example.com',
+    const testEmail = 'test@example.com';
+    const testPassword = 'testpassword123';
+
+    // Step 1: Check if Supabase Auth user exists
+    console.log('🔍 Checking for existing Supabase Auth user...');
+    const listUsersUrl = `${supabaseUrl}/auth/v1/admin/users`;
+
+    try {
+      const existingUsers = await makeRequest(listUsersUrl, supabaseServiceKey, 'GET');
+
+      if (existingUsers && existingUsers.users) {
+        const existingAuthUser = existingUsers.users.find(user => user.email === testEmail);
+
+        if (existingAuthUser) {
+          console.log('✅ Found existing Supabase Auth user:', existingAuthUser.id);
+
+          // Check if profile exists in custom users table
+          const profileCheckUrl = `${supabaseUrl}/rest/v1/users?email=eq.${testEmail}&select=id`;
+          const existingProfile = await makeRequest(profileCheckUrl, supabaseServiceKey, 'GET');
+
+          if (existingProfile && existingProfile.length > 0) {
+            console.log('✅ Test user profile already exists:', existingProfile[0].id);
+            console.log('📧 Email: test@example.com');
+            console.log('🔑 Password: testpassword123');
+            return existingProfile[0].id;
+          }
+
+          // Create profile in custom users table using auth user ID
+          console.log('📝 Creating user profile in custom users table...');
+          const profileData = {
+            id: existingAuthUser.id, // Use the Supabase Auth user ID
+            email: testEmail,
+            name: 'Test User',
+            user_type: 'creator',
+            is_verified: true,
+            phone_verified: true,
+            company_name: 'Test Company',
+            industry: 'Technology',
+            experience: '5+ years',
+            bio: 'Test user for development and testing purposes',
+            location: 'San Francisco, CA',
+            website: 'https://example.com',
+            social_links: {
+              linkedin: 'https://linkedin.com/in/testuser',
+              twitter: 'https://twitter.com/testuser'
+            }
+          };
+
+          const createProfileUrl = `${supabaseUrl}/rest/v1/users`;
+          const newProfile = await makeRequest(createProfileUrl, supabaseServiceKey, 'POST', profileData);
+
+          if (newProfile && newProfile.length > 0) {
+            console.log('✅ Test user profile created successfully!');
+            console.log('📧 Email: test@example.com');
+            console.log('🔑 Password: testpassword123');
+            console.log('🆔 User ID:', newProfile[0].id);
+            return newProfile[0].id;
+          }
+        }
+      }
+    } catch (error) {
+      console.log('ℹ️ Could not check existing users, creating new auth user...');
+    }
+
+    // Step 2: Create new Supabase Auth user
+    console.log('👤 Creating new Supabase Auth user...');
+    const createAuthUserUrl = `${supabaseUrl}/auth/v1/admin/users`;
+
+    const authUserData = {
+      email: testEmail,
+      password: testPassword,
+      email_confirm: true,
+      user_metadata: {
+        name: 'Test User'
+      }
+    };
+
+    const newAuthUser = await makeRequest(createAuthUserUrl, supabaseServiceKey, 'POST', authUserData);
+
+    if (!newAuthUser || !newAuthUser.id) {
+      console.error('❌ Failed to create Supabase Auth user');
+      return;
+    }
+
+    console.log('✅ Created Supabase Auth user:', newAuthUser.id);
+
+    // Step 3: Create profile in custom users table
+    console.log('📝 Creating user profile in custom users table...');
+    const profileData = {
+      id: newAuthUser.id, // Use the Supabase Auth user ID
+      email: testEmail,
       name: 'Test User',
       user_type: 'creator',
       is_verified: true,
@@ -63,31 +151,17 @@ async function createTestUser() {
       }
     };
 
-    // First, check if user already exists
-    const checkUrl = `${supabaseUrl}/rest/v1/users?email=eq.${testUser.email}&select=id`;
+    const createProfileUrl = `${supabaseUrl}/rest/v1/users`;
+    const newProfile = await makeRequest(createProfileUrl, supabaseServiceKey, 'POST', profileData);
 
-    const existingUser = await makeRequest(checkUrl, supabaseKey, 'GET');
-
-    if (existingUser && existingUser.length > 0) {
-      console.log('✅ Test user already exists:', existingUser[0].id);
-      console.log('📧 Email: test@example.com');
-      console.log('🔑 Password: testpassword123');
-      return existingUser[0].id;
-    }
-
-    // Create new user
-    const createUrl = `${supabaseUrl}/rest/v1/users`;
-
-    const newUser = await makeRequest(createUrl, supabaseKey, 'POST', testUser);
-
-    if (newUser && newUser.length > 0) {
+    if (newProfile && newProfile.length > 0) {
       console.log('✅ Test user created successfully!');
       console.log('📧 Email: test@example.com');
       console.log('🔑 Password: testpassword123');
-      console.log('🆔 User ID:', newUser[0].id);
-      return newUser[0].id;
+      console.log('🆔 User ID:', newProfile[0].id);
+      return newProfile[0].id;
     } else {
-      console.error('❌ Failed to create test user');
+      console.error('❌ Failed to create test user profile');
     }
 
   } catch (error) {
@@ -98,6 +172,10 @@ async function createTestUser() {
 function makeRequest(url, apiKey, method, data = null) {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
+
+    // Determine if this is an admin API call (auth endpoints)
+    const isAdminAPI = url.includes('/auth/v1/admin/');
+
     const options = {
       hostname: urlObj.hostname,
       path: urlObj.pathname + urlObj.search,
@@ -106,7 +184,7 @@ function makeRequest(url, apiKey, method, data = null) {
         'Content-Type': 'application/json',
         'apikey': apiKey,
         'Authorization': `Bearer ${apiKey}`,
-        'Prefer': 'return=representation'
+        ...(isAdminAPI && { 'Prefer': 'return=representation' })
       }
     };
 

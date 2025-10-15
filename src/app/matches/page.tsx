@@ -395,21 +395,21 @@ export default function MatchesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredMatches.map((match: any) => (
-              <Card key={match._id} className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 dark:bg-slate-800 dark:border-slate-700`}>
+              <Card key={match.id} className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 dark:bg-slate-800 dark:border-slate-700`}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <CardTitle className="text-xl text-gray-900 dark:text-white">
-                        Match #{match._id?.slice(-6) || 'Unknown'}
+                        Match #{match.id?.slice(-6) || 'Unknown'}
                       </CardTitle>
                       <CardDescription className="mt-2 text-gray-600 dark:text-gray-300">
-                        Created on {formatDate(match.createdAt)} • Last updated {formatDate(match.updatedAt)}
+                        Created on {formatDate(new Date(match.created_at).getTime())} • Last updated {formatDate(new Date(match.updated_at).getTime())}
                       </CardDescription>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <div className="text-2xl font-bold text-green-400">
-                          {match.matchScore}%
+                          {Math.round(match.match_score * 100)}%
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-300">Match Score</div>
                       </div>
@@ -423,33 +423,33 @@ export default function MatchesPage() {
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <div>
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Amount Compatibility</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{match.matchingFactors.amountCompatibility}%</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{match.matching_factors.amountCompatibility}%</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Industry Alignment</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{match.matchingFactors.industryAlignment}%</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{match.matching_factors.industryAlignment}%</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Stage Preference</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{match.matchingFactors.stagePreference}%</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{match.matching_factors.stagePreference}%</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Risk Alignment</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{match.matchingFactors.riskAlignment}%</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{match.matching_factors.riskAlignment}%</p>
                     </div>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <div className="flex gap-3">
-                      <Link href={`/ideas/${match.ideaId}`}>
+                      <Link href={`/ideas/${match.idea_id}`}>
                         <Button variant="outline" size="sm">View Idea</Button>
                       </Link>
                       {user.userType === "creator" ? (
-                        <Link href={`/offers/${match.offerId}`}>
+                        <Link href={`/offers/${match.offer_id}`}>
                           <Button variant="outline" size="sm">View Offer</Button>
                         </Link>
                       ) : (
-                        <Link href={`/ideas/${match.ideaId}`}>
+                        <Link href={`/ideas/${match.idea_id}`}>
                           <Button variant="outline" size="sm">View Idea</Button>
                         </Link>
                       )}
@@ -509,7 +509,7 @@ export default function MatchesPage() {
             <Card className="dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-gray-400">
-                  {matches.length > 0 ? Math.round(matches.reduce((acc: number, m: any) => acc + m.matchScore, 0) / matches.length) : 0}%
+                  {matches.length > 0 ? Math.round(matches.reduce((acc: number, m: any) => acc + (m.match_score * 100), 0) / matches.length) : 0}%
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Avg Score</div>
               </CardContent>

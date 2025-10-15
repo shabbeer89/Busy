@@ -1,6 +1,8 @@
 // Performance Monitoring System
 // Real-time performance tracking and optimization
 
+import * as React from "react";
+
 export interface PerformanceMetric {
   id: string;
   name: string;
@@ -430,7 +432,7 @@ export function withPerformanceTracking<P extends object>(
   componentName: string,
   tenantId?: string
 ) {
-  return (props: P) => {
+  const WrappedComponent = (props: P) => {
     const startTime = performance.now();
 
     React.useEffect(() => {
@@ -444,6 +446,11 @@ export function withPerformanceTracking<P extends object>(
       );
     });
 
-    return <Component {...props} />;
+    return React.createElement(Component, props);
   };
+
+  // Set display name for debugging
+  WrappedComponent.displayName = `withPerformanceTracking(${componentName})`;
+
+  return WrappedComponent;
 }
