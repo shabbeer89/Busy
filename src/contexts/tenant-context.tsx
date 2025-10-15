@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { getSession } from 'next-auth/react';
 import { createClient } from '@/lib/supabase-client';
 
 interface Tenant {
@@ -103,18 +104,26 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
 
   const loadTenants = async () => {
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('tenants')
-        .select('*')
-        .eq('status', 'active')
-        .order('name');
+      const response = await fetch('/api/tenants/load', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (error) {
-        console.error('Error loading tenants:', error);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to load tenants:', errorData);
+
+        // If database is not configured, show helpful message
+        if (response.status === 503) {
+          console.warn('Database not configured:', errorData.details);
+        }
+
         return;
       }
 
+      const data = await response.json();
       setTenants(data || []);
     } catch (error) {
       console.error('Error loading tenants:', error);

@@ -7,12 +7,12 @@ This is a **Multi-Tenant SaaS Business Investment Platform** called "Strategic P
 
 ### Web Application
 - **Framework & Runtime**: Next.js 15+ with App Router, React 19+, TypeScript, Node.js 20+
-- **Database & Backend**: Supabase with PostgreSQL 15+
-   - Supabase Auth, Realtime, Storage, Edge Functions
-   - **Row Level Security (RLS) policies with tenant isolation**
-   - **Multi-schema architecture** for tenant data separation
-   - Comprehensive database schema with triggers and functions
-   - **Tenant lifecycle management** and provisioning workflows
+- **Database & Backend**: Remote Supabase with PostgreSQL 15+
+    - Supabase Auth, Realtime, Storage, Edge Functions
+    - **Row Level Security (RLS) policies with tenant isolation**
+    - **Multi-schema architecture** for tenant data separation
+    - Comprehensive database schema with triggers and functions
+    - **Tenant lifecycle management** and provisioning workflows
 - **Authentication**: NextAuth.js with Supabase adapter + Custom Supabase Auth
    - Multi-provider OAuth (Google, LinkedIn, Apple)
    - Phone OTP verification via Twilio
@@ -32,7 +32,7 @@ This is a **Multi-Tenant SaaS Business Investment Platform** called "Strategic P
   - React Hook Form for performant forms
   - **Zod for TypeScript-first schema validation**
   - **Tenant-aware validation rules**
-- **Real-time Features**: Supabase Realtime for live updates with tenant scoping
+- **Real-time Features**: Remote Supabase Realtime for live updates with tenant scoping
 - **API Communication**:
   - Apollo Client 3.x for GraphQL
   - Axios for REST endpoints
@@ -294,7 +294,7 @@ Fallback Option: Provides alternative for users who prefer Google
 
 ## Technical Specifications
 
-### Multi-Tenant Database Architecture (PostgreSQL via Supabase)
+### Multi-Tenant Database Architecture (PostgreSQL via Remote Supabase)
 ```sql
 -- Multi-tenant schema with tenant isolation
 tenants (id, name, slug, status, settings, created_at, updated_at)
@@ -402,7 +402,7 @@ audit_logs (id, tenant_id, user_id, action, resource, details, timestamp)
 ## Multi-Tenant Implementation Roadmap
 
 ### Phase 1: Multi-Tenant Foundation (Q1)
-- **Supabase migration** from Convex with multi-tenant schema
+- **Remote Supabase setup** with multi-tenant schema deployment
 - **Tenant architecture** setup with isolation and RLS policies
 - **Core authentication** and profiles with tenant context
 - **Basic idea/investment CRUD** with tenant scoping
@@ -716,15 +716,13 @@ web-app/
 │   ├── images/                     # Tenant-customizable images
 │   └── manifest.json               # Web app manifest
 │
-├── supabase/                       # Supabase configuration
-│   ├── functions/                  # Edge Functions (Multi-Tenant)
+├── (Supabase functions deployed to remote project)
+│   ├── Edge Functions (Multi-Tenant) deployed via Supabase Dashboard
 │   │   ├── business-ideas/        # Business logic functions
 │   │   ├── matches/               # Matching algorithm
 │   │   ├── messages/              # Real-time messaging
 │   │   ├── tenant-management/     # Tenant operations
 │   │   └── feature-flags/         # Feature flag processing
-│   │
-│   └── migrations/                 # Database migrations with tenant support
 │
 ├── middleware.ts                   # Next.js middleware for tenant routing
 ├── tailwind.config.ts             # Tailwind with design tokens
@@ -772,9 +770,7 @@ web-app/
 │   ├── icons/          # Multi-size icons for different devices
 │   ├── images/         # Responsive images with multiple sizes
 │   └── splash/         # Mobile splash screens
-├── supabase/           # Edge Functions and migrations
-│   ├── functions/      # Supabase Edge Functions
-│   └── migrations/     # Database migrations
+├── (Supabase Edge Functions deployed remotely via Supabase Dashboard)
 ├── middleware.ts       # Next.js middleware for auth and redirects
 ├── tailwind.config.ts  # Mobile-first Tailwind configuration
 └── next.config.ts      # Next.js config with mobile optimizations
@@ -782,12 +778,12 @@ web-app/
 
 ## Multi-Tenant Technology Implementation Status
 
-### ✅ Supabase PostgreSQL Multi-Tenant Implementation Complete
+### ✅ Remote Supabase PostgreSQL Multi-Tenant Implementation Complete
 - **Multi-Tenant Database Schema**: Enhanced PostgreSQL schema with tenant isolation
 - **Row Level Security (RLS)**: Full RLS implementation with tenant_id scoping across all tables
 - **Tenant Management**: Complete tenant lifecycle management system
-- **Edge Functions**: Business logic implemented via Supabase Edge Functions with tenant context
-- **Real-time Features**: Live subscriptions via Supabase Realtime with tenant filtering
+- **Edge Functions**: Business logic implemented via remote Supabase Edge Functions with tenant context
+- **Real-time Features**: Live subscriptions via remote Supabase Realtime with tenant filtering
 - **Authentication**: NextAuth + Supabase Auth integration with tenant context
 
 ### ✅ Multi-Tenant Architecture Features Implemented
