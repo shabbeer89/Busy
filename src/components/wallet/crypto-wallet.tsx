@@ -140,115 +140,159 @@ export function CryptoWallet({ className }: CryptoWalletProps) {
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Wallet className="h-5 w-5" />
-          Crypto Wallet
-        </CardTitle>
-        <CardDescription>
-          Connect your Web3 wallet to make secure cryptocurrency investments
-        </CardDescription>
-      </CardHeader>
+    <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-indigo-900/20 border border-blue-400/30 backdrop-blur-sm ${className}`}>
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-indigo-600/5" />
+      <div className="relative">
+        <Card className="bg-transparent border-0 shadow-none">
+          <CardHeader className="pb-6">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <Wallet className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <CardTitle className="text-center text-white text-2xl font-bold">
+              🌐 Crypto Wallet Hub
+            </CardTitle>
+            <CardDescription className="text-center text-slate-200 text-lg">
+              Connect your Web3 wallet to make secure cryptocurrency investments
+            </CardDescription>
+          </CardHeader>
 
-      <CardContent className="space-y-6">
-        {/* Wallet Connection Status */}
-        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-          <div className="flex items-center gap-3">
-            {walletState.connected ? (
-              <CheckCircle className="h-5 w-5 text-green-500" />
-            ) : (
-              <AlertCircle className="h-5 w-5 text-orange-500" />
-            )}
+          <CardContent className="space-y-6">
+                    {/* Enhanced Wallet Connection Status */}
+                    <div className={`flex items-center justify-between p-6 rounded-xl border-2 transition-all ${
+                      walletState.connected
+                        ? 'bg-gradient-to-r from-green-900/20 to-green-800/20 border-green-400/30'
+                        : 'bg-gradient-to-r from-orange-900/20 to-orange-800/20 border-orange-400/30'
+                    }`}>
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+              walletState.connected
+                ? 'bg-green-500 shadow-green-500/30'
+                : 'bg-orange-500 shadow-orange-500/30'
+            } shadow-lg`}>
+              {walletState.connected ? (
+                <CheckCircle className="h-6 w-6 text-white" />
+              ) : (
+                <AlertCircle className="h-6 w-6 text-white" />
+              )}
+            </div>
             <div>
-              <p className="font-medium">
-                {walletState.connected ? 'Wallet Connected' : 'Wallet Not Connected'}
+              <p className="font-bold text-lg text-white">
+                {walletState.connected ? '✅ Wallet Connected' : '⚠️ Wallet Not Connected'}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className={`text-sm ${
+                walletState.connected ? 'text-green-200' : 'text-orange-200'
+              }`}>
                 {walletState.connected
-                  ? 'Ready for secure transactions'
-                  : 'Connect your wallet to start investing'
+                  ? '🔐 Ready for secure transactions'
+                  : '🔗 Connect your wallet to start investing'
                 }
               </p>
             </div>
           </div>
 
           {!walletState.connected && hasWeb3Support && (
-            <Button onClick={connectWallet} disabled={walletState.isLoading}>
+            <Button
+              onClick={connectWallet}
+              disabled={walletState.isLoading}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+            >
               {walletState.isLoading ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                   Connecting...
                 </>
               ) : (
-                'Connect Wallet'
+                <>
+                  <Wallet className="h-4 w-4 mr-2" />
+                  Connect Wallet
+                </>
               )}
             </Button>
           )}
-        </div>
-
-        {/* Wallet Info */}
-        {walletState.connected && walletState.address && (
-          <div className="space-y-4">
+</div>
+          {/* Enhanced Wallet Info */}
+          {walletState.connected && walletState.address && (
+          <div className="space-y-6">
             {/* Wallet Address */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Wallet Address</label>
-              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                <code className="flex-1 text-sm">
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-white">💳 Wallet Address</label>
+              <div className="flex items-center gap-2 p-4 bg-slate-800/50 border border-slate-600 rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                  <Wallet className="w-5 h-5 text-white" />
+                </div>
+                <code className="flex-1 text-sm font-mono text-slate-200">
                   {formatAddress(walletState.address)}
                 </code>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowFullAddress(!showFullAddress)}
-                  className="px-2"
-                >
-                  {showFullAddress ? 'Hide' : 'Show'}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={copyAddress}
-                  className="px-2"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => window.open(`https://etherscan.io/address/${walletState.address}`, '_blank')}
-                  className="px-2"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFullAddress(!showFullAddress)}
+                    className="px-2 text-slate-300 hover:text-white hover:bg-slate-700"
+                  >
+                    {showFullAddress ? '🙈' : '👁️'}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={copyAddress}
+                    className="px-2 text-slate-300 hover:text-white hover:bg-slate-700"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => window.open(`https://etherscan.io/address/${walletState.address}`, '_blank')}
+                    className="px-2 text-slate-300 hover:text-white hover:bg-slate-700"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
 
-            {/* Network Info */}
+            {/* Enhanced Network Info */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Network</label>
-                <Badge className={getNetworkColor(walletState.chainId || 0)}>
+              <div className="p-4 bg-slate-800/50 border border-slate-600 rounded-xl">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">🌐</span>
+                  </div>
+                  <label className="text-sm font-bold text-white">Network</label>
+                </div>
+                <Badge className={`${getNetworkColor(walletState.chainId || 0)} text-white border-0`}>
                   {getNetworkName(walletState.chainId || 0)}
                 </Badge>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Balance</label>
-                <div className="text-lg font-semibold">
+              <div className="p-4 bg-slate-800/50 border border-slate-600 rounded-xl">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center">
+                    <DollarSign className="w-4 h-4 text-white" />
+                  </div>
+                  <label className="text-sm font-bold text-white">Balance</label>
+                </div>
+                <div className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
                   {walletState.balance} ETH
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Enhanced Quick Actions */}
             <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
+              <Button variant="outline" className="flex items-center gap-2 p-4 bg-slate-800/50 border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white transition-all">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                  <TrendingUp className="w-3 h-3 text-white" />
+                </div>
                 View Portfolio
               </Button>
-              <Button variant="outline" className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
+              <Button variant="outline" className="flex items-center gap-2 p-4 bg-slate-800/50 border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white transition-all">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-green-500 to-blue-600 flex items-center justify-center">
+                  <DollarSign className="w-3 h-3 text-white" />
+                </div>
                 Make Investment
               </Button>
             </div>
@@ -360,6 +404,8 @@ export function CryptoWallet({ className }: CryptoWalletProps) {
         )}
       </CardContent>
     </Card>
+    </div>
+    </div>
   )
 }
 
