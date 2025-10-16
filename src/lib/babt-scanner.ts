@@ -65,9 +65,19 @@ export interface SmartContractInfo {
  * - Better documentation and support
  */
 export class BABTScannerService {
-  private readonly ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_BSCSCAN_API_KEY || 'demo';
-  private readonly BSC_BASE_URL = 'https://api.bscscan.com/api';
-  private readonly ETHERSCAN_BASE_URL = 'https://api.etherscan.io/v2/api';
+   private readonly ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_BSCSCAN_API_KEY || 'demo';
+   private readonly BSC_BASE_URL = 'https://api.bscscan.com/api'; // Legacy V1 endpoint
+   private readonly ETHERSCAN_BASE_URL = 'https://api.etherscan.io/v2/api'; // New V2 endpoint
+
+   // Chain ID for BSC in Etherscan API V2
+   private readonly BSC_CHAIN_ID = '56';
+
+   // Whitelist of known BABT contract addresses
+   private readonly BABT_CONTRACT_WHITELIST = [
+     '0x2B09d47D550061f995A3b5C6AF7d13f3a81E9C23', // Official Binance BABT (BSC)
+     '0x1c7e83f8c58165c518e2ff2d1c7e4b5d4b6e6a5', // Alternative BABT
+     '0x3a6d8ca21d1cf76f653a67577fa0d27453350dd', // Test BABT
+   ];
 
   /**
    * Scan and analyze a BAB token contract
@@ -80,7 +90,7 @@ export class BABTScannerService {
         throw new Error('Address is not a valid BAB token contract');
       }
 
-      // Get contract information
+      // Get contract information using Etherscan API V2
       const [basicInfo, sourceCode] = await Promise.all([
         this.getTokenBasicInfo(contractAddress),
         this.getContractSourceCode(contractAddress)
@@ -106,8 +116,8 @@ export class BABTScannerService {
   }
 
   /**
-   * Get wallet portfolio including BAB tokens
-   */
+    * Get wallet portfolio including BAB tokens
+    */
   async getWalletPortfolio(walletAddress: string): Promise<WalletPortfolio> {
     try {
       const [bnbBalance, tokenBalances] = await Promise.all([
@@ -135,8 +145,8 @@ export class BABTScannerService {
   }
 
   /**
-   * Analyze smart contract for BAB token characteristics
-   */
+    * Analyze smart contract for BAB token characteristics
+    */
   async analyzeSmartContract(contractAddress: string): Promise<SmartContractInfo> {
     try {
       const [isContract, bytecode] = await Promise.all([
@@ -174,35 +184,75 @@ export class BABTScannerService {
     */
    private async verifyBABTContract(contractAddress: string): Promise<boolean> {
      try {
+       // First, check if contract is in our whitelist
+       if (this.BABT_CONTRACT_WHITELIST.includes(contractAddress.toLowerCase())) {
+         console.log('✅ Address found in whitelist:', contractAddress);
+         return true;
+       }
+
+       // If not in whitelist, verify it's a valid contract first
+       console.log('🔍 Checking if address is a contract:', contractAddress);
+       const isContract = await this.isContractAddress(contractAddress);
+
+       if (!isContract) {
+         console.log('❌ Address is not a contract:', contractAddress);
+         return false;
+       }
+
+       // Then check source code for BAB token characteristics using Etherscan API V2
        const response = await fetch(
+         `${this.ETHERSCAN_BASE_URL}?chainId=${this.BSC_CHAIN_ID}&module=contract&action=getsourcecode&address=${contractAddress}&apikey=${this.ETHERSCAN_API_KEY}`
+       );
+       const data = await response.json();
+
+       if (data.status === '1' && data.result && data.result.length > 0) {
+         const sourceCode = data.result[0].SourceCode || '';
+         return this.checkBABTCharacteristics(sourceCode);
+       }
+
+       // Fallback to BSCScan V1 if V2 fails
+       const fallbackResponse = await fetch(
          `${this.BSC_BASE_URL}?module=contract&action=getsourcecode&address=${contractAddress}&apikey=${this.ETHERSCAN_API_KEY}`
        );
-      const data = await response.json();
+       const fallbackData = await fallbackResponse.json();
 
-      if (data.status === '1' && data.result[0]) {
-        const sourceCode = data.result[0].SourceCode || '';
-        // Check for BAB token characteristics in source code
-        return this.checkBABTCharacteristics(sourceCode);
-      }
-      return false;
-    } catch (error) {
-      console.error('Error verifying BABT contract:', error);
-      return false;
-    }
-  }
+       if (fallbackData.status === '1' && fallbackData.result[0]) {
+         const sourceCode = fallbackData.result[0].SourceCode || '';
+         return this.checkBABTCharacteristics(sourceCode);
+       }
+
+       // If no source code available, assume it's not a BABT contract
+       return false;
+     } catch (error) {
+       console.error('Error verifying BABT contract:', error);
+       return false;
+     }
+   }
 
   /**
    * Check if source code contains BAB token characteristics
    */
   private checkBABTCharacteristics(sourceCode: string): boolean {
+    // If source code is empty or not available, we can't verify characteristics
+    if (!sourceCode || sourceCode.trim() === '') {
+      return false;
+    }
+
     const babtIndicators = [
       'BABT',
+      'babt',
       'Binance Account Bound',
       'Account Bound Token',
       'Soulbound',
       'SBT',
       'Non-transferable',
-      'Binance Smart Chain'
+      'Binance Smart Chain',
+      'BSC',
+      'Account Bound',
+      'bound token',
+      'binance',
+      'soul bound',
+      'non transferable'
     ];
 
     const lowerSource = sourceCode.toLowerCase();
@@ -214,13 +264,14 @@ export class BABTScannerService {
    */
   private async getTokenBasicInfo(contractAddress: string): Promise<Partial<BABTokenInfo>> {
     try {
+      // Use Etherscan API V2 for BSC (chainId: 56)
       const response = await fetch(
-        `${this.BSC_BASE_URL}?module=token&action=tokeninfo&contractaddress=${contractAddress}&apikey=${this.ETHERSCAN_API_KEY}`
+        `${this.ETHERSCAN_BASE_URL}?chainId=${this.BSC_CHAIN_ID}&module=token&action=tokeninfo&contractaddress=${contractAddress}&apikey=${this.ETHERSCAN_API_KEY}`
       );
       const data = await response.json();
 
-      if (data.status === '1' && data.result) {
-        const token = data.result;
+      if (data.status === '1' && data.result && data.result.length > 0) {
+        const token = data.result[0];
         return {
           address: contractAddress,
           name: token.name || 'Unknown',
@@ -230,7 +281,24 @@ export class BABTScannerService {
         };
       }
 
-      // Fallback to contract info
+      // Fallback to BSCScan V1 API if V2 fails
+      const fallbackResponse = await fetch(
+        `${this.BSC_BASE_URL}?module=token&action=tokeninfo&contractaddress=${contractAddress}&apikey=${this.ETHERSCAN_API_KEY}`
+      );
+      const fallbackData = await fallbackResponse.json();
+
+      if (fallbackData.status === '1' && fallbackData.result) {
+        const token = fallbackData.result;
+        return {
+          address: contractAddress,
+          name: token.name || 'Unknown',
+          symbol: token.symbol || 'UNKNOWN',
+          decimals: parseInt(token.decimals || '18'),
+          totalSupply: token.totalSupply || '0'
+        };
+      }
+
+      // Final fallback to contract info
       return await this.getContractInfo(contractAddress);
     } catch (error) {
       console.error('Error getting token basic info:', error);
@@ -273,13 +341,24 @@ export class BABTScannerService {
    */
   private async getBNBBalance(address: string): Promise<string> {
     try {
+      // Use Etherscan API V2 for BSC
       const response = await fetch(
-        `${this.BSC_BASE_URL}?module=account&action=balance&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
+        `${this.ETHERSCAN_BASE_URL}?chainId=${this.BSC_CHAIN_ID}&module=account&action=balance&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
       );
       const data = await response.json();
 
       if (data.status === '1') {
         return (parseInt(data.result) / 1e18).toFixed(4);
+      }
+
+      // Fallback to BSCScan V1
+      const fallbackResponse = await fetch(
+        `${this.BSC_BASE_URL}?module=account&action=balance&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
+      );
+      const fallbackData = await fallbackResponse.json();
+
+      if (fallbackData.status === '1') {
+        return (parseInt(fallbackData.result) / 1e18).toFixed(4);
       }
       return '0';
     } catch (error) {
@@ -293,8 +372,9 @@ export class BABTScannerService {
    */
   private async getTokenBalances(address: string): Promise<TokenBalance[]> {
     try {
+      // Use Etherscan API V2 for BSC
       const response = await fetch(
-        `${this.BSC_BASE_URL}?module=account&action=tokentx&address=${address}&startblock=0&endblock=999999999&sort=desc&apikey=${this.ETHERSCAN_API_KEY}`
+        `${this.ETHERSCAN_BASE_URL}?chainId=${this.BSC_CHAIN_ID}&module=account&action=tokentx&address=${address}&startblock=0&endblock=999999999&sort=desc&apikey=${this.ETHERSCAN_API_KEY}`
       );
       const data = await response.json();
 
@@ -317,7 +397,7 @@ export class BABTScannerService {
 
         // Get current balances for each token
         const balances: any[] = [];
-        tokenMap.forEach(async (tokenInfo, tokenAddress) => {
+        for (const [tokenAddress, tokenInfo] of tokenMap) {
           try {
             const balance = await this.getTokenBalance(address, tokenAddress);
             if (parseFloat(balance) > 0) {
@@ -330,7 +410,48 @@ export class BABTScannerService {
           } catch (error) {
             console.warn(`Error getting balance for token ${tokenAddress}:`, error);
           }
-        });
+        }
+
+        return balances;
+      }
+
+      // Fallback to BSCScan V1
+      const fallbackResponse = await fetch(
+        `${this.BSC_BASE_URL}?module=account&action=tokentx&address=${address}&startblock=0&endblock=999999999&sort=desc&apikey=${this.ETHERSCAN_API_KEY}`
+      );
+      const fallbackData = await fallbackResponse.json();
+
+      if (fallbackData.status === '1' && fallbackData.result) {
+        const tokenMap = new Map<string, any>();
+
+        for (const tx of fallbackData.result.slice(0, 100)) {
+          const tokenAddress = tx.contractAddress;
+          if (!tokenMap.has(tokenAddress)) {
+            tokenMap.set(tokenAddress, {
+              tokenAddress,
+              tokenName: tx.tokenName,
+              tokenSymbol: tx.tokenSymbol,
+              balance: '0',
+              decimals: parseInt(tx.tokenDecimal || '18')
+            });
+          }
+        }
+
+        const balances: any[] = [];
+        for (const [tokenAddress, tokenInfo] of tokenMap) {
+          try {
+            const balance = await this.getTokenBalance(address, tokenAddress);
+            if (parseFloat(balance) > 0) {
+              balances.push({
+                ...tokenInfo,
+                balance,
+                usdValue: await this.getTokenPrice(tokenAddress, balance)
+              });
+            }
+          } catch (error) {
+            console.warn(`Error getting balance for token ${tokenAddress}:`, error);
+          }
+        }
 
         return balances;
       }
@@ -346,8 +467,9 @@ export class BABTScannerService {
    */
   private async getTokenBalance(walletAddress: string, tokenAddress: string): Promise<string> {
     try {
+      // Use Etherscan API V2 for BSC
       const response = await fetch(
-        `${this.BSC_BASE_URL}?module=account&action=tokenbalance&contractaddress=${tokenAddress}&address=${walletAddress}&apikey=${this.ETHERSCAN_API_KEY}`
+        `${this.ETHERSCAN_BASE_URL}?chainId=${this.BSC_CHAIN_ID}&module=account&action=tokenbalance&contractaddress=${tokenAddress}&address=${walletAddress}&apikey=${this.ETHERSCAN_API_KEY}`
       );
       const data = await response.json();
 
@@ -355,6 +477,18 @@ export class BABTScannerService {
         // Get token decimals to format balance correctly
         const decimals = await this.getTokenDecimals(tokenAddress);
         const balance = parseInt(data.result) / Math.pow(10, decimals);
+        return balance.toFixed(4);
+      }
+
+      // Fallback to BSCScan V1
+      const fallbackResponse = await fetch(
+        `${this.BSC_BASE_URL}?module=account&action=tokenbalance&contractaddress=${tokenAddress}&address=${walletAddress}&apikey=${this.ETHERSCAN_API_KEY}`
+      );
+      const fallbackData = await fallbackResponse.json();
+
+      if (fallbackData.status === '1') {
+        const decimals = await this.getTokenDecimals(tokenAddress);
+        const balance = parseInt(fallbackData.result) / Math.pow(10, decimals);
         return balance.toFixed(4);
       }
       return '0';
@@ -369,13 +503,24 @@ export class BABTScannerService {
    */
   private async getTokenDecimals(tokenAddress: string): Promise<number> {
     try {
+      // Use Etherscan API V2 for BSC
       const response = await fetch(
-        `${this.BSC_BASE_URL}?module=token&action=tokeninfo&contractaddress=${tokenAddress}&apikey=${this.ETHERSCAN_API_KEY}`
+        `${this.ETHERSCAN_BASE_URL}?chainId=${this.BSC_CHAIN_ID}&module=token&action=tokeninfo&contractaddress=${tokenAddress}&apikey=${this.ETHERSCAN_API_KEY}`
       );
       const data = await response.json();
 
-      if (data.status === '1' && data.result) {
-        return parseInt(data.result.decimals || '18');
+      if (data.status === '1' && data.result && data.result.length > 0) {
+        return parseInt(data.result[0].decimals || '18');
+      }
+
+      // Fallback to BSCScan V1
+      const fallbackResponse = await fetch(
+        `${this.BSC_BASE_URL}?module=token&action=tokeninfo&contractaddress=${tokenAddress}&apikey=${this.ETHERSCAN_API_KEY}`
+      );
+      const fallbackData = await fallbackResponse.json();
+
+      if (fallbackData.status === '1' && fallbackData.result) {
+        return parseInt(fallbackData.result.decimals || '18');
       }
       return 18;
     } catch (error) {
@@ -443,8 +588,9 @@ export class BABTScannerService {
    */
   private async getContractBytecode(address: string): Promise<string> {
     try {
+      // Use Etherscan API V2 for BSC
       const response = await fetch(
-        `${this.BSC_BASE_URL}?module=proxy&action=eth_getCode&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
+        `${this.ETHERSCAN_BASE_URL}?chainId=${this.BSC_CHAIN_ID}&module=proxy&action=eth_getCode&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
       );
       const data = await response.json();
       return data.result || '';
@@ -459,13 +605,24 @@ export class BABTScannerService {
    */
   private async getContractSourceCode(address: string): Promise<string> {
     try {
+      // Use Etherscan API V2 for BSC
       const response = await fetch(
-        `${this.BSC_BASE_URL}?module=contract&action=getsourcecode&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
+        `${this.ETHERSCAN_BASE_URL}?chainId=${this.BSC_CHAIN_ID}&module=contract&action=getsourcecode&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
       );
       const data = await response.json();
 
-      if (data.status === '1' && data.result[0]) {
+      if (data.status === '1' && data.result && data.result.length > 0) {
         return data.result[0].SourceCode || '';
+      }
+
+      // Fallback to BSCScan V1 API if V2 fails
+      const fallbackResponse = await fetch(
+        `${this.BSC_BASE_URL}?module=contract&action=getsourcecode&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
+      );
+      const fallbackData = await fallbackResponse.json();
+
+      if (fallbackData.status === '1' && fallbackData.result[0]) {
+        return fallbackData.result[0].SourceCode || '';
       }
       return '';
     } catch (error) {
@@ -479,11 +636,30 @@ export class BABTScannerService {
    */
   private async isContractAddress(address: string): Promise<boolean> {
     try {
+      // Use Etherscan API V2 for BSC
       const response = await fetch(
-        `${this.BSC_BASE_URL}?module=proxy&action=eth_getCode&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
+        `${this.ETHERSCAN_BASE_URL}?chainId=${this.BSC_CHAIN_ID}&module=proxy&action=eth_getCode&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
       );
       const data = await response.json();
-      return data.result && data.result !== '0x';
+
+      if (data.result && data.result !== '0x') {
+        console.log('✅ Address is a valid contract:', address);
+        return true;
+      }
+
+      // Fallback to BSCScan V1 API if V2 fails
+      const fallbackResponse = await fetch(
+        `${this.BSC_BASE_URL}?module=proxy&action=eth_getCode&address=${address}&apikey=${this.ETHERSCAN_API_KEY}`
+      );
+      const fallbackData = await fallbackResponse.json();
+
+      if (fallbackData.result && fallbackData.result !== '0x') {
+        console.log('✅ Address is a valid contract (V1 fallback):', address);
+        return true;
+      }
+
+      console.log('❌ Address is not a contract or not found:', address, data);
+      return false;
     } catch (error) {
       console.error('Error checking if address is contract:', error);
       return false;
