@@ -12,29 +12,29 @@ export function useAuth() {
   const router = useRouter();
   const supabase = createClient();
 
-  // Sync with NextAuth session on mount
+  // Sync with NextAuth session on mount - only once
   useEffect(() => {
+    let isMounted = true;
+
     const syncSession = async () => {
       try {
         const session = await getSession();
-        if (session?.user) {
+        if (session?.user && isMounted) {
           const sessionUserId = (session.user as any).id;
-          const fallbackId = crypto.randomUUID();
-          console.log('🔍 [DEBUG] Session sync user ID check:', {
-            sessionUserId,
-            fallbackId: fallbackId,
-            usingFallback: !sessionUserId
-          });
+
+          // Use existing user ID if available, otherwise use session ID
+          const existingUserId = user?.id;
+          const finalUserId = existingUserId || sessionUserId || `session_${Date.now()}`;
 
           const userData: User = {
-            id: sessionUserId || fallbackId,
+            id: finalUserId,
             email: session.user.email!,
             name: session.user.name || session.user.email?.split('@')[0] || 'User',
             avatar: session.user.image || undefined,
             userType: (session.user as any).user_type || 'creator',
             isVerified: (session.user as any).is_verified || true,
             phoneVerified: (session.user as any).phone_verified || false,
-            createdAt: Date.now(),
+            createdAt: user?.createdAt || Date.now(),
             updatedAt: Date.now(),
           };
           setUser(userData);
@@ -44,8 +44,15 @@ export function useAuth() {
       }
     };
 
-    syncSession();
-  }, []);
+    // Only sync if we don't already have a user
+    if (!user) {
+      syncSession();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency array - only run once on mount
 
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setLoading(true);
@@ -66,22 +73,19 @@ export function useAuth() {
       const session = await getSession();
       if (session?.user) {
         const sessionUserId = (session.user as any).id;
-        const fallbackId = crypto.randomUUID();
-        console.log('🔍 [DEBUG] SignIn user ID check:', {
-          sessionUserId,
-          fallbackId: fallbackId,
-          usingFallback: !sessionUserId
-        });
+        // Use existing user ID if available, otherwise use session ID
+        const existingUserId = user?.id;
+        const finalUserId = existingUserId || sessionUserId || `signin_${Date.now()}`;
 
         const userData: User = {
-          id: sessionUserId || fallbackId,
+          id: finalUserId,
           email: session.user.email!,
           name: session.user.name || session.user.email?.split('@')[0] || 'User',
           avatar: session.user.image || undefined,
           userType: (session.user as any).user_type || 'creator',
           isVerified: (session.user as any).is_verified || true,
           phoneVerified: (session.user as any).phone_verified || false,
-          createdAt: Date.now(),
+          createdAt: user?.createdAt || Date.now(),
           updatedAt: Date.now(),
         };
         setUser(userData);
@@ -257,22 +261,19 @@ export function useAuth() {
       const session = await getSession();
       if (session?.user) {
         const sessionUserId = (session.user as any).id;
-        const fallbackId = crypto.randomUUID();
-        console.log('🔍 [DEBUG] Google signIn user ID check:', {
-          sessionUserId,
-          fallbackId: fallbackId,
-          usingFallback: !sessionUserId
-        });
+        // Use existing user ID if available, otherwise use session ID
+        const existingUserId = user?.id;
+        const finalUserId = existingUserId || sessionUserId || `google_${Date.now()}`;
 
         const userData: User = {
-          id: sessionUserId || fallbackId,
+          id: finalUserId,
           email: session.user.email!,
           name: session.user.name || session.user.email?.split('@')[0] || 'User',
           avatar: session.user.image || undefined,
           userType: (session.user as any).user_type || 'creator',
           isVerified: (session.user as any).is_verified || true,
           phoneVerified: (session.user as any).phone_verified || false,
-          createdAt: Date.now(),
+          createdAt: user?.createdAt || Date.now(),
           updatedAt: Date.now(),
         };
         setUser(userData);
@@ -299,22 +300,19 @@ export function useAuth() {
       const session = await getSession();
       if (session?.user) {
         const sessionUserId = (session.user as any).id;
-        const fallbackId = crypto.randomUUID();
-        console.log('🔍 [DEBUG] LinkedIn signIn user ID check:', {
-          sessionUserId,
-          fallbackId: fallbackId,
-          usingFallback: !sessionUserId
-        });
+        // Use existing user ID if available, otherwise use session ID
+        const existingUserId = user?.id;
+        const finalUserId = existingUserId || sessionUserId || `linkedin_${Date.now()}`;
 
         const userData: User = {
-          id: sessionUserId || fallbackId,
+          id: finalUserId,
           email: session.user.email!,
           name: session.user.name || session.user.email?.split('@')[0] || 'User',
           avatar: session.user.image || undefined,
           userType: (session.user as any).user_type || 'creator',
           isVerified: (session.user as any).is_verified || true,
           phoneVerified: (session.user as any).phone_verified || false,
-          createdAt: Date.now(),
+          createdAt: user?.createdAt || Date.now(),
           updatedAt: Date.now(),
         };
         setUser(userData);

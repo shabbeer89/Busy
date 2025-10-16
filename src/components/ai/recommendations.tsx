@@ -91,11 +91,11 @@ export function AIRecommendations({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
+          <h2 className="text-slate-300 text-2xl font-bold flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-purple-500" />
             AI Recommendations
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-slate-300">
             Personalized suggestions powered by artificial intelligence
           </p>
         </div>
@@ -134,11 +134,11 @@ export function AIRecommendations({
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-muted rounded-lg"></div>
+                  <div className="w-10 h-10 bg-slate-700 rounded-lg"></div>
                   <div className="flex-1 space-y-3">
-                    <div className="h-4 bg-muted rounded w-3/4"></div>
-                    <div className="h-3 bg-muted rounded w-1/2"></div>
-                    <div className="h-16 bg-muted rounded"></div>
+                    <div className="h-4 bg-slate-700 rounded w-3/4"></div>
+                    <div className="h-3 bg-slate-700 rounded w-1/2"></div>
+                    <div className="h-16 bg-slate-700 rounded"></div>
                   </div>
                 </div>
               </CardContent>
@@ -167,7 +167,7 @@ export function AIRecommendations({
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-lg line-clamp-1">
+                      <h3 className="font-semibold text-lg line-clamp-1 text-white">
                         {rec.title}
                       </h3>
 
@@ -182,25 +182,25 @@ export function AIRecommendations({
                       </div>
                     </div>
 
-                    <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+                    <p className="text-slate-300 text-sm mb-3 line-clamp-2">
                       {rec.description}
                     </p>
 
                     {/* Reason */}
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
-                      <span className="text-xs text-muted-foreground">{rec.reason}</span>
+                      <span className="text-xs text-slate-400">{rec.reason}</span>
                     </div>
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1 mb-4">
                       {rec.tags.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="outline" className="text-xs">
+                        <Badge key={tag} variant="outline" className="text-xs text-slate-300 border-slate-600">
                           {tag}
                         </Badge>
                       ))}
                       {rec.tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs text-slate-300 border-slate-600">
                           +{rec.tags.length - 3}
                         </Badge>
                       )}
@@ -208,7 +208,7 @@ export function AIRecommendations({
 
                     {/* Metadata */}
                     {rec.metadata && (
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                      <div className="flex items-center gap-4 text-xs text-slate-400 mb-4">
                         {rec.metadata.funding_goal && (
                           <div className="flex items-center gap-1">
                             <DollarSign className="h-3 w-3" />
@@ -222,7 +222,7 @@ export function AIRecommendations({
                           </div>
                         )}
                         {rec.metadata.category && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs text-slate-300 bg-slate-700">
                             {rec.metadata.category}
                           </Badge>
                         )}
@@ -230,7 +230,7 @@ export function AIRecommendations({
                     )}
 
                     {/* Action Button */}
-                    <Button size="sm" className="w-full">
+                    <Button size="sm" className="w-full text-white">
                       {rec.type === 'idea' ? 'View Opportunity' : 'Learn More'}
                       <ArrowRight className="h-3 w-3 ml-2" />
                     </Button>
@@ -246,9 +246,9 @@ export function AIRecommendations({
       {!isLoading && recommendations.length === 0 && !error && (
         <Card>
           <CardContent className="text-center py-12">
-            <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">No recommendations yet</h3>
-            <p className="text-muted-foreground mb-4">
+            <Sparkles className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+            <h3 className="text-lg font-semibold mb-2 text-white">No recommendations yet</h3>
+            <p className="text-slate-300 mb-4">
               Complete your profile to get personalized AI recommendations
             </p>
             <Button onClick={() => generateRecommendations(maxRecommendations)}>
@@ -265,7 +265,7 @@ export function AIRecommendations({
           {/* Top Interests */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2 text-white">
                 <Target className="h-4 w-4" />
                 Your Interests
               </CardTitle>
@@ -284,7 +284,7 @@ export function AIRecommendations({
           {/* Suggested Actions */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2 text-white">
                 <Lightbulb className="h-4 w-4" />
                 Suggested Actions
               </CardTitle>
@@ -294,7 +294,7 @@ export function AIRecommendations({
                 {insights.suggestedActions.map((action, index) => (
                   <div key={index} className="flex items-start gap-2 text-sm">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span className="text-muted-foreground">{action}</span>
+                    <span className="text-slate-300">{action}</span>
                   </div>
                 ))}
               </div>
@@ -304,7 +304,7 @@ export function AIRecommendations({
           {/* Market Opportunities */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2 text-white">
                 <TrendingUp className="h-4 w-4" />
                 Market Opportunities
               </CardTitle>
@@ -314,7 +314,7 @@ export function AIRecommendations({
                 {insights.marketOpportunities.map((opportunity, index) => (
                   <div key={index} className="flex items-start gap-2 text-sm">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
-                    <span className="text-muted-foreground">{opportunity}</span>
+                    <span className="text-slate-300">{opportunity}</span>
                   </div>
                 ))}
               </div>

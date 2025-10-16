@@ -126,9 +126,9 @@ export function Sidebar({ className }: SidebarProps) {
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Logo/Brand */}
-      <div className="flex h-16 items-center border-b px-4 border-slate-700">
-        <Link href="/dashboard" className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-white">
+      <div className="flex h-16 items-center border-b px-4 border-slate-600/50">
+        <Link href="/dashboard" className="flex items-center space-x-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
             <span className="text-sm font-bold">BM</span>
           </div>
           {isExpanded && (
@@ -151,10 +151,10 @@ export function Sidebar({ className }: SidebarProps) {
               {/* Main navigation item */}
               <div
                 className={cn(
-                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 cursor-pointer",
+                  "group flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-all duration-300 cursor-pointer transform hover:scale-105",
                   isActive
-                    ? "bg-slate-700 text-blue-300"
-                    : "text-slate-300 hover:bg-slate-700 hover:text-white",
+                    ? "bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-300 border border-blue-500/30 shadow-lg"
+                    : "text-slate-300 hover:bg-gradient-to-r hover:from-slate-700/50 hover:to-slate-600/50 hover:text-white hover:border-slate-500/50",
                   isExpanded ? (hasSubmenu ? "justify-between" : "justify-start") : "justify-center"
                 )}
                 onClick={() => {
@@ -164,11 +164,14 @@ export function Sidebar({ className }: SidebarProps) {
                 }}
               >
                 <Link href={item.href} className="flex items-center flex-1">
-                  <Icon className={cn("h-5 w-5 flex-shrink-0", isExpanded ? "mr-3" : "")} />
-                  {isExpanded && (
+                  <Icon className={cn(
+                    "h-5 w-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:text-blue-400",
+                    (isExpanded || isHovered) ? "mr-3" : ""
+                  )} />
+                  {(isExpanded || isHovered) && (
                     <span className="truncate">{item.name}</span>
                   )}
-                  {(!isExpanded && !isHovered) && (
+                  {!isExpanded && !isHovered && (
                     <div className="absolute left-full ml-6 hidden rounded-md bg-slate-800 px-2 py-1 text-xs text-white group-hover:block">
                       {item.name}
                     </div>
@@ -214,17 +217,17 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* User Section */}
         {isAuthenticated && user && (
-          <div className="border-t border-slate-700 p-4">
+          <div className="border-t border-slate-600/50 p-4">
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-600">
-                  <span className="text-sm font-medium text-gray-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-purple-600 border-2 border-white/20 shadow-lg">
+                  <span className="text-sm font-bold text-white">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
                 {(isExpanded || isHovered) && (
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
+                    <p className="text-sm font-semibold text-white truncate">
                       {user.name}
                     </p>
                     <p className="text-xs text-slate-400 capitalize">
@@ -241,7 +244,7 @@ export function Sidebar({ className }: SidebarProps) {
                   router.push('/');
                 }}
                 className={cn(
-                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 text-slate-400 hover:bg-slate-700 hover:text-white w-full text-left",
+                  "group flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-all duration-300 text-slate-400 hover:bg-gradient-to-r hover:from-red-600/20 hover:to-red-700/20 hover:text-red-300 hover:border-red-500/30 w-full text-left border border-transparent hover:border",
                   (!isExpanded && !isHovered) ? "justify-center" : "justify-start"
                 )}
                 title="Logout"
@@ -285,7 +288,7 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-20 bg-slate-900 shadow-lg transition-all duration-300 border-r border-slate-700",
+          "fixed inset-y-0 left-0 z-20 bg-gradient-to-b from-slate-900 to-slate-800 shadow-2xl transition-all duration-300 border-r border-slate-600/50",
           (isExpanded || isHovered) ? "w-64" : "w-16",
           "hidden lg:block"
         )}
@@ -299,10 +302,10 @@ export function Sidebar({ className }: SidebarProps) {
       {isMobileOpen && (
         <>
           <div
-            className="fixed inset-0 z-10 bg-black bg-opacity-50 lg:hidden"
+            className="fixed inset-0 z-10 bg-black/60 backdrop-blur-sm lg:hidden"
             onClick={() => setIsMobileOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 z-20 w-64 bg-slate-900 shadow-xl lg:hidden">
+          <div className="fixed inset-y-0 left-0 z-20 w-64 bg-gradient-to-b from-slate-900 to-slate-800 shadow-2xl lg:hidden">
             <SidebarContent />
           </div>
         </>
@@ -322,10 +325,14 @@ export function Sidebar({ className }: SidebarProps) {
 // Layout wrapper component that includes the sidebar
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Sidebar />
-      <div className="lg:pl-20">
-        {children}
+      <div className={cn(
+        "transition-all duration-300 relative min-h-screen"
+      )}>
+        <div className="min-h-screen">
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+/* Ensure all borders are light colored on dark backgrounds */
+.dark {
+  --tw-border-opacity: 1;
+}
+
+.dark * {
+  border-color: rgb(71 85 105); /* slate-600 */
+}
+
+/* Override any default black borders */
+* {
+  border-color: rgb(71 85 105); /* slate-600 */
+}

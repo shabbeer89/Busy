@@ -7,11 +7,19 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
 
-  // Optimize CSS loading to prevent preload warnings
-  experimental: {
-    // optimizeCss: {
-    //   preload: false, // Disable CSS preloading to prevent unused preload warnings
-    // },
+  // Webpack optimization for font files to prevent preload warnings
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Handle font files to prevent preload warnings
+      config.module.rules.push({
+        test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'static/media/[name].[hash].[ext]',
+        },
+      });
+    }
+    return config;
   },
 
   // Disable ESLint during build to avoid build failures

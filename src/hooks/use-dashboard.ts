@@ -52,7 +52,7 @@ export function useDashboard({
     } finally {
       setIsLoading(false)
     }
-  }, [user])
+  }, [user?.id, user?.userType])
 
   // Set up real-time subscriptions for data changes
   useEffect(() => {
@@ -125,7 +125,7 @@ export function useDashboard({
       subscriptions.forEach(sub => sub.unsubscribe())
       clearInterval(refreshIntervalId)
     }
-  }, [user, autoRefresh, refreshInterval, tenant, supabase, loadDashboardData])
+  }, [user, autoRefresh, refreshInterval, tenant, supabase])
 
   // Manual refresh function
   const refreshDashboard = useCallback(() => {

@@ -51,7 +51,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
               </div>
-              <CardTitle className="text-2xl">Something went wrong</CardTitle>
+              <CardTitle className="text-2xl text-white">Something went wrong</CardTitle>
               <CardDescription>
                 An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.
               </CardDescription>
@@ -137,8 +137,8 @@ export function ErrorFallback({
         <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
           <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
         </div>
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        <p className="text-muted-foreground mb-4">{description}</p>
+        <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
+        <p className="text-slate-300 mb-4">{description}</p>
 
         {process.env.NODE_ENV === 'development' && error && (
           <Alert variant="destructive" className="mb-4">
@@ -177,7 +177,7 @@ export function LoadingSpinner({ size = 'md', text, className }: LoadingSpinnerP
     <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
       <div className={`${sizeClasses[size]} animate-spin rounded-full border-2 border-primary border-t-transparent`} />
       {text && (
-        <p className="text-sm text-muted-foreground animate-pulse">{text}</p>
+        <p className="text-sm text-slate-300 animate-pulse">{text}</p>
       )}
     </div>
   )
@@ -195,7 +195,7 @@ export function SkeletonLoader({ className, lines = 3 }: SkeletonLoaderProps) {
       {Array.from({ length: lines }).map((_, i) => (
         <div
           key={i}
-          className={`h-4 bg-muted rounded ${i === lines - 1 ? 'w-3/4' : 'w-full'}`}
+          className={`h-4 bg-slate-700 rounded ${i === lines - 1 ? 'w-3/4' : 'w-full'}`}
         />
       ))}
     </div>
@@ -215,8 +215,8 @@ export function NetworkError({ onRetry, className }: NetworkErrorProps) {
         <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
           <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
         </div>
-        <h3 className="text-lg font-semibold mb-2">Connection Issue</h3>
-        <p className="text-muted-foreground mb-4">
+        <h3 className="text-lg font-semibold mb-2 text-white">Connection Issue</h3>
+        <p className="text-slate-300 mb-4">
           Unable to connect to our servers. Please check your internet connection and try again.
         </p>
         {onRetry && (

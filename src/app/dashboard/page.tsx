@@ -164,14 +164,14 @@ export default function DashboardPage() {
                   <Button
                     variant="outline"
                     onClick={() => window.location.reload()}
-                    className="w-full border-gray-600 text-gray-300 hover:bg-gray-700"
+                    className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
                   >
                     Refresh Page
                   </Button>
                 </div>
 
                 {lastUpdated && (
-                  <p className="text-xs text-gray-500 mt-4 text-center">
+                  <p className="text-xs text-slate-400 mt-4 text-center">
                     Last successful update: {lastUpdated.toLocaleTimeString()}
                   </p>
                 )}
@@ -203,7 +203,7 @@ export default function DashboardPage() {
       case 'investment':
         return <DollarSign className="w-4 h-4 text-yellow-400" />;
       default:
-        return <Activity className="w-4 h-4 text-gray-400" />;
+        return <Activity className="w-4 h-4 text-slate-400" />;
     }
   };
 
@@ -218,7 +218,7 @@ export default function DashboardPage() {
       case 'investment':
         return 'bg-yellow-900/20 border-yellow-800 text-yellow-400';
       default:
-        return 'bg-gray-900/20 border-gray-800 text-gray-400';
+        return 'bg-slate-900/20 border-slate-800 text-slate-400';
     }
   };
 
@@ -227,7 +227,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           {/* Personalized Welcome Section */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-white/10 backdrop-blur-sm">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-white/20 backdrop-blur-sm">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5" />
             <div className="relative p-8">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -245,17 +245,17 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">
+                    <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-sm">
                       Welcome back, {user.name}!
                     </h1>
-                    <p className="text-slate-300 text-lg mb-3">
+                    <p className="text-slate-200 text-lg mb-3">
                       Ready to {user.userType === 'creator' ? 'pitch your next big idea' : 'discover amazing opportunities'}?
                     </p>
                     <div className="flex items-center gap-4">
                       <Badge variant="outline" className="bg-white/10 text-white border-white/20 capitalize">
                         {user.userType}
                       </Badge>
-                      <div className="flex items-center gap-2 text-sm text-slate-300">
+                      <div className="flex items-center gap-2 text-sm text-slate-200">
                         <Star className="w-4 h-4 text-yellow-400" />
                         <span>{dashboardStats?.successRate}% Success Rate</span>
                       </div>
@@ -265,13 +265,13 @@ export default function DashboardPage() {
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                  <div className="text-center p-4 bg-white/10 rounded-lg border border-white/20">
                     <div className="text-2xl font-bold text-white mb-1">{dashboardStats?.totalMatches || 0}</div>
-                    <div className="text-sm text-slate-300">Total Matches</div>
+                    <div className="text-sm text-slate-200">Total Matches</div>
                   </div>
-                  <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                  <div className="text-center p-4 bg-white/10 rounded-lg border border-white/20">
                     <div className="text-2xl font-bold text-white mb-1">{dashboardStats?.profileViews || 0}</div>
-                    <div className="text-sm text-slate-300">Profile Views</div>
+                    <div className="text-sm text-slate-200">Profile Views</div>
                   </div>
                 </div>
               </div>
@@ -280,7 +280,7 @@ export default function DashboardPage() {
 
           {/* Key Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/80 border-slate-600 backdrop-blur-sm shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-blue-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -289,7 +289,7 @@ export default function DashboardPage() {
                   <ArrowUpRight className="w-4 h-4 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-400 mb-1">Total Matches</p>
+                  <p className="text-sm font-medium text-slate-300 mb-1">Total Matches</p>
                   <div className="text-3xl font-bold text-white mb-2">
                     {dashboardStats?.totalMatches || 0}
                     {enhancedMatches.length > 0 && (
@@ -307,7 +307,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/80 border-slate-600 backdrop-blur-sm shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-green-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -316,7 +316,7 @@ export default function DashboardPage() {
                   <ArrowUpRight className="w-4 h-4 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-400 mb-1">Total Earnings</p>
+                  <p className="text-sm font-medium text-slate-300 mb-1">Total Earnings</p>
                   <p className="text-3xl font-bold text-white mb-2">{formatCurrency(dashboardStats?.totalEarnings || 0)}</p>
                   <p className="text-xs text-green-400 flex items-center gap-1">
                     <ArrowUpRight className="w-3 h-3" />
@@ -326,7 +326,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/80 border-slate-600 backdrop-blur-sm shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-purple-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -335,7 +335,7 @@ export default function DashboardPage() {
                   <ArrowDownRight className="w-4 h-4 text-red-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-400 mb-1">Response Rate</p>
+                  <p className="text-sm font-medium text-slate-300 mb-1">Response Rate</p>
                   <p className="text-3xl font-bold text-white mb-2">{dashboardStats?.responseRate || 0}%</p>
                   <p className="text-xs text-red-400 flex items-center gap-1">
                     <ArrowDownRight className="w-3 h-3" />
@@ -345,7 +345,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/80 border-slate-600 backdrop-blur-sm shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -354,7 +354,7 @@ export default function DashboardPage() {
                   <ArrowUpRight className="w-4 h-4 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-400 mb-1">Profile Views</p>
+                  <p className="text-sm font-medium text-slate-300 mb-1">Profile Views</p>
                   <p className="text-3xl font-bold text-white mb-2">{dashboardStats?.profileViews || 0}</p>
                   <p className="text-xs text-green-400 flex items-center gap-1">
                     <ArrowUpRight className="w-3 h-3" />
@@ -378,12 +378,12 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white">Enhanced Matching Analytics</h2>
-                  <p className="text-slate-400 mt-1">
+                  <p className="text-slate-300 mt-1">
                     AI-powered insights from your intelligent matching performance
                   </p>
                 </div>
                 {lastUpdated && (
-                  <div className="text-sm text-slate-400">
+                  <div className="text-sm text-slate-300">
                     Updated: {lastUpdated.toLocaleTimeString()}
                   </div>
                 )}
@@ -407,10 +407,10 @@ export default function DashboardPage() {
                 />
 
                 {/* Enhanced Matching Insights */}
-                <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+                <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/80 border-slate-600 backdrop-blur-sm">
                   <CardHeader>
-                    <CardTitle className="text-white">Matching Insights</CardTitle>
-                    <CardDescription className="text-slate-400">
+                    <CardTitle className="text-white drop-shadow-sm">Matching Insights</CardTitle>
+                    <CardDescription className="text-slate-300">
                       Performance analysis from your AI-powered matches
                     </CardDescription>
                   </CardHeader>
@@ -420,12 +420,12 @@ export default function DashboardPage() {
                       <h4 className="font-medium text-white mb-3">Top Match Scores</h4>
                       <div className="space-y-2">
                         {enhancedMatches.slice(0, 3).map((match, index) => (
-                          <div key={match.idea_id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                          <div key={match.idea_id} className="flex items-center justify-between p-3 bg-slate-700/70 rounded-lg border border-slate-600">
                             <div className="flex items-center space-x-3">
                               <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
                                 {index + 1}
                               </div>
-                              <span className="text-sm text-slate-300">Match #{match.idea_id.slice(-6)}</span>
+                              <span className="text-sm text-slate-200">Match #{match.idea_id.slice(-6)}</span>
                             </div>
                             <Badge className={`${
                               match.match_score >= 0.8 ? 'bg-green-900/20 text-green-400' :
@@ -443,23 +443,23 @@ export default function DashboardPage() {
                     <div>
                       <h4 className="font-medium text-white mb-3">Confidence Levels</h4>
                       <div className="grid grid-cols-3 gap-2">
-                        <div className="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                        <div className="text-center p-3 bg-slate-700/70 rounded-lg border border-slate-600">
                           <div className="text-lg font-bold text-green-400">
                             {enhancedMatches.filter(m => m.confidence === 'high').length}
                           </div>
-                          <div className="text-xs text-slate-400">High</div>
+                          <div className="text-xs text-slate-300">High</div>
                         </div>
-                        <div className="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                        <div className="text-center p-3 bg-slate-700/70 rounded-lg border border-slate-600">
                           <div className="text-lg font-bold text-blue-400">
                             {enhancedMatches.filter(m => m.confidence === 'medium').length}
                           </div>
-                          <div className="text-xs text-slate-400">Medium</div>
+                          <div className="text-xs text-slate-300">Medium</div>
                         </div>
-                        <div className="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                        <div className="text-center p-3 bg-slate-700/70 rounded-lg border border-slate-600">
                           <div className="text-lg font-bold text-orange-400">
                             {enhancedMatches.filter(m => m.confidence === 'low').length}
                           </div>
-                          <div className="text-xs text-slate-400">Low</div>
+                          <div className="text-xs text-slate-300">Low</div>
                         </div>
                       </div>
                     </div>
@@ -477,7 +477,7 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Quick Actions */}
-            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/80 border-slate-600 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Zap className="w-5 h-5 text-yellow-400" />
@@ -494,13 +494,13 @@ export default function DashboardPage() {
                       </Button>
                     </Link>
                     <Link href="/ideas">
-                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white py-3">
                         <Lightbulb className="w-4 h-4 mr-2" />
                         Browse All Ideas
                       </Button>
                     </Link>
                     <Link href="/matches">
-                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white py-3">
                         <Target className="w-4 h-4 mr-2" />
                         My Matches
                       </Button>
@@ -515,13 +515,13 @@ export default function DashboardPage() {
                       </Button>
                     </Link>
                     <Link href="/offers/create">
-                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white py-3">
                         <Plus className="w-4 h-4 mr-2" />
                         Create Investment Offer
                       </Button>
                     </Link>
                     <Link href="/matches">
-                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white py-3">
                         <Target className="w-4 h-4 mr-2" />
                         My Matches
                       </Button>
@@ -532,7 +532,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Profile Completion */}
-            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/80 border-slate-600 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Award className="w-5 h-5 text-purple-400" />
@@ -544,14 +544,14 @@ export default function DashboardPage() {
                   <>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-slate-300">Completion</span>
-                        <span className="text-sm text-slate-400">{profileStatus.percentage}%</span>
+                        <span className="text-sm font-medium text-slate-200">Completion</span>
+                        <span className="text-sm text-slate-300">{profileStatus.percentage}%</span>
                       </div>
                       <Progress value={profileStatus.percentage} className="h-2 bg-slate-700" />
                     </div>
 
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/70 border border-slate-600">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${user.isVerified ? 'bg-green-900/20' : 'bg-amber-900/20'}`}>
                           <Clock className={`w-4 h-4 ${user.isVerified ? 'text-green-400' : 'text-amber-400'}`} />
                         </div>
@@ -563,13 +563,13 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/70 border border-slate-600">
                         <div className="w-8 h-8 rounded-full bg-blue-900/20 flex items-center justify-center">
                           <User className="w-4 h-4 text-blue-400" />
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium text-white">Profile Info</p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-slate-300">
                             {user.bio || user.location ? "Complete" : "Incomplete"}
                           </p>
                         </div>
@@ -577,7 +577,7 @@ export default function DashboardPage() {
                     </div>
 
                     <Link href="/profile">
-                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white">
                         {user.bio || user.location ? "Edit Profile" : "Complete Profile"}
                       </Button>
                     </Link>
@@ -587,7 +587,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Recent Activity */}
-            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/80 border-slate-600 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Activity className="w-5 h-5 text-green-400" />
@@ -604,9 +604,9 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-white truncate">{activity.title}</p>
-                          <p className="text-xs text-slate-300 truncate">{activity.description}</p>
+                          <p className="text-xs text-slate-200 truncate">{activity.description}</p>
                           <div className="flex items-center justify-between mt-2">
-                            <span className="text-xs text-slate-400">{activity.timestamp}</span>
+                            <span className="text-xs text-slate-300">{activity.timestamp}</span>
                             {activity.amount && (
                               <span className="text-xs font-medium text-green-400">
                                 {formatCurrency(activity.amount)}
@@ -619,7 +619,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
                 <Link href="/matches">
-                  <Button variant="outline" className="w-full mt-4 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
+                  <Button variant="outline" className="w-full mt-4 border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white">
                     View All Activity
                   </Button>
                 </Link>
@@ -628,33 +628,33 @@ export default function DashboardPage() {
           </div>
 
           {/* Platform Overview */}
-          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/80 border-slate-600 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <TrendingUp className="w-5 h-5 text-blue-400" />
                 Platform Overview
               </CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardDescription className="text-slate-300">
                 Current platform statistics and your performance
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-center p-4 bg-slate-700/70 rounded-lg border border-slate-600">
                   <div className="text-2xl font-bold text-blue-400 mb-1">{platformStats?.totalIdeas || 0}</div>
-                  <div className="text-sm text-slate-400">Total Ideas</div>
+                  <div className="text-sm text-slate-300">Total Ideas</div>
                 </div>
-                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-center p-4 bg-slate-700/70 rounded-lg border border-slate-600">
                   <div className="text-2xl font-bold text-green-400 mb-1">{platformStats?.totalOffers || 0}</div>
-                  <div className="text-sm text-slate-400">Active Offers</div>
+                  <div className="text-sm text-slate-300">Active Offers</div>
                 </div>
-                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-center p-4 bg-slate-700/70 rounded-lg border border-slate-600">
                   <div className="text-2xl font-bold text-purple-400 mb-1">{platformStats?.totalMatches || 0}</div>
-                  <div className="text-sm text-slate-400">Total Matches</div>
+                  <div className="text-sm text-slate-300">Total Matches</div>
                 </div>
-                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-center p-4 bg-slate-700/70 rounded-lg border border-slate-600">
                   <div className="text-2xl font-bold text-yellow-400 mb-1">${((platformStats?.totalFunding || 0) / 1000000).toFixed(1)}M</div>
-                  <div className="text-sm text-slate-400">Total Funding</div>
+                  <div className="text-sm text-slate-300">Total Funding</div>
                 </div>
               </div>
 
@@ -664,15 +664,15 @@ export default function DashboardPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-slate-300">Success Rate</span>
-                        <span className="text-sm text-slate-400">{dashboardStats?.successRate}%</span>
+                        <span className="text-sm text-slate-200">Success Rate</span>
+                        <span className="text-sm text-slate-300">{dashboardStats?.successRate}%</span>
                       </div>
                       <Progress value={dashboardStats?.successRate} className="h-2 bg-slate-700" />
                     </div>
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-slate-300">Response Rate</span>
-                        <span className="text-sm text-slate-400">{dashboardStats?.responseRate}%</span>
+                        <span className="text-sm text-slate-200">Response Rate</span>
+                        <span className="text-sm text-slate-300">{dashboardStats?.responseRate}%</span>
                        </div>
                        <Progress value={dashboardStats?.responseRate} className="h-2 bg-slate-700" />
                     </div>
@@ -683,9 +683,9 @@ export default function DashboardPage() {
                   <h4 className="font-medium text-white">Top Industries</h4>
                   <div className="space-y-2">
                     {platformStats?.topIndustries?.slice(0, 4).map((industry, index) => (
-                      <div key={industry} className="flex items-center justify-between p-2 bg-slate-700/50 rounded border border-slate-600">
-                        <span className="text-sm text-slate-300">{industry}</span>
-                        <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
+                      <div key={industry} className="flex items-center justify-between p-2 bg-slate-700/70 rounded border border-slate-600">
+                        <span className="text-sm text-slate-200">{industry}</span>
+                        <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">
                           #{index + 1}
                         </Badge>
                       </div>
