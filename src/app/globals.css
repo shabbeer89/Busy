@@ -87,10 +87,69 @@
 }
 
 @keyframes counter-up {
-  from {
-    transform: translateY(1rem);
-  }
-  to {
-    transform: translateY(0);
-  }
+   from {
+     transform: translateY(1rem);
+   }
+   to {
+     transform: translateY(0);
+   }
+ }
+
+/* Enhanced cursor and interaction styles for admin interface */
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+.cursor-pointer:hover {
+  cursor: pointer !important;
+}
+
+/* Ensure all buttons and interactive elements have proper cursor */
+button, .btn, [role="button"], input[type="submit"], input[type="button"] {
+  cursor: pointer !important;
+}
+
+/* Enhanced hover effects for admin cards */
+.admin-card-hover {
+  transition: all 0.3s ease;
+}
+
+.admin-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Gradient text effects */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Admin panel specific styles */
+.admin-gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.admin-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Button hover animations */
+.btn-hover-scale {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-hover-scale:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced focus states */
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
 }

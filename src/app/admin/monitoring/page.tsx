@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../layout';
 import { adminService, SystemHealth } from '@/services/admin-service';
+import { AdminMonitoringSkeleton } from '@/components/ui/skeleton';
 
 interface MetricCard {
   title: string;
@@ -161,16 +162,11 @@ export default function MonitoringPage() {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      </AdminLayout>
+        <AdminMonitoringSkeleton />
     );
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -420,6 +416,5 @@ export default function MonitoringPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   );
 }

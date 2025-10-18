@@ -7,6 +7,7 @@ import { OTPVerification } from "@/components/auth/otp-verification";
 import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
 import { useAuth } from "@/hooks/use-auth";
 import { CreateUserData } from "@/types";
+import { useTenant } from "@/contexts/tenant-context";
 
 type SignupStep = "form" | "otp" | "social";
 
@@ -84,7 +85,7 @@ export default function RegisterPage() {
 
         <div className="bg-slate-800/50 py-8 px-4 shadow-xl border border-slate-700 sm:rounded-lg sm:px-10 backdrop-blur-sm">
           {error && (
-            <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 text-red-400 rounded">
+            <div className="mb-4 p-3 bg-red-900/50 border border-red-500/50 text-red-300 rounded-md">
               {error}
             </div>
           )}
@@ -96,10 +97,10 @@ export default function RegisterPage() {
               <div className="mt-6">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+                    <span className="w-full border-t border-slate-600" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="bg-white px-2 text-gray-500">Or</span>
+                    <span className="bg-slate-800 px-2 text-slate-400">Or</span>
                   </div>
                 </div>
 
@@ -121,11 +122,11 @@ export default function RegisterPage() {
 
           {currentStep === "social" && (
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Continue with Social Login</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">Continue with Social Login</h2>
               <SocialLoginButtons callbackUrl="/dashboard" />
               <button
                 onClick={() => setCurrentStep("form")}
-                className="mt-4 text-gray-600 hover:text-gray-800 text-sm"
+                className="mt-4 text-slate-400 hover:text-white text-sm"
               >
                 ← Back to signup form
               </button>

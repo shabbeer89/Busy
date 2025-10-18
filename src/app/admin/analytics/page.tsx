@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../layout';
 import { analyticsService, AnalyticsData, DateRange } from '@/services/analytics-service';
+import { AdminAnalyticsSkeleton } from '@/components/ui/skeleton';
 
 interface MetricCardProps {
   title: string;
@@ -143,26 +144,20 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      </AdminLayout>
+        <AdminAnalyticsSkeleton ></AdminAnalyticsSkeleton>
     );
   }
 
   if (!analyticsData) {
     return (
-      <AdminLayout>
+    
         <div className="text-center py-8">
           <p className="text-red-600">Failed to load analytics data</p>
         </div>
-      </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -504,6 +499,5 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   );
 }

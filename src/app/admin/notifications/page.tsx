@@ -44,6 +44,7 @@ import {
   NotificationTemplate,
   NotificationStats
 } from '@/services/notification-service';
+import { AdminNotificationsSkeleton } from '@/components/ui/skeleton';
 
 interface NotificationCardProps {
   notification: SystemNotification;
@@ -259,16 +260,11 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      </AdminLayout>
+        <AdminNotificationsSkeleton />
     );
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -575,6 +571,5 @@ export default function NotificationsPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   );
 }

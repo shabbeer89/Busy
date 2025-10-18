@@ -31,7 +31,7 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(
             ? React.cloneElement(child as React.ReactElement<any>, {
                 isOpen,
                 setIsOpen,
-                selectedValue,
+                ...(child.type === SelectTrigger && { selectedValue }),
                 onValueChange: handleValueChange,
               })
             : child

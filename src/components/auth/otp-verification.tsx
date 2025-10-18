@@ -97,7 +97,7 @@ export function OTPVerification({
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
-            className={`text-center text-2xl font-mono tracking-widest ${error ? "border-red-500" : ""}`}
+            className={`text-center text-2xl font-mono tracking-widest bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 ${error ? "border-red-500" : ""}`}
             maxLength={6}
           />
           {error && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{error}</p>}
@@ -116,7 +116,7 @@ export function OTPVerification({
             <button
               type="button"
               onClick={handleResendOTP}
-              className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+              className="text-blue-400 hover:text-blue-300 text-sm font-medium"
             >
               Resend Code
             </button>

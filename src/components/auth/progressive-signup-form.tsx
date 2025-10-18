@@ -151,7 +151,7 @@ export function ProgressiveSignupForm({ onSubmit, isLoading = false }: Progressi
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter your full name"
-                className={errors.name ? "border-red-500" : ""}
+                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 ${errors.name ? "border-red-500" : ""}`}
               />
               {errors.name && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.name}</p>}
             </div>
@@ -172,7 +172,7 @@ export function ProgressiveSignupForm({ onSubmit, isLoading = false }: Progressi
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter your email"
-                className={errors.email ? "border-red-500" : ""}
+                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 ${errors.email ? "border-red-500" : ""}`}
               />
               {errors.email && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.email}</p>}
             </div>
@@ -187,7 +187,7 @@ export function ProgressiveSignupForm({ onSubmit, isLoading = false }: Progressi
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 placeholder="+1 (555) 123-4567"
-                className={errors.phoneNumber ? "border-red-500" : ""}
+                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 ${errors.phoneNumber ? "border-red-500" : ""}`}
               />
               {errors.phoneNumber && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.phoneNumber}</p>}
             </div>
@@ -206,7 +206,7 @@ export function ProgressiveSignupForm({ onSubmit, isLoading = false }: Progressi
                 name="userType"
                 value={formData.userType}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.userType ? "border-red-500" : "border-gray-300"}`}
+                className={`w-full px-3 py-2 bg-slate-700/50 border-slate-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.userType ? "border-red-500" : ""}`}
               >
                 <option value="">Select your account type</option>
                 <option value="creator">Business Idea Creator</option>
@@ -231,7 +231,7 @@ export function ProgressiveSignupForm({ onSubmit, isLoading = false }: Progressi
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Create a strong password"
-                className={errors.password ? "border-red-500" : ""}
+                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 ${errors.password ? "border-red-500" : ""}`}
               />
               {errors.password && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.password}</p>}
             </div>
@@ -258,7 +258,7 @@ export function ProgressiveSignupForm({ onSubmit, isLoading = false }: Progressi
                     ? "bg-green-500 text-white"
                     : step.id === currentStep
                     ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-600"
+                    : "bg-slate-600 text-slate-300"
                 }`}
               >
                 {step.id < currentStep ? "✓" : step.id}
@@ -266,7 +266,7 @@ export function ProgressiveSignupForm({ onSubmit, isLoading = false }: Progressi
               {step.id < steps.length && (
                 <div
                   className={`w-8 h-1 mx-2 ${
-                    step.id < currentStep ? "bg-green-500" : "bg-gray-200"
+                    step.id < currentStep ? "bg-green-500" : "bg-slate-600"
                   }`}
                 />
               )}

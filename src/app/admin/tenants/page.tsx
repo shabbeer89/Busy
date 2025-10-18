@@ -30,6 +30,7 @@ import {
 import { Tenant, adminService } from '@/services/admin-service';
 import { TenantForm } from '@/components/admin/tenant-form';
 import { billingService, TenantSubscription, SubscriptionPlan, Invoice, BillingStats } from '@/services/billing-service';
+import { AdminTenantsSkeleton } from '@/components/ui/skeleton';
 
 export default function TenantsPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -137,16 +138,12 @@ export default function TenantsPage() {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      </AdminLayout>
+        <AdminTenantsSkeleton />
     );
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -522,6 +519,6 @@ export default function TenantsPage() {
           mode="edit"
         />
       )}
-    </AdminLayout>
+    </>
   );
 }

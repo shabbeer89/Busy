@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { usePermissions, UserRole } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,45 +40,100 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, isAdmin = false }: SidebarProps) {
-   const [isExpanded, setIsExpanded] = useState(false);
-   const [isMobileOpen, setIsMobileOpen] = useState(false);
-   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
-   const [isHovered, setIsHovered] = useState(false);
-   const pathname = usePathname();
-   const router = useRouter();
-   const { user, isAuthenticated, signOut } = useAuth();
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const pathname = usePathname();
+    const router = useRouter();
+    const { user, isAuthenticated, signOut } = useAuth();
+ 
+   // Get user role for display
+   const getUserRoleFromUserType = (userType: string, email?: string): UserRole => {
+     // Special case: treat test@example.com as super admin for development
+     if (email === 'test@example.com') {
+       return UserRole.SUPER_ADMIN;
+     }
+ 
+     switch (userType) {
+       case 'super_admin':
+         return UserRole.SUPER_ADMIN;
+       case 'tenant_admin':
+         return UserRole.TENANT_ADMIN;
+       case 'creator':
+         return UserRole.CREATOR;
+       case 'investor':
+         return UserRole.INVESTOR;
+       default:
+         return UserRole.USER;
+     }
+   };
+ 
+   const userRole = user ? getUserRoleFromUserType(user.userType || 'user', user.email) : UserRole.USER;
+   const isSuperAdmin = userRole === UserRole.SUPER_ADMIN;
+   const isTenantAdmin = userRole === UserRole.TENANT_ADMIN;
 
   const navigationItems = isAdmin ? [
-    // Admin Navigation Items - Only existing pages
+    // Admin Navigation Items - Complete admin panel
     {
       name: "Admin Dashboard",
       href: "/admin",
       icon: LayoutDashboard,
-      current: pathname.startsWith("/admin"),
+      current: pathname === "/admin",
     },
     {
       name: "User Management",
       href: "/admin/users",
       icon: Users,
-      current: pathname.startsWith("/admin/users"),
+      current: pathname === "/admin/users",
     },
     {
       name: "Tenant Management",
       href: "/admin/tenants",
       icon: Building,
-      current: pathname.startsWith("/admin/tenants"),
+      current: pathname === "/admin/tenants",
     },
     {
       name: "Platform Analytics",
       href: "/admin/analytics",
       icon: BarChart3,
-      current: pathname.startsWith("/admin/analytics"),
+      current: pathname === "/admin/analytics",
+    },
+    {
+      name: "System Monitoring",
+      href: "/admin/monitoring",
+      icon: Activity,
+      current: pathname === "/admin/monitoring",
+    },
+    {
+      name: "Security Center",
+      href: "/admin/security",
+      icon: ShieldCheck,
+      current: pathname === "/admin/security",
+    },
+    {
+      name: "Feature Toggles",
+      href: "/admin/features",
+      icon: Zap,
+      current: pathname === "/admin/features",
+    },
+    {
+      name: "Configuration",
+      href: "/admin/config",
+      icon: Settings,
+      current: pathname === "/admin/config",
+    },
+    {
+      name: "Notifications",
+      href: "/admin/notifications",
+      icon: TrendingUp,
+      current: pathname === "/admin/notifications",
     },
     {
       name: "Audit Logs",
       href: "/admin/audit-logs",
       icon: FileText,
-      current: pathname.startsWith("/admin/audit-logs"),
+      current: pathname === "/admin/audit-logs",
     },
   ] : [
     // Regular User Navigation Items
@@ -165,13 +221,13 @@ export function Sidebar({ className, isAdmin = false }: SidebarProps) {
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Logo/Brand */}
-      <div className="flex h-16 items-center border-b px-4 border-slate-600/50">
-        <Link href="/dashboard" className="flex items-center space-x-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
-            <span className="text-sm font-bold">BM</span>
+      <div className="flex h-16 items-center border-b px-4 border-white/10 bg-gradient-to-r from-white/5 to-white/10">
+        <Link href="/dashboard" className="flex items-center space-x-3 hover:scale-105 transition-transform duration-300">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-600 text-white shadow-xl border-2 border-white/20">
+            <span className="text-base font-bold">🚀</span>
           </div>
           {isExpanded && (
-            <span className="text-xl font-bold text-white">
+            <span className="text-xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
               BusinessMatch
             </span>
           )}
@@ -270,7 +326,7 @@ export function Sidebar({ className, isAdmin = false }: SidebarProps) {
                       {user.name}
                     </p>
                     <p className="text-xs text-slate-400 capitalize">
-                      {user.userType}
+                      {isSuperAdmin ? 'Super Admin' : isTenantAdmin ? 'Tenant Admin' : user.userType?.replace('_', ' ') || 'user'}
                     </p>
                   </div>
                 )}
@@ -278,8 +334,8 @@ export function Sidebar({ className, isAdmin = false }: SidebarProps) {
 
               {/* Logout button - always visible */}
               <button
-                onClick={() => {
-                  signOut();
+                onClick={async () => {
+                  await signOut();
                   router.push('/');
                 }}
                 className={cn(
@@ -324,12 +380,11 @@ export function Sidebar({ className, isAdmin = false }: SidebarProps) {
         </Button>
       </div>
 
-      {/* Sidebar */}
+      {/* Desktop Sidebar - Only show on lg screens and up */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-20 bg-gradient-to-b from-slate-900 to-slate-800 shadow-2xl transition-all duration-300 border-r border-slate-600/50",
-          (isExpanded || isHovered) ? "w-64" : "w-16",
-          "hidden lg:block"
+          "fixed inset-y-0 left-0 z-20 bg-gradient-to-b from-slate-900 to-slate-800 shadow-2xl transition-all duration-300 border-r border-slate-600/50 hidden lg:block",
+          (isExpanded || isHovered) ? "w-64" : "w-16"
         )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -337,14 +392,14 @@ export function Sidebar({ className, isAdmin = false }: SidebarProps) {
         <SidebarContent />
       </div>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile Sidebar Overlay - Only show on screens smaller than lg */}
       {isMobileOpen && (
         <>
           <div
-            className="fixed inset-0 z-10 bg-black/60 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-10 bg-black/60 backdrop-blur-sm block lg:hidden"
             onClick={() => setIsMobileOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 z-20 w-64 bg-gradient-to-b from-slate-900 to-slate-800 shadow-2xl lg:hidden">
+          <div className="fixed inset-y-0 left-0 z-20 w-64 bg-gradient-to-b from-slate-900 to-slate-800 shadow-2xl block lg:hidden">
             <SidebarContent />
           </div>
         </>
@@ -363,16 +418,16 @@ export function Sidebar({ className, isAdmin = false }: SidebarProps) {
 
 // Layout wrapper component that includes the sidebar
 export function SidebarLayout({ children, isAdmin = false }: { children: React.ReactNode; isAdmin?: boolean }) {
-   return (
-     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-       <Sidebar isAdmin={isAdmin} />
-       <div className={cn(
-         "transition-all duration-300 relative min-h-screen"
-       )}>
-         <div className="min-h-screen">
-           {children}
-         </div>
-       </div>
-     </div>
-   );
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <Sidebar isAdmin={isAdmin} />
+        <div className={cn(
+          "transition-all duration-300 relative min-h-screen"
+        )}>
+          <div className="min-h-screen">
+            {children}
+          </div>
+        </div>
+      </div>
+    );
 }

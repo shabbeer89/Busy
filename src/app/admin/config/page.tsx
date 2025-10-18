@@ -35,6 +35,7 @@ import {
   ConfigCategory,
   configService
 } from '@/services/config-service';
+import { AdminConfigSkeleton } from '@/components/ui/skeleton';
 
 const categoryIcons: Record<string, React.ElementType> = {
   general: Settings,
@@ -256,41 +257,40 @@ export default function ConfigPage() {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      </AdminLayout>
+        <AdminConfigSkeleton ></AdminConfigSkeleton>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Configuration Management</h2>
-            <p className="text-gray-600 dark:text-gray-300">
+            <h2 className="text-3xl font-bold text-white">Configuration Management</h2>
+            <p className="text-slate-300">
               Manage platform-wide settings and feature flags
             </p>
           </div>
-          <Button variant="outline" onClick={loadConfigurations}>
+          <Button
+            variant="outline"
+            onClick={loadConfigurations}
+            className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 text-blue-300 hover:from-blue-500/30 hover:to-purple-500/30 hover:text-blue-200 hover:border-blue-400/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
+          >
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
         </div>
 
         {/* Search */}
-        <Card>
-          <CardContent className="p-4">
+        <Card className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border-slate-600/30 hover:border-slate-500/50 transition-all duration-300">
+          <CardContent className="p-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
               <Input
                 placeholder="Search configurations..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:bg-slate-700/50 focus:border-blue-500/50 transition-all duration-300"
               />
             </div>
           </CardContent>
@@ -298,9 +298,11 @@ export default function ConfigPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Category Sidebar */}
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle className="text-lg">Categories</CardTitle>
+          <Card className="lg:col-span-1 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border-slate-600/30 hover:border-slate-500/50 transition-all duration-300">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-white flex items-center gap-2">
+                📂 Categories
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {categories.map((category) => {
@@ -309,7 +311,11 @@ export default function ConfigPage() {
                   <Button
                     key={category.id}
                     variant={selectedCategory === category.id ? "default" : "ghost"}
-                    className="w-full justify-start"
+                    className={`w-full justify-start ${
+                      selectedCategory === category.id
+                        ? "bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 text-blue-300 hover:from-blue-500/30 hover:to-purple-500/30 hover:text-blue-200 hover:border-blue-400/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
+                        : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                    }`}
                     onClick={() => setSelectedCategory(category.id)}
                   >
                     <Icon className="w-4 h-4 mr-2" />
@@ -321,13 +327,13 @@ export default function ConfigPage() {
           </Card>
 
           {/* Configuration Settings */}
-          <Card className="lg:col-span-3">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card className="lg:col-span-3 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border-slate-600/30 hover:border-slate-500/50 transition-all duration-300">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-2xl text-white flex items-center gap-2">
                 {React.createElement(categoryIcons[selectedCategory] || Settings, { className: "w-5 h-5" })}
                 {categories.find(cat => cat.id === selectedCategory)?.name || 'Settings'}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-slate-300">
                 {categories.find(cat => cat.id === selectedCategory)?.description}
               </CardDescription>
             </CardHeader>
@@ -479,6 +485,5 @@ export default function ConfigPage() {
           </Card>
         </div>
       </div>
-    </AdminLayout>
   );
 }

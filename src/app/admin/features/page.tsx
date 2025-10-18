@@ -97,7 +97,6 @@ export default function FeaturesPage() {
   const globalFeatures = mockFeatures.filter(f => !f.tenantScoped);
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -255,6 +254,5 @@ export default function FeaturesPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   );
 }

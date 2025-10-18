@@ -59,6 +59,7 @@ import {
   SecurityPolicy,
   SecurityStats
 } from '@/services/security-service';
+import { AdminSecuritySkeleton } from '@/components/ui/skeleton';
 
 interface SecurityMetricCardProps {
   title: string;
@@ -214,16 +215,12 @@ export default function SecurityPage() {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      </AdminLayout>
+        <AdminSecuritySkeleton />
     );
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -636,6 +633,6 @@ export default function SecurityPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
   );
 }

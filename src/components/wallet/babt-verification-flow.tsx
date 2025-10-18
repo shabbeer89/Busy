@@ -429,11 +429,11 @@ Alternatively, you can use the "Link Web3 Wallet" option for verification.`);
         /* Verification Flow */
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2">
+            <CardTitle className="flex text-white items-center justify-center gap-2">
               <Shield className="w-6 h-6 text-blue-500" />
               Verify Your BABT
             </CardTitle>
-            <CardDescription>
+            <CardDescription className='text-white'>
               Choose your preferred verification method below
             </CardDescription>
           </CardHeader>
@@ -454,10 +454,10 @@ Alternatively, you can use the "Link Web3 Wallet" option for verification.`);
                   <Button
                     onClick={() => setState(prev => ({ ...prev, step: 'wallet' }))}
                     variant="outline"
-                    className="h-20 flex-col gap-2"
+                    className="h-20 flex-col gap-2 text-white"
                     size="lg"
                   >
-                    <Wallet className="w-6 h-6" />
+                    <Wallet className="w-6 h-6 " />
                     Link Web3 Wallet
                   </Button>
                 </div>
