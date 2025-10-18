@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,56 +18,48 @@ import {
 } from 'lucide-react';
 import AdminLayout from './layout';
 import Link from 'next/link';
+import { adminService, AdminStats } from '@/services/admin-service';
 
 export default function AdminDashboardPage() {
-  // Mock stats data
-  const stats = {
-    totalTenants: 15,
-    activeTenants: 12,
-    totalUsers: 2847,
-    totalRevenue: 89250,
-    systemHealth: 98.5,
-    activeFeatures: 8,
-    criticalEvents: 0,
-    pendingTasks: 3,
-  };
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const recentActivities = [
-    {
-      id: '1',
-      type: 'tenant_created',
-      message: 'New tenant "HealthTech Solutions" was created',
-      timestamp: '2 hours ago',
-      severity: 'info',
-    },
-    {
-      id: '2',
-      type: 'feature_enabled',
-      message: 'BABT verification enabled for TechVentures Inc.',
-      timestamp: '4 hours ago',
-      severity: 'success',
-    },
-    {
-      id: '3',
-      type: 'security_alert',
-      message: 'Multiple failed login attempts detected',
-      timestamp: '6 hours ago',
-      severity: 'warning',
-    },
-    {
-      id: '4',
-      type: 'system_update',
-      message: 'System backup completed successfully',
-      timestamp: '1 day ago',
-      severity: 'success',
-    },
-  ];
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const data = await adminService.getAdminStats();
+        setStats(data);
+      } catch (error) {
+        console.error('Failed to load admin stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const topTenants = [
-    { name: 'TechVentures Inc.', users: 245, revenue: 12500, growth: 15.3 },
-    { name: 'GreenEnergy Solutions', users: 89, revenue: 3200, growth: 8.7 },
-    { name: 'FinTech Innovations', users: 156, revenue: 8900, growth: 12.4 },
-  ];
+    loadStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <AdminLayout>
+        <div className="text-center py-8">
+          <p className="text-red-600">Failed to load dashboard data</p>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  // Use real data from stats
 
   return (
     <AdminLayout>
@@ -172,13 +165,15 @@ export default function AdminDashboardPage() {
                 </Button>
               </Link>
 
-              <Link href="/admin/features">
-                <Button variant="outline" className="w-full justify-start">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Feature Management
-                  <ChevronRight className="w-4 h-4 ml-auto" />
-                </Button>
-              </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                disabled
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Feature Management (Coming Soon)
+                <ChevronRight className="w-4 h-4 ml-auto opacity-50" />
+              </Button>
 
               <Link href="/admin/audit-logs">
                 <Button variant="outline" className="w-full justify-start">
@@ -191,7 +186,7 @@ export default function AdminDashboardPage() {
               <Link href="/admin/analytics">
                 <Button variant="outline" className="w-full justify-start">
                   <TrendingUp className="w-4 h-4 mr-2" />
-                  System Analytics
+                  Platform Analytics
                   <ChevronRight className="w-4 h-4 ml-auto" />
                 </Button>
               </Link>
@@ -206,7 +201,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentActivities.map((activity) => (
+                {stats.recentActivities.map((activity) => (
                   <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                     <div className={`w-2 h-2 rounded-full mt-2 ${
                       activity.severity === 'success' ? 'bg-green-500' :
@@ -218,7 +213,7 @@ export default function AdminDashboardPage() {
                         {activity.message}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {activity.timestamp}
+                        {new Date(activity.timestamp).toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -244,7 +239,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topTenants.map((tenant, index) => (
+              {stats.topTenants.map((tenant, index) => (
                 <div key={tenant.name} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-4">
                     <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">

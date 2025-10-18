@@ -40,6 +40,18 @@ const publicRoutes = [
   '/tenant-select',
 ];
 
+// Helper function to check if user is admin
+async function checkIfAdminUser(user: any): Promise<boolean> {
+  try {
+    // For now, check if email is test@example.com (admin user)
+    // In production, you'd query your users table to check user_type
+    return user?.email === 'test@example.com';
+  } catch (error) {
+    console.error('Error checking admin user:', error);
+    return false;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -116,6 +128,13 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if ((pathname === '/auth/login' || pathname === '/auth/register') && session) {
+    // Check if user is admin (you'll need to implement this check)
+    const isAdminUser = await checkIfAdminUser(session.user);
+
+    if (isAdminUser) {
+      return NextResponse.redirect(new URL('/admin', request.url));
+    }
+
     // If user has tenant context, redirect to tenant dashboard
     if (tenantSlug) {
       return NextResponse.redirect(new URL(`/${tenantSlug}/dashboard`, request.url));

@@ -1,116 +1,149 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TenantCard } from '@/components/admin/tenant-card';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Building,
+  Users,
+  Settings,
+  MoreHorizontal,
+  Filter,
+  TrendingUp,
+  CreditCard,
+  DollarSign
+} from 'lucide-react';
 import AdminLayout from '../layout';
-
-interface Tenant {
-  id: string;
-  name: string;
-  slug: string;
-  status: 'active' | 'suspended' | 'pending';
-  subscription: {
-    plan: string;
-    status: string;
-    expiresAt: string;
-  };
-  stats: {
-    users: number;
-    revenue: number;
-    growth: number;
-  };
-  createdAt: string;
-}
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Tenant, adminService } from '@/services/admin-service';
+import { TenantForm } from '@/components/admin/tenant-form';
+import { billingService, TenantSubscription, SubscriptionPlan, Invoice, BillingStats } from '@/services/billing-service';
 
 export default function TenantsPage() {
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
 
-  // Mock tenant data
-  const mockTenants: Tenant[] = [
-    {
-      id: '1',
-      name: 'TechVentures Inc.',
-      slug: 'techventures',
-      status: 'active',
-      subscription: {
-        plan: 'Enterprise',
-        status: 'active',
-        expiresAt: '2024-12-31',
-      },
-      stats: {
-        users: 245,
-        revenue: 12500,
-        growth: 15.3,
-      },
-      createdAt: '2023-06-15T10:00:00Z',
-    },
-    {
-      id: '2',
-      name: 'GreenEnergy Solutions',
-      slug: 'greenenergy',
-      status: 'active',
-      subscription: {
-        plan: 'Pro',
-        status: 'active',
-        expiresAt: '2024-08-15',
-      },
-      stats: {
-        users: 89,
-        revenue: 3200,
-        growth: 8.7,
-      },
-      createdAt: '2023-09-22T14:30:00Z',
-    },
-    {
-      id: '3',
-      name: 'FinTech Innovations',
-      slug: 'fintech-innovations',
-      status: 'suspended',
-      subscription: {
-        plan: 'Basic',
-        status: 'expired',
-        expiresAt: '2024-01-01',
-      },
-      stats: {
-        users: 34,
-        revenue: 800,
-        growth: -2.1,
-      },
-      createdAt: '2023-11-08T09:15:00Z',
-    },
-  ];
+  // Enhanced billing features
+  const [subscriptions, setSubscriptions] = useState<TenantSubscription[]>([]);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [billingStats, setBillingStats] = useState<BillingStats | null>(null);
+  const [showBillingDetails, setShowBillingDetails] = useState<string | null>(null);
+  const [selectedTenantForBilling, setSelectedTenantForBilling] = useState<Tenant | null>(null);
 
-  const filteredTenants = mockTenants.filter(tenant => {
+  useEffect(() => {
+    loadTenants();
+  }, []);
+
+  const loadTenants = async () => {
+    try {
+      setLoading(true);
+      const [tenantsData, plansData, statsData] = await Promise.all([
+        adminService.getTenants(),
+        billingService.getSubscriptionPlans(),
+        billingService.getBillingStats()
+      ]);
+      setTenants(tenantsData);
+      setPlans(plansData);
+      setBillingStats(statsData);
+
+      // Load subscriptions for all tenants
+      const allSubscriptions = await billingService.getTenantSubscriptions();
+      setSubscriptions(allSubscriptions);
+    } catch (error) {
+      console.error('Failed to load tenants:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateTenant = async (tenantData: Omit<Tenant, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const newTenant = await adminService.createTenant(tenantData);
+      if (newTenant) {
+        setTenants(prev => [newTenant, ...prev]);
+        setShowCreateForm(false);
+      }
+    } catch (error) {
+      console.error('Failed to create tenant:', error);
+    }
+  };
+
+  const handleEditTenant = (tenant: Tenant) => {
+    setEditingTenant(tenant);
+  };
+
+  const handleUpdateTenant = async (tenantData: Omit<Tenant, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!editingTenant) return;
+
+    try {
+      const updatedTenant = await adminService.updateTenant(editingTenant.id, tenantData);
+      if (updatedTenant) {
+        setTenants(prev => prev.map(t => t.id === editingTenant.id ? updatedTenant : t));
+        setEditingTenant(null);
+      }
+    } catch (error) {
+      console.error('Failed to update tenant:', error);
+    }
+  };
+
+  const handleDeleteTenant = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this tenant? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const success = await adminService.deleteTenant(id);
+      if (success) {
+        setTenants(prev => prev.filter(t => t.id !== id));
+      }
+    } catch (error) {
+      console.error('Failed to delete tenant:', error);
+    }
+  };
+
+  const filteredTenants = tenants.filter(tenant => {
     const matchesSearch = tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          tenant.slug.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || tenant.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
-  const handleViewTenant = (tenantId: string) => {
-    console.log('View tenant:', tenantId);
-    // Navigate to tenant details page
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'inactive': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      case 'suspended': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
   };
 
-  const handleEditTenant = (tenantId: string) => {
-    console.log('Edit tenant:', tenantId);
-    // Navigate to tenant edit page
-  };
-
-  const handleImpersonate = (tenantId: string) => {
-    console.log('Impersonate tenant:', tenantId);
-    // Start impersonation session
-  };
-
-  const handleCreateTenant = () => {
-    console.log('Create new tenant');
-    // Navigate to tenant creation page
-  };
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -120,20 +153,20 @@ export default function TenantsPage() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Tenant Management</h2>
             <p className="text-gray-600 dark:text-gray-300">
-              Manage all tenants on the platform
+              Manage tenants, their settings, and access permissions
             </p>
           </div>
-          <Button onClick={handleCreateTenant} className="flex items-center gap-2">
+          <Button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Create Tenant
           </Button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Enhanced Stats with Billing Information */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <Card>
             <CardContent className="p-6">
-              <div className="text-2xl font-bold text-blue-600">{mockTenants.length}</div>
+              <div className="text-2xl font-bold text-blue-600">{tenants.length}</div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Total Tenants</p>
             </CardContent>
           </Card>
@@ -141,7 +174,7 @@ export default function TenantsPage() {
           <Card>
             <CardContent className="p-6">
               <div className="text-2xl font-bold text-green-600">
-                {mockTenants.filter(t => t.status === 'active').length}
+                {tenants.filter(t => t.status === 'active').length}
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Active Tenants</p>
             </CardContent>
@@ -149,19 +182,144 @@ export default function TenantsPage() {
 
           <Card>
             <CardContent className="p-6">
-              <div className="text-2xl font-bold text-orange-600">
-                {mockTenants.filter(t => t.status === 'suspended').length}
+              <div className="text-2xl font-bold text-purple-600">
+                {billingStats?.activeSubscriptions || 0}
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Suspended</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Active Subscriptions</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="p-6">
-              <div className="text-2xl font-bold text-purple-600">
-                ${mockTenants.reduce((sum, t) => sum + t.stats.revenue, 0).toLocaleString()}
+              <div className="text-2xl font-bold text-orange-600">
+                ${billingStats?.monthlyRecurringRevenue?.toFixed(0) || '0'}
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Total Revenue</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Monthly Revenue</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-2xl font-bold text-indigo-600">
+                {billingStats?.trialSubscriptions || 0}
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Free Trials</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-2xl font-bold text-green-600">
+                +{billingStats?.growthRate?.toFixed(1) || '0'}%
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Growth Rate</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Billing Overview Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Subscription Plans Overview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building className="w-5 h-5" />
+                Subscription Plans
+              </CardTitle>
+              <CardDescription>
+                Available plans and pricing
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {plans.slice(0, 4).map((plan) => (
+                  <div key={plan.id} className="p-4 border rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium text-gray-900 dark:text-white">
+                        {plan.name}
+                      </h4>
+                      <div className="text-right">
+                        <div className="font-bold text-lg">
+                          ${plan.price}/{plan.interval === 'monthly' ? 'mo' : 'yr'}
+                        </div>
+                        {plan.isPopular && (
+                          <Badge className="bg-green-100 text-green-800">Popular</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                      {plan.description}
+                    </p>
+                    <div className="text-xs text-gray-500">
+                      <div>Users: {plan.features.maxUsers === -1 ? 'Unlimited' : plan.features.maxUsers}</div>
+                      <div>Storage: {plan.features.storageLimit}GB</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Revenue by Plan */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                Revenue by Plan
+              </CardTitle>
+              <CardDescription>
+                Monthly recurring revenue breakdown
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Object.entries(billingStats?.revenueByPlan || {})
+                  .sort(([,a], [,b]) => b - a)
+                  .slice(0, 5)
+                  .map(([planName, revenue]) => (
+                    <div key={planName} className="flex justify-between items-center">
+                      <span className="text-sm font-medium">{planName}</span>
+                      <div className="text-right">
+                        <div className="font-bold">${revenue.toFixed(0)}</div>
+                        <div className="text-xs text-gray-500">per month</div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Top Paying Tenants */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Top Paying Tenants
+              </CardTitle>
+              <CardDescription>
+                Highest revenue generating tenants
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {billingStats?.topPayingTenants?.slice(0, 5).map((tenant, index) => (
+                  <div key={tenant.tenantId} className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
+                        {index + 1}
+                      </div>
+                      <span className="text-sm font-medium truncate">{tenant.tenantName}</span>
+                    </div>
+                    <div className="font-bold text-green-600">
+                      ${tenant.revenue.toFixed(0)}
+                    </div>
+                  </div>
+                )) || (
+                  <div className="text-center py-4 text-gray-500">
+                    <p>No subscription data available</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -169,7 +327,7 @@ export default function TenantsPage() {
         {/* Filters */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 items-center">
               <div className="flex-1 min-w-[200px]">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -191,37 +349,179 @@ export default function TenantsPage() {
                 >
                   <option value="all">All Status</option>
                   <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
                   <option value="suspended">Suspended</option>
-                  <option value="pending">Pending</option>
                 </select>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Tenants Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTenants.map((tenant) => (
-            <TenantCard
-              key={tenant.id}
-              tenant={tenant}
-              onView={handleViewTenant}
-              onEdit={handleEditTenant}
-              onImpersonate={handleImpersonate}
-            />
-          ))}
-        </div>
-
-        {filteredTenants.length === 0 && (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-gray-600 dark:text-gray-300">
+        {/* Tenants Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building className="w-5 h-5" />
+              All Tenants
+            </CardTitle>
+            <CardDescription>
+              Complete list of tenants in your system
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {filteredTenants.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
                 No tenants found matching your criteria.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Slug</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Subscription</TableHead>
+                    <TableHead>Revenue</TableHead>
+                    <TableHead className="w-[50px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredTenants.map((tenant) => (
+                    <TableRow key={tenant.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {tenant.name}
+                          </div>
+                          {tenant.domain && (
+                            <div className="text-sm text-gray-500">
+                              {tenant.domain}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <code className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                          {tenant.slug}
+                        </code>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(tenant.status)}>
+                          {tenant.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                          {new Date(tenant.createdAt).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {(() => {
+                            const tenantSubscription = subscriptions.find(s => s.tenantId === tenant.id);
+                            if (!tenantSubscription) {
+                              return <span className="text-gray-400">No subscription</span>;
+                            }
+                            return (
+                              <div>
+                                <div className="font-medium">{tenantSubscription.planName}</div>
+                                <div className="text-xs text-gray-500">
+                                  {tenantSubscription.status} • ${tenantSubscription.totalAmount}/{tenantSubscription.planName === 'Free' ? 'mo' : 'mo'}
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {(() => {
+                            const tenantSubscription = subscriptions.find(s => s.tenantId === tenant.id);
+                            const revenue = billingStats?.topPayingTenants?.find(t => t.tenantId === tenant.id)?.revenue || 0;
+                            return (
+                              <div className="font-medium text-green-600">
+                                ${revenue.toFixed(0)}/mo
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowBillingDetails(tenant.id)}
+                          >
+                            <CreditCard className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {/* TODO: Open settings modal */}}
+                          >
+                            <Settings className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {/* TODO: Open users modal */}}
+                          >
+                            <Users className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem
+                              onClick={() => handleEditTenant(tenant)}
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteTenant(tenant.id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Tenant Forms */}
+      <TenantForm
+        open={showCreateForm}
+        onOpenChange={setShowCreateForm}
+        onSubmit={handleCreateTenant}
+        mode="create"
+      />
+
+      {editingTenant && (
+        <TenantForm
+          open={!!editingTenant}
+          onOpenChange={(open) => !open && setEditingTenant(null)}
+          onSubmit={handleUpdateTenant}
+          initialData={editingTenant}
+          mode="edit"
+        />
+      )}
     </AdminLayout>
   );
 }

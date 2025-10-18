@@ -46,6 +46,7 @@ interface SelectTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   isOpen?: boolean;
   setIsOpen?: (open: boolean) => void;
   selectedValue?: string;
+  onValueChange?: (value: string) => void;
 }
 
 const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(

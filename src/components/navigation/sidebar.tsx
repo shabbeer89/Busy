@@ -7,41 +7,80 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  LayoutDashboard,
-  Briefcase,
-  Lightbulb,
-  Users,
-  MessageSquare,
-  Heart,
-  Wallet,
-  BarChart3,
-  Settings,
-  User,
-  Menu,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  LogOut,
-  Search,
-  ShieldCheck
-} from "lucide-react";
+   LayoutDashboard,
+   Briefcase,
+   Lightbulb,
+   Users,
+   MessageSquare,
+   Heart,
+   Wallet,
+   BarChart3,
+   Settings,
+   User,
+   Menu,
+   X,
+   ChevronLeft,
+   ChevronRight,
+   ChevronDown,
+   LogOut,
+   Search,
+   ShieldCheck,
+   Building,
+   FileText,
+   Activity,
+   TrendingUp,
+   Zap
+ } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
-  className?: string;
+   className?: string;
+   isAdmin?: boolean;
 }
 
-export function Sidebar({ className }: SidebarProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isProfileExpanded, setIsProfileExpanded] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
-  const { user, isAuthenticated, signOut } = useAuth();
+export function Sidebar({ className, isAdmin = false }: SidebarProps) {
+   const [isExpanded, setIsExpanded] = useState(false);
+   const [isMobileOpen, setIsMobileOpen] = useState(false);
+   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+   const [isHovered, setIsHovered] = useState(false);
+   const pathname = usePathname();
+   const router = useRouter();
+   const { user, isAuthenticated, signOut } = useAuth();
 
-  const navigationItems = [
+  const navigationItems = isAdmin ? [
+    // Admin Navigation Items - Only existing pages
+    {
+      name: "Admin Dashboard",
+      href: "/admin",
+      icon: LayoutDashboard,
+      current: pathname.startsWith("/admin"),
+    },
+    {
+      name: "User Management",
+      href: "/admin/users",
+      icon: Users,
+      current: pathname.startsWith("/admin/users"),
+    },
+    {
+      name: "Tenant Management",
+      href: "/admin/tenants",
+      icon: Building,
+      current: pathname.startsWith("/admin/tenants"),
+    },
+    {
+      name: "Platform Analytics",
+      href: "/admin/analytics",
+      icon: BarChart3,
+      current: pathname.startsWith("/admin/analytics"),
+    },
+    {
+      name: "Audit Logs",
+      href: "/admin/audit-logs",
+      icon: FileText,
+      current: pathname.startsWith("/admin/audit-logs"),
+    },
+  ] : [
+    // Regular User Navigation Items
     {
       name: "Dashboard",
       href: "/dashboard",
@@ -323,17 +362,17 @@ export function Sidebar({ className }: SidebarProps) {
 }
 
 // Layout wrapper component that includes the sidebar
-export function SidebarLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <Sidebar />
-      <div className={cn(
-        "transition-all duration-300 relative min-h-screen"
-      )}>
-        <div className="min-h-screen">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
+export function SidebarLayout({ children, isAdmin = false }: { children: React.ReactNode; isAdmin?: boolean }) {
+   return (
+     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+       <Sidebar isAdmin={isAdmin} />
+       <div className={cn(
+         "transition-all duration-300 relative min-h-screen"
+       )}>
+         <div className="min-h-screen">
+           {children}
+         </div>
+       </div>
+     </div>
+   );
 }

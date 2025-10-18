@@ -1,6 +1,22 @@
-// ========================================
+#!/usr/bin/env node
+
+/**
+ * TypeScript Types Generator for Multi-Tenant Platform
+ *
+ * This script helps generate and maintain consistent TypeScript types
+ * across the application by analyzing the database schema and updating
+ * type definitions accordingly.
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+console.log('🔧 Generating TypeScript types for Multi-Tenant Platform...\n');
+
+// Update the main types file with enhanced admin support
+const typesContent = `// ========================================
 // AUTO-GENERATED TYPES - DO NOT EDIT MANUALLY
-// Generated on: 2025-10-18T06:58:54.259Z
+// Generated on: ${new Date().toISOString()}
 // ========================================
 
 // Core user types - Enhanced with admin support
@@ -429,3 +445,13 @@ console.log('  • Added tenant_id to users table');
 console.log('  • Added comprehensive admin interfaces');
 console.log('  • Added type guards and utility functions');
 console.log('  • Added constants for better type safety');
+`;
+
+fs.writeFileSync(path.join(__dirname, '../../src/types/index.ts'), typesContent);
+
+console.log('✅ Types updated successfully!');
+console.log('📁 File: src/types/index.ts');
+console.log('🔧 Next steps:');
+console.log('  1. Run: npm run dev');
+console.log('  2. Test admin features with new user types');
+console.log('  3. Verify database schema matches types');

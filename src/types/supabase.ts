@@ -16,13 +16,18 @@ export interface Database {
           name: string
           phone_number: string | null
           avatar: string | null
-          user_type: 'creator' | 'investor'
+          user_type: 'creator' | 'investor' | 'tenant_admin' | 'super_admin'
           is_verified: boolean
           phone_verified: boolean | null
           oauth_id: string | null
           provider: string | null
           created_at: string
           updated_at: string
+
+          // Admin role fields
+          role_level: 'user' | 'admin' | 'super_admin' | null
+          permissions: string[] | null
+          managed_tenant_ids: string[] | null
 
           // Creator specific fields
           company_name: string | null
@@ -45,6 +50,9 @@ export interface Database {
             linkedin?: string
             twitter?: string
           } | null
+
+          // Multi-tenant field
+          tenant_id: string | null
         }
         Insert: {
           id?: string
@@ -52,13 +60,18 @@ export interface Database {
           name: string
           phone_number?: string | null
           avatar?: string | null
-          user_type: 'creator' | 'investor'
+          user_type: 'creator' | 'investor' | 'tenant_admin' | 'super_admin'
           is_verified?: boolean
           phone_verified?: boolean | null
           oauth_id?: string | null
           provider?: string | null
           created_at?: string
           updated_at?: string
+
+          // Admin role fields
+          role_level?: 'user' | 'admin' | 'super_admin' | null
+          permissions?: string[] | null
+          managed_tenant_ids?: string[] | null
 
           // Creator specific fields
           company_name?: string | null
@@ -81,6 +94,9 @@ export interface Database {
             linkedin?: string
             twitter?: string
           } | null
+
+          // Multi-tenant field
+          tenant_id?: string | null
         }
         Update: {
           id?: string
@@ -88,13 +104,18 @@ export interface Database {
           name?: string
           phone_number?: string | null
           avatar?: string | null
-          user_type?: 'creator' | 'investor'
+          user_type?: 'creator' | 'investor' | 'tenant_admin' | 'super_admin'
           is_verified?: boolean
           phone_verified?: boolean | null
           oauth_id?: string | null
           provider?: string | null
           created_at?: string
           updated_at?: string
+
+          // Admin role fields
+          role_level?: 'user' | 'admin' | 'super_admin' | null
+          permissions?: string[] | null
+          managed_tenant_ids?: string[] | null
 
           // Creator specific fields
           company_name?: string | null
@@ -117,6 +138,9 @@ export interface Database {
             linkedin?: string
             twitter?: string
           } | null
+
+          // Multi-tenant field
+          tenant_id?: string | null
         }
       }
 
@@ -624,6 +648,270 @@ export interface Database {
           cancel_at_period_end?: boolean
           created_at?: string
           updated_at?: string
+        }
+      }
+
+      audit_logs: {
+        Row: {
+          id: string
+          timestamp: string
+          user_id: string | null
+          user_name: string | null
+          tenant_id: string | null
+          tenant_name: string | null
+          action: string
+          resource: string
+          resource_id: string | null
+          details: Json
+          ip_address: string | null
+          user_agent: string | null
+          severity: 'low' | 'medium' | 'high' | 'critical'
+          session_id: string | null
+          location: string | null
+          risk_score: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          timestamp?: string
+          user_id?: string | null
+          user_name?: string | null
+          tenant_id?: string | null
+          tenant_name?: string | null
+          action: string
+          resource: string
+          resource_id?: string | null
+          details?: Json
+          ip_address?: string | null
+          user_agent?: string | null
+          severity?: 'low' | 'medium' | 'high' | 'critical'
+          session_id?: string | null
+          location?: string | null
+          risk_score?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          timestamp?: string
+          user_id?: string | null
+          user_name?: string | null
+          tenant_id?: string | null
+          tenant_name?: string | null
+          action?: string
+          resource?: string
+          resource_id?: string | null
+          details?: Json
+          ip_address?: string | null
+          user_agent?: string | null
+          severity?: 'low' | 'medium' | 'high' | 'critical'
+          session_id?: string | null
+          location?: string | null
+          risk_score?: number
+          created_at?: string
+        }
+      }
+
+      platform_configurations: {
+        Row: {
+          id: string
+          category: string
+          key: string
+          value: Json
+          type: 'string' | 'number' | 'boolean' | 'json' | 'password'
+          description: string | null
+          is_secret: boolean
+          is_read_only: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          category: string
+          key: string
+          value: Json
+          type?: 'string' | 'number' | 'boolean' | 'json' | 'password'
+          description?: string | null
+          is_secret?: boolean
+          is_read_only?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          category?: string
+          key?: string
+          value?: Json
+          type?: 'string' | 'number' | 'boolean' | 'json' | 'password'
+          description?: string | null
+          is_secret?: boolean
+          is_read_only?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+      }
+
+      api_keys: {
+        Row: {
+          id: string
+          name: string
+          key_hash: string
+          key_prefix: string
+          tenant_id: string | null
+          user_id: string | null
+          permissions: string[]
+          rate_limits: Json
+          is_active: boolean
+          expires_at: string | null
+          last_used: string | null
+          usage: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          key_hash: string
+          key_prefix: string
+          tenant_id?: string | null
+          user_id?: string | null
+          permissions?: string[]
+          rate_limits?: Json
+          is_active?: boolean
+          expires_at?: string | null
+          last_used?: string | null
+          usage?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          key_hash?: string
+          key_prefix?: string
+          tenant_id?: string | null
+          user_id?: string | null
+          permissions?: string[]
+          rate_limits?: Json
+          is_active?: boolean
+          expires_at?: string | null
+          last_used?: string | null
+          usage?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+
+      notifications: {
+        Row: {
+          id: string
+          type: 'info' | 'success' | 'warning' | 'error'
+          title: string
+          message: string
+          priority: 'low' | 'normal' | 'high' | 'critical'
+          user_id: string | null
+          tenant_id: string | null
+          is_read: boolean
+          read_at: string | null
+          action_url: string | null
+          expires_at: string | null
+          metadata: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          type: 'info' | 'success' | 'warning' | 'error'
+          title: string
+          message: string
+          priority?: 'low' | 'normal' | 'high' | 'critical'
+          user_id?: string | null
+          tenant_id?: string | null
+          is_read?: boolean
+          read_at?: string | null
+          action_url?: string | null
+          expires_at?: string | null
+          metadata?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          type?: 'info' | 'success' | 'warning' | 'error'
+          title?: string
+          message?: string
+          priority?: 'low' | 'normal' | 'high' | 'critical'
+          user_id?: string | null
+          tenant_id?: string | null
+          is_read?: boolean
+          read_at?: string | null
+          action_url?: string | null
+          expires_at?: string | null
+          metadata?: Json
+          created_at?: string
+        }
+      }
+
+      security_events: {
+        Row: {
+          id: string
+          timestamp: string
+          type: 'threat' | 'breach' | 'suspicious' | 'policy_violation' | 'failed_login' | 'unauthorized_access'
+          severity: 'low' | 'medium' | 'high' | 'critical'
+          title: string
+          description: string
+          source_ip: string | null
+          user_id: string | null
+          user_name: string | null
+          tenant_id: string | null
+          location: string | null
+          user_agent: string | null
+          risk_score: number
+          status: 'active' | 'investigating' | 'resolved' | 'false_positive'
+          assigned_to: string | null
+          resolved_at: string | null
+          resolution: string | null
+          details: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          timestamp?: string
+          type: 'threat' | 'breach' | 'suspicious' | 'policy_violation' | 'failed_login' | 'unauthorized_access'
+          severity?: 'low' | 'medium' | 'high' | 'critical'
+          title: string
+          description: string
+          source_ip?: string | null
+          user_id?: string | null
+          user_name?: string | null
+          tenant_id?: string | null
+          location?: string | null
+          user_agent?: string | null
+          risk_score?: number
+          status?: 'active' | 'investigating' | 'resolved' | 'false_positive'
+          assigned_to?: string | null
+          resolved_at?: string | null
+          resolution?: string | null
+          details?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          timestamp?: string
+          type?: 'threat' | 'breach' | 'suspicious' | 'policy_violation' | 'failed_login' | 'unauthorized_access'
+          severity?: 'low' | 'medium' | 'high' | 'critical'
+          title?: string
+          description?: string
+          source_ip?: string | null
+          user_id?: string | null
+          user_name?: string | null
+          tenant_id?: string | null
+          location?: string | null
+          user_agent?: string | null
+          risk_score?: number
+          status?: 'active' | 'investigating' | 'resolved' | 'false_positive'
+          assigned_to?: string | null
+          resolved_at?: string | null
+          resolution?: string | null
+          details?: Json
+          created_at?: string
         }
       }
     }

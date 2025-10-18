@@ -1,144 +1,122 @@
 "use client";
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuditLogTable } from '@/components/admin/audit-log-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Filter } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  FileText,
+  Download,
+  Filter,
+  Search,
+  RefreshCw,
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  TrendingUp,
+  Users,
+  Activity,
+  Calendar,
+  Clock
+} from 'lucide-react';
 import AdminLayout from '../layout';
+import {
+  auditService,
+  AuditLogEntry,
+  AuditFilters,
+  AuditStats
+} from '@/services/audit-service';
 
-interface AuditLogEntry {
-  id: string;
-  timestamp: string;
-  userId: string;
-  userName: string;
-  tenantId?: string;
-  tenantName?: string;
-  action: string;
-  resource: string;
-  resourceId?: string;
-  details: Record<string, any>;
-  ipAddress: string;
-  userAgent: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-}
-
-interface AuditLogFilters {
-  userId?: string;
-  action?: string;
-  resource?: string;
-  severity?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  tenantId?: string;
-}
+// Using interfaces from audit service
 
 export default function AuditLogsPage() {
-  // Mock audit log data
-  const mockAuditLogs: AuditLogEntry[] = [
-    {
-      id: '1',
-      timestamp: '2024-01-15T10:30:00Z',
-      userId: 'user_123',
-      userName: 'John Doe',
-      tenantId: 'techventures',
-      tenantName: 'TechVentures Inc.',
-      action: 'login',
-      resource: 'authentication',
-      resourceId: 'session_456',
-      details: { method: 'password', successful: true },
-      ipAddress: '192.168.1.100',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      severity: 'low',
-    },
-    {
-      id: '2',
-      timestamp: '2024-01-15T10:25:00Z',
-      userId: 'user_456',
-      userName: 'Jane Smith',
-      tenantId: 'greenenergy',
-      tenantName: 'GreenEnergy Solutions',
-      action: 'feature_toggle',
-      resource: 'feature_flags',
-      resourceId: 'video-calling',
-      details: { oldValue: false, newValue: true, feature: 'video-calling' },
-      ipAddress: '192.168.1.101',
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-      severity: 'medium',
-    },
-    {
-      id: '3',
-      timestamp: '2024-01-15T10:20:00Z',
-      userId: 'admin_789',
-      userName: 'Admin User',
-      action: 'tenant_suspend',
-      resource: 'tenants',
-      resourceId: 'fintech-innovations',
-      details: { reason: 'payment_failure', previousStatus: 'active', newStatus: 'suspended' },
-      ipAddress: '192.168.1.1',
-      userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
-      severity: 'high',
-    },
-    {
-      id: '4',
-      timestamp: '2024-01-15T10:15:00Z',
-      userId: 'user_101',
-      userName: 'Bob Wilson',
-      tenantId: 'techventures',
-      tenantName: 'TechVentures Inc.',
-      action: 'profile_update',
-      resource: 'users',
-      resourceId: 'user_101',
-      details: { fields: ['bio', 'website'], ipAddress: '192.168.1.102' },
-      ipAddress: '192.168.1.102',
-      userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
-      severity: 'low',
-    },
-    {
-      id: '5',
-      timestamp: '2024-01-15T10:10:00Z',
-      userId: 'user_202',
-      userName: 'Alice Brown',
-      tenantId: 'fintech',
-      tenantName: 'FinTech Innovations',
-      action: 'investment_create',
-      resource: 'investments',
-      resourceId: 'investment_789',
-      details: { amount: 50000, currency: 'USD', projectId: 'project_123' },
-      ipAddress: '192.168.1.103',
-      userAgent: 'Mozilla/5.0 (Android 13; Mobile) AppleWebKit/537.36',
-      severity: 'medium',
-    },
-  ];
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+  const [auditStats, setAuditStats] = useState<AuditStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [severityFilter, setSeverityFilter] = useState<string>('all');
+  const [actionFilter, setActionFilter] = useState<string>('all');
+  const [tenantFilter, setTenantFilter] = useState<string>('all');
+  const [riskFilter, setRiskFilter] = useState<number>(0);
+  const [showSecurityOnly, setShowSecurityOnly] = useState(false);
+
+  useEffect(() => {
+    loadAuditData();
+  }, []);
+
+  const loadAuditData = async () => {
+    try {
+      setLoading(true);
+      const [logs, stats] = await Promise.all([
+        auditService.getAuditLogs(),
+        auditService.getAuditStats()
+      ]);
+      setAuditLogs(logs);
+      setAuditStats(stats);
+    } catch (error) {
+      console.error('Failed to load audit data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleViewDetails = (log: AuditLogEntry) => {
     console.log('View audit log details:', log);
-    // Show detailed modal or navigate to detail page
+    // TODO: Show detailed modal with full log information
   };
 
-  const handleExport = (filters: AuditLogFilters) => {
-    console.log('Export audit logs with filters:', filters);
-    // Export filtered logs as CSV/JSON
+  const handleExport = async (filters: AuditFilters) => {
+    try {
+      const exportData = await auditService.exportAuditLogs(filters, 'csv');
+      // Create and download file
+      const blob = new Blob([exportData], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export audit logs:', error);
+    }
   };
 
-  const getSeverityStats = () => {
-    const stats = { low: 0, medium: 0, high: 0, critical: 0 };
-    mockAuditLogs.forEach(log => {
-      stats[log.severity]++;
-    });
-    return stats;
+  const filteredLogs = auditLogs.filter(log => {
+    const matchesSearch = log.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         log.resource.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesSeverity = severityFilter === 'all' || log.severity === severityFilter;
+    const matchesAction = actionFilter === 'all' || log.action === actionFilter;
+    const matchesTenant = tenantFilter === 'all' || log.tenantId === tenantFilter;
+    const matchesRisk = (log.riskScore || 0) >= riskFilter;
+    const matchesSecurity = !showSecurityOnly || (log.riskScore || 0) >= 60;
+
+    return matchesSearch && matchesSeverity && matchesAction && matchesTenant && matchesRisk && matchesSecurity;
+  });
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'high': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
   };
 
-  const getActionStats = () => {
-    const actionCounts: Record<string, number> = {};
-    mockAuditLogs.forEach(log => {
-      actionCounts[log.action] = (actionCounts[log.action] || 0) + 1;
-    });
-    return Object.entries(actionCounts).sort(([,a], [,b]) => b - a);
+  const getRiskColor = (riskScore?: number) => {
+    if (!riskScore) return 'text-gray-500';
+    if (riskScore >= 80) return 'text-red-600';
+    if (riskScore >= 60) return 'text-orange-600';
+    if (riskScore >= 40) return 'text-yellow-600';
+    return 'text-green-600';
   };
-
-  const severityStats = getSeverityStats();
-  const actionStats = getActionStats();
 
   return (
     <AdminLayout>
@@ -157,72 +135,269 @@ export default function AuditLogsPage() {
           </Button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardContent className="p-6">
-              <div className="text-2xl font-bold text-blue-600">{mockAuditLogs.length}</div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Total Events</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-red-600">{severityStats.critical}</div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Critical Events</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-orange-600">{severityStats.high}</div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">High Severity</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-green-600">
-                {mockAuditLogs.filter(log => {
-                  const logDate = new Date(log.timestamp);
-                  const today = new Date();
-                  return logDate.toDateString() === today.toDateString();
-                }).length}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Events</p>
+                  <p className="text-3xl font-bold text-blue-600">{auditStats?.totalLogs || 0}</p>
+                </div>
+                <Activity className="w-8 h-8 text-blue-500" />
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Today</p>
+              <div className="mt-4 flex items-center text-sm">
+                <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                <span className="text-green-600 font-medium">+12.5%</span>
+                <span className="text-gray-400 ml-2">vs last week</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">High Risk Events</p>
+                  <p className="text-3xl font-bold text-red-600">{auditStats?.highRiskEvents || 0}</p>
+                </div>
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
+              <div className="mt-4 flex items-center text-sm">
+                <span className="text-gray-600">Requires attention</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Failed Logins</p>
+                  <p className="text-3xl font-bold text-orange-600">{auditStats?.failedLogins || 0}</p>
+                </div>
+                <Shield className="w-8 h-8 text-orange-500" />
+              </div>
+              <div className="mt-4 flex items-center text-sm">
+                <span className="text-gray-600">Security monitoring</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Suspicious Activities</p>
+                  <p className="text-3xl font-bold text-purple-600">{auditStats?.suspiciousActivities || 0}</p>
+                </div>
+                <Info className="w-8 h-8 text-purple-500" />
+              </div>
+              <div className="mt-4 flex items-center text-sm">
+                <span className="text-gray-600">Anomaly detection</span>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Top Actions */}
+        {/* Enhanced Filtering */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Most Common Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {actionStats.slice(0, 4).map(([action, count]) => (
-                <div key={action} className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{count}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">
-                    {action.replace('_', ' ')}
-                  </p>
+          <CardContent className="p-6">
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex-1 min-w-[200px]">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Search audit logs..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
-              ))}
+              </div>
+
+              <select
+                value={severityFilter}
+                onChange={(e) => setSeverityFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              >
+                <option value="all">All Severities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+
+              <select
+                value={actionFilter}
+                onChange={(e) => setActionFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              >
+                <option value="all">All Actions</option>
+                {Object.keys(auditStats?.logsByAction || {}).map(action => (
+                  <option key={action} value={action}>
+                    {action.replace('_', ' ')}
+                  </option>
+                ))}
+              </select>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="securityOnly"
+                  checked={showSecurityOnly}
+                  onChange={(e) => setShowSecurityOnly(e.target.checked)}
+                  className="rounded"
+                />
+                <label htmlFor="securityOnly" className="text-sm text-gray-600">
+                  Security Events Only
+                </label>
+              </div>
+
+              <Button variant="outline" onClick={loadAuditData}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Audit Logs Table */}
-        <AuditLogTable
-          logs={mockAuditLogs}
-          onViewDetails={handleViewDetails}
-          onExport={handleExport}
-          showTenantColumn={true}
-        />
+        {/* Action Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Action Distribution
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(auditStats?.logsByAction || {})
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 4)
+                .map(([action, count]) => (
+                  <div key={action} className="text-center p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{count}</div>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">
+                      {action.replace('_', ' ')}
+                    </p>
+                  </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Enhanced Audit Logs Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="w-5 h-5" />
+              Audit Log Entries ({filteredLogs.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {filteredLogs.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No audit logs found matching your criteria.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredLogs.slice(0, 50).map((log) => (
+                  <div key={log.id} className="flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                      log.severity === 'critical' ? 'bg-red-500' :
+                      log.severity === 'high' ? 'bg-orange-500' :
+                      log.severity === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                    }`} />
+
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {log.userName}
+                        </span>
+                        <Badge className={getSeverityColor(log.severity)}>
+                          {log.severity}
+                        </Badge>
+                        {log.riskScore && (
+                          <Badge className={getRiskColor(log.riskScore)}>
+                            Risk: {log.riskScore}
+                          </Badge>
+                        )}
+                      </div>
+
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                        {log.action.replace('_', ' ')} • {log.resource}
+                      </p>
+
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span>{new Date(log.timestamp).toLocaleString()}</span>
+                        <span>IP: {log.ipAddress}</span>
+                        {log.location && <span>{log.location}</span>}
+                        {log.tenantName && <span>Tenant: {log.tenantName}</span>}
+                      </div>
+
+                      {log.details && Object.keys(log.details).length > 0 && (
+                        <details className="mt-2">
+                          <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">
+                            View Details
+                          </summary>
+                          <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1 overflow-x-auto">
+                            {JSON.stringify(log.details, null, 2)}
+                          </pre>
+                        </details>
+                      )}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewDetails(log)}
+                    >
+                      Details
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Security Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5" />
+              Security Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-red-600 mb-2">
+                  {auditStats?.highRiskEvents || 0}
+                </div>
+                <p className="text-sm text-gray-600">High Risk Events</p>
+                <p className="text-xs text-gray-500 mt-1">Events requiring immediate attention</p>
+              </div>
+
+              <div className="text-center">
+                <div className="text-3xl font-bold text-orange-600 mb-2">
+                  {auditStats?.failedLogins || 0}
+                </div>
+                <p className="text-sm text-gray-600">Failed Login Attempts</p>
+                <p className="text-xs text-gray-500 mt-1">Potential security threats</p>
+              </div>
+
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-600 mb-2">
+                  {auditStats?.suspiciousActivities || 0}
+                </div>
+                <p className="text-sm text-gray-600">Suspicious Activities</p>
+                <p className="text-xs text-gray-500 mt-1">Anomalous behavior detected</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Audit Log Information */}
         <Card>

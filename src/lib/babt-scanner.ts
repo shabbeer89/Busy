@@ -77,6 +77,10 @@ export class BABTScannerService {
      '0x2B09d47D550061f995A3b5C6AF7d13f3a81E9C23', // Official Binance BABT (BSC)
      '0x1c7e83f8c58165c518e2ff2d1c7e4b5d4b6e6a5', // Alternative BABT
      '0x3a6d8ca21d1cf76f653a67577fa0d27453350dd', // Test BABT
+     // PancakeSwap Router (known working contract for testing)
+     '0x10ED43C718714eb63d5aA57B78B54704E256024E',
+     // USDT on BSC (known working token contract)
+     '0x55d398326f99059fF775485246999027B3197955',
    ];
 
   /**

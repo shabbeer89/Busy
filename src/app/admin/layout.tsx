@@ -23,8 +23,30 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     tenantName?: string;
   } | null>(null);
 
-  // Check if user has admin permissions (mock role for now)
-  const userRole = (user as any).role || UserRole.USER;
+  // Check if user has admin permissions
+  // The user object contains userType from custom users table via auth hook
+  const getUserRoleFromUserType = (userType: string, email?: string): UserRole => {
+    // Special case: treat test@example.com as super admin for development
+    if (email === 'test@example.com') {
+      return UserRole.SUPER_ADMIN;
+    }
+
+    switch (userType) {
+      case 'super_admin':
+        return UserRole.SUPER_ADMIN;
+      case 'tenant_admin':
+        return UserRole.TENANT_ADMIN;
+      case 'creator':
+        return UserRole.CREATOR;
+      case 'investor':
+        return UserRole.INVESTOR;
+      default:
+        return UserRole.USER;
+    }
+  };
+
+  // Get role from user's userType (from custom users table)
+  const userRole = user ? getUserRoleFromUserType(user.userType || 'user', user.email) : UserRole.USER;
   const permissions = usePermissions(userRole);
   const isSuperAdmin = permissions.isSuperAdmin();
   const isTenantAdmin = permissions.isTenantAdmin();
@@ -68,9 +90,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <SidebarLayout>
+    <SidebarLayout isAdmin={true}>
       <div className="min-h-screen bg-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Impersonation Banner */}
           {impersonatedUser && (
             <ImpersonationBanner
@@ -99,7 +121,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     {user.name}
                   </p>
                   <p className="text-xs text-gray-600 dark:text-gray-300 capitalize">
-                    {(user as any).role?.replace('_', ' ') || 'user'}
+                    {user.userType?.replace('_', ' ') || 'user'}
                   </p>
                 </div>
               </div>

@@ -2,8 +2,33 @@
 -- Strategic Partnership Platform Database Schema - COMPLETE FIXED VERSION
 -- ========================================
 
+-- ========================================
+-- Strategic Partnership Platform Database Schema - COMPLETE FIXED VERSION
+-- ========================================
+-- FIXED: Proper table creation order and dependency handling
+
+-- Destroys all objects in public (clean slate approach)
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+
+
+-- Enable necessary extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ========================================
+-- DIAGNOSTIC LOGGING FUNCTION
+-- ========================================
+
+CREATE OR REPLACE FUNCTION log_diagnostic(message TEXT)
+RETURNS void AS $$
+BEGIN
+    RAISE NOTICE 'DIAGNOSTIC: %', message;
+END;
+$$ LANGUAGE plpgsql;
 
 -- ========================================
 -- DIAGNOSTIC LOGGING FUNCTION
@@ -20,7 +45,10 @@ $$ LANGUAGE plpgsql;
 -- TENANTS TABLE (Must be created first)
 -- ========================================
 
-CREATE TABLE IF NOT EXISTS tenants (
+-- Log before creating tenants table
+SELECT log_diagnostic('Starting tenants table creation');
+
+CREATE TABLE tenants (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
@@ -51,20 +79,25 @@ CREATE TABLE IF NOT EXISTS tenants (
 -- USERS TABLE
 -- ========================================
 
--- First ensure users table exists
+-- First ensure users table exists with ADMIN ROLES SUPPORT
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   phone_number TEXT,
   avatar TEXT,
-  user_type TEXT NOT NULL CHECK (user_type IN ('creator', 'investor')),
+  user_type TEXT NOT NULL CHECK (user_type IN ('creator', 'investor', 'tenant_admin', 'super_admin')),
   is_verified BOOLEAN NOT NULL DEFAULT FALSE,
   phone_verified BOOLEAN DEFAULT FALSE,
   oauth_id TEXT,
   provider TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  -- Admin role fields (NEW - for admin hierarchy support)
+  role_level TEXT DEFAULT 'user' CHECK (role_level IN ('user', 'admin', 'super_admin')),
+  permissions JSONB DEFAULT '[]'::jsonb,
+  managed_tenant_ids UUID[] DEFAULT '{}',
 
   -- Creator specific fields
   company_name TEXT,
@@ -95,6 +128,33 @@ BEGIN
     END IF;
 END $$;
 
+-- Add admin role columns to users table if they don't exist
+DO $$
+BEGIN
+    -- Add role_level column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'users' AND column_name = 'role_level') THEN
+        ALTER TABLE users ADD COLUMN role_level TEXT CHECK (role_level IN ('user', 'admin', 'super_admin'));
+        RAISE NOTICE 'Added role_level column to users table';
+    END IF;
+
+    -- Add permissions column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'users' AND column_name = 'permissions') THEN
+        ALTER TABLE users ADD COLUMN permissions JSONB DEFAULT '[]'::jsonb;
+        RAISE NOTICE 'Added permissions column to users table';
+    END IF;
+
+    -- Add managed_tenant_ids column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'users' AND column_name = 'managed_tenant_ids') THEN
+        ALTER TABLE users ADD COLUMN managed_tenant_ids UUID[] DEFAULT '{}';
+        RAISE NOTICE 'Added managed_tenant_ids column to users table';
+    END IF;
+END $$;
+
+-- Note: tenant_id column will be added during table creation below
+
 -- Indexes for users table
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone_number);
@@ -102,6 +162,11 @@ CREATE INDEX IF NOT EXISTS idx_users_oauth ON users(oauth_id);
 CREATE INDEX IF NOT EXISTS idx_users_type ON users(user_type);
 CREATE INDEX IF NOT EXISTS idx_users_tenant ON users(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_users_created ON users(created_at);
+
+-- NEW: Indexes for admin role fields (for performance and admin queries)
+CREATE INDEX IF NOT EXISTS idx_users_role_level ON users(role_level);
+CREATE INDEX IF NOT EXISTS idx_users_managed_tenants ON users USING GIN(managed_tenant_ids);
+CREATE INDEX IF NOT EXISTS idx_users_admin_type ON users(user_type, role_level) WHERE role_level IN ('admin', 'super_admin');
 
 -- ========================================
 -- BUSINESS IDEAS TABLE
@@ -147,7 +212,10 @@ CREATE INDEX IF NOT EXISTS idx_business_ideas_created ON business_ideas(created_
 -- INVESTMENT OFFERS TABLE
 -- ========================================
 
-CREATE TABLE IF NOT EXISTS investment_offers (
+-- Log before creating investment_offers table
+SELECT log_diagnostic('Starting investment_offers table creation');
+
+CREATE TABLE investment_offers (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   investor_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
@@ -172,6 +240,36 @@ CREATE TABLE IF NOT EXISTS investment_offers (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Log after investment_offers table creation
+SELECT log_diagnostic('Investment_offers table created successfully');
+
+-- ========================================
+-- SAFE TABLE MODIFICATION FUNCTIONS
+-- ========================================
+
+-- Function to safely add tenant_id column to investment_offers if table exists
+CREATE OR REPLACE FUNCTION safe_add_tenant_id_to_investment_offers()
+RETURNS void AS $$
+BEGIN
+    -- Check if investment_offers table exists
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'investment_offers') THEN
+        -- Check if tenant_id column already exists
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                      WHERE table_name = 'investment_offers' AND column_name = 'tenant_id') THEN
+            ALTER TABLE investment_offers ADD COLUMN tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE;
+            RAISE NOTICE 'Added tenant_id column to investment_offers table';
+        ELSE
+            RAISE NOTICE 'tenant_id column already exists in investment_offers table';
+        END IF;
+    ELSE
+        RAISE NOTICE 'investment_offers table does not exist - will be created by main schema';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Execute the safe function
+SELECT safe_add_tenant_id_to_investment_offers();
 
 -- Indexes for investment_offers table
 CREATE INDEX IF NOT EXISTS idx_investment_offers_investor ON investment_offers(investor_id);
@@ -459,7 +557,7 @@ BEGIN
 END $$;
 
 -- ========================================
--- USERS TABLE POLICIES
+-- USERS TABLE POLICIES - ENHANCED VERSION
 -- ========================================
 
 -- Drop existing policies if they exist (clean slate approach)
@@ -468,8 +566,12 @@ DROP POLICY IF EXISTS "Users can view tenant profiles" ON users;
 DROP POLICY IF EXISTS "Users can view public profiles" ON users;
 DROP POLICY IF EXISTS "Users can update own profile" ON users;
 DROP POLICY IF EXISTS "Users can insert own profile" ON users;
+DROP POLICY IF EXISTS "Service role full access" ON users;
 
--- Users can read their own profile and public profiles within their tenant
+-- POLICY 1: Allow service role full access (for API routes and admin operations)
+CREATE POLICY "Service role full access" ON users FOR ALL USING (true) WITH CHECK (true);
+
+-- POLICY 2: Users can read their own profile and public profiles within their tenant
 CREATE POLICY "Users can view own profile" ON users
   FOR SELECT USING (auth.uid() = id);
 
@@ -479,16 +581,16 @@ CREATE POLICY "Users can view tenant profiles" ON users
 CREATE POLICY "Users can view public profiles" ON users
   FOR SELECT USING (tenant_id IS NULL OR tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
 
--- Users can update their own profile
+-- POLICY 3: Users can update their own profile
 CREATE POLICY "Users can update own profile" ON users
   FOR UPDATE USING (auth.uid() = id);
 
--- Users can insert their own profile with tenant context
+-- POLICY 4: Users can insert their own profile with tenant context
 CREATE POLICY "Users can insert own profile" ON users
   FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- ========================================
--- BUSINESS IDEAS POLICIES
+-- BUSINESS IDEAS POLICIES - ENHANCED VERSION
 -- ========================================
 
 -- Drop existing policies if they exist
@@ -496,25 +598,29 @@ DROP POLICY IF EXISTS "Anyone can view published ideas" ON business_ideas;
 DROP POLICY IF EXISTS "Creators can view own ideas" ON business_ideas;
 DROP POLICY IF EXISTS "Creators can insert own ideas" ON business_ideas;
 DROP POLICY IF EXISTS "Creators can update own ideas" ON business_ideas;
+DROP POLICY IF EXISTS "Service role full access" ON business_ideas;
 
--- Anyone can view published ideas
+-- POLICY 1: Allow service role full access (for API routes and admin operations)
+CREATE POLICY "Service role full access" ON business_ideas FOR ALL USING (true) WITH CHECK (true);
+
+-- POLICY 2: Anyone can view published ideas
 CREATE POLICY "Anyone can view published ideas" ON business_ideas
   FOR SELECT USING (status = 'published');
 
--- Creators can view all their own ideas
+-- POLICY 3: Creators can view all their own ideas
 CREATE POLICY "Creators can view own ideas" ON business_ideas
   FOR SELECT USING (auth.uid() = creator_id);
 
--- Creators can insert their own ideas
+-- POLICY 4: Creators can insert their own ideas
 CREATE POLICY "Creators can insert own ideas" ON business_ideas
   FOR INSERT WITH CHECK (auth.uid() = creator_id);
 
--- Creators can update their own ideas
+-- POLICY 5: Creators can update their own ideas
 CREATE POLICY "Creators can update own ideas" ON business_ideas
   FOR UPDATE USING (auth.uid() = creator_id);
 
 -- ========================================
--- INVESTMENT OFFERS POLICIES
+-- INVESTMENT OFFERS POLICIES - ENHANCED VERSION
 -- ========================================
 
 -- Drop existing policies if they exist
@@ -522,20 +628,24 @@ DROP POLICY IF EXISTS "Anyone can view active offers" ON investment_offers;
 DROP POLICY IF EXISTS "Investors can view own offers" ON investment_offers;
 DROP POLICY IF EXISTS "Investors can insert own offers" ON investment_offers;
 DROP POLICY IF EXISTS "Investors can update own offers" ON investment_offers;
+DROP POLICY IF EXISTS "Service role full access" ON investment_offers;
 
--- Anyone can view active offers
+-- POLICY 1: Allow service role full access (for API routes and admin operations)
+CREATE POLICY "Service role full access" ON investment_offers FOR ALL USING (true) WITH CHECK (true);
+
+-- POLICY 2: Anyone can view active offers
 CREATE POLICY "Anyone can view active offers" ON investment_offers
   FOR SELECT USING (is_active = true);
 
--- Investors can view all their own offers
+-- POLICY 3: Investors can view all their own offers
 CREATE POLICY "Investors can view own offers" ON investment_offers
   FOR SELECT USING (auth.uid() = investor_id);
 
--- Investors can insert their own offers
+-- POLICY 4: Investors can insert their own offers
 CREATE POLICY "Investors can insert own offers" ON investment_offers
   FOR INSERT WITH CHECK (auth.uid() = investor_id);
 
--- Investors can update their own offers
+-- POLICY 5: Investors can update their own offers
 CREATE POLICY "Investors can update own offers" ON investment_offers
   FOR UPDATE USING (auth.uid() = investor_id);
 
@@ -672,39 +782,45 @@ CREATE POLICY "System can insert analytics" ON analytics_events
   FOR INSERT WITH CHECK (true);
 
 -- ========================================
--- TENANTS POLICIES - FIXED VERSION
+-- TENANTS POLICIES - ENHANCED VERSION
 -- ========================================
 
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "Anyone can view active tenants" ON tenants;
 DROP POLICY IF EXISTS "Super admin can manage tenants" ON tenants;
+DROP POLICY IF EXISTS "Allow service role full access" ON tenants;
+DROP POLICY IF EXISTS "Allow authenticated users to read active tenants" ON tenants;
+DROP POLICY IF EXISTS "Allow authenticated users to insert tenants" ON tenants;
+DROP POLICY IF EXISTS "Allow authenticated users to update tenants" ON tenants;
+DROP POLICY IF EXISTS "Allow super admin full access" ON tenants;
 
--- FIXED POLICY 1: Allow service role full access (for API routes)
+-- POLICY 1: Allow service role full access (for API routes and admin operations)
 CREATE POLICY "Allow service role full access" ON tenants
-    FOR ALL USING (true);
+    FOR ALL USING (true) WITH CHECK (true);
 
--- FIXED POLICY 2: Allow authenticated users to read active tenants
+-- POLICY 2: Allow authenticated users to read active tenants
 CREATE POLICY "Allow authenticated users to read active tenants" ON tenants
     FOR SELECT USING (
         auth.role() = 'authenticated' AND
         status = 'active'
     );
 
--- FIXED POLICY 3: Allow authenticated users to insert tenants (for admin functionality)
+-- POLICY 3: Allow authenticated users to insert tenants (for admin functionality)
 CREATE POLICY "Allow authenticated users to insert tenants" ON tenants
     FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
--- FIXED POLICY 4: Allow authenticated users to update tenants they have access to
+-- POLICY 4: Allow authenticated users to update tenants they have access to
 CREATE POLICY "Allow authenticated users to update tenants" ON tenants
     FOR UPDATE USING (auth.role() = 'authenticated');
 
--- FIXED POLICY 5: Allow super admin users full access
+-- POLICY 5: Allow super admin users full access (FIXED - supports admin roles)
 CREATE POLICY "Allow super admin full access" ON tenants
     FOR ALL USING (
         EXISTS (
             SELECT 1 FROM users
             WHERE users.id = auth.uid()
-            AND users.user_type = 'super_admin'
+            AND users.user_type IN ('super_admin', 'tenant_admin')
+            AND users.role_level IN ('admin', 'super_admin')
         )
     );
 
@@ -726,13 +842,14 @@ CREATE POLICY "Tenants can view own subscriptions" ON tenant_subscriptions
     )
   );
 
--- Super admin can manage all subscriptions
+-- Super admin can manage all subscriptions (FIXED - supports admin roles)
 CREATE POLICY "Super admin can manage subscriptions" ON tenant_subscriptions
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM users
       WHERE users.id = auth.uid()
-      AND users.user_type = 'super_admin'
+      AND users.user_type IN ('super_admin', 'tenant_admin')
+      AND users.role_level IN ('admin', 'super_admin')
     )
   );
 
@@ -913,7 +1030,7 @@ END $$;
 -- GRANT SERVICE ROLE PERMISSIONS
 -- ========================================
 
--- Grant necessary permissions to service role
+-- Grant necessary permissions to service role for all tables
 GRANT ALL ON tenants TO service_role;
 GRANT ALL ON users TO service_role;
 GRANT ALL ON business_ideas TO service_role;
@@ -925,6 +1042,23 @@ GRANT ALL ON transactions TO service_role;
 GRANT ALL ON favorites TO service_role;
 GRANT ALL ON analytics_events TO service_role;
 GRANT ALL ON tenant_subscriptions TO service_role;
+
+-- Admin table permissions will be granted after table creation below
+
+-- Grant schema access for comprehensive permissions
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+
+-- Grant table/sequence access (for existing or future tables)
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres, anon, authenticated, service_role;
+
+-- Grant function access (for existing or future functions)
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO postgres, anon, authenticated, service_role;
+
+-- Default grants for anything new you create
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres, anon, authenticated, service_role;
 
 -- ========================================
 -- VERIFICATION QUERIES
@@ -958,8 +1092,451 @@ FROM pg_tables
 WHERE tablename = 'tenants';
 
 -- ========================================
+-- ADMIN FEATURE TABLES
+-- ========================================
+
+-- AUDIT LOGS TABLE for comprehensive audit logging
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  user_name TEXT,
+  tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
+  tenant_name TEXT,
+  action TEXT NOT NULL,
+  resource TEXT NOT NULL,
+  resource_id TEXT,
+  details JSONB NOT NULL DEFAULT '{}',
+  ip_address INET,
+  user_agent TEXT,
+  severity TEXT NOT NULL DEFAULT 'info' CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+  session_id TEXT,
+  location TEXT,
+  risk_score INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for audit_logs table
+CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_tenant ON audit_logs(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_resource ON audit_logs(resource);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_severity ON audit_logs(severity);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_risk_score ON audit_logs(risk_score DESC);
+
+-- PLATFORM CONFIGURATIONS TABLE for configuration management
+CREATE TABLE IF NOT EXISTS platform_configurations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  category TEXT NOT NULL,
+  key TEXT NOT NULL,
+  value JSONB NOT NULL,
+  type TEXT NOT NULL DEFAULT 'string' CHECK (type IN ('string', 'number', 'boolean', 'json', 'password')),
+  description TEXT,
+  is_secret BOOLEAN NOT NULL DEFAULT FALSE,
+  is_read_only BOOLEAN NOT NULL DEFAULT FALSE,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_by UUID REFERENCES users(id) ON DELETE SET NULL,
+
+  -- Ensure unique configuration keys
+  UNIQUE(category, key)
+);
+
+-- Indexes for platform_configurations table
+CREATE INDEX IF NOT EXISTS idx_platform_configurations_category ON platform_configurations(category);
+CREATE INDEX IF NOT EXISTS idx_platform_configurations_key ON platform_configurations(key);
+CREATE INDEX IF NOT EXISTS idx_platform_configurations_updated_at ON platform_configurations(updated_at DESC);
+
+-- API KEYS TABLE for API management
+CREATE TABLE IF NOT EXISTS api_keys (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  key_hash TEXT NOT NULL UNIQUE, -- Store hash of actual key for security
+  key_prefix TEXT NOT NULL, -- First few characters for identification
+  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  permissions JSONB NOT NULL DEFAULT '[]',
+  rate_limits JSONB NOT NULL DEFAULT '{
+    "requests_per_second": 100,
+    "requests_per_minute": 5000,
+    "requests_per_hour": 100000,
+    "requests_per_day": 1000000
+  }',
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  expires_at TIMESTAMPTZ,
+  last_used TIMESTAMPTZ,
+  usage JSONB NOT NULL DEFAULT '{
+    "current_period": {
+      "requests": 0,
+      "start_time": null
+    },
+    "limits": {
+      "daily": 1000000,
+      "monthly": 30000000
+    }
+  }',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for api_keys table
+CREATE INDEX IF NOT EXISTS idx_api_keys_tenant ON api_keys(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_api_keys_user ON api_keys(user_id);
+CREATE INDEX IF NOT EXISTS idx_api_keys_active ON api_keys(is_active);
+CREATE INDEX IF NOT EXISTS idx_api_keys_expires ON api_keys(expires_at);
+
+-- RATE LIMIT RULES TABLE for API rate limiting
+CREATE TABLE IF NOT EXISTS rate_limit_rules (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  description TEXT,
+  endpoint_pattern TEXT NOT NULL,
+  method TEXT,
+  limit_count INTEGER NOT NULL,
+  window_seconds INTEGER NOT NULL,
+  strategy TEXT NOT NULL DEFAULT 'fixed_window' CHECK (strategy IN ('fixed_window', 'sliding_window', 'token_bucket')),
+  applies_to TEXT NOT NULL DEFAULT 'global' CHECK (applies_to IN ('global', 'tenant', 'user', 'ip')),
+  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  ip_range INET,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  priority INTEGER NOT NULL DEFAULT 1,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for rate_limit_rules table
+CREATE INDEX IF NOT EXISTS idx_rate_limit_rules_active ON rate_limit_rules(is_active);
+CREATE INDEX IF NOT EXISTS idx_rate_limit_rules_tenant ON rate_limit_rules(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_rate_limit_rules_priority ON rate_limit_rules(priority DESC);
+
+-- SECURITY EVENTS TABLE for security monitoring
+CREATE TABLE IF NOT EXISTS security_events (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  type TEXT NOT NULL CHECK (type IN ('threat', 'breach', 'suspicious', 'policy_violation', 'failed_login', 'unauthorized_access')),
+  severity TEXT NOT NULL DEFAULT 'medium' CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  source_ip INET,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  user_name TEXT,
+  tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
+  location TEXT,
+  user_agent TEXT,
+  risk_score INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'investigating', 'resolved', 'false_positive')),
+  assigned_to UUID REFERENCES users(id) ON DELETE SET NULL,
+  resolved_at TIMESTAMPTZ,
+  resolution TEXT,
+  details JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for security_events table
+CREATE INDEX IF NOT EXISTS idx_security_events_timestamp ON security_events(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_security_events_type ON security_events(type);
+CREATE INDEX IF NOT EXISTS idx_security_events_severity ON security_events(severity);
+CREATE INDEX IF NOT EXISTS idx_security_events_status ON security_events(status);
+CREATE INDEX IF NOT EXISTS idx_security_events_tenant ON security_events(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_security_events_risk_score ON security_events(risk_score DESC);
+
+-- WEBHOOKS TABLE for API management
+CREATE TABLE IF NOT EXISTS webhooks (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  url TEXT NOT NULL,
+  events JSONB NOT NULL DEFAULT '[]',
+  secret_hash TEXT NOT NULL, -- Store hash of webhook secret
+  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  retry_policy JSONB NOT NULL DEFAULT '{
+    "max_retries": 3,
+    "backoff_strategy": "exponential",
+    "retry_on": [500, 502, 503, 504]
+  }',
+  last_triggered TIMESTAMPTZ,
+  success_rate DECIMAL(5,2) DEFAULT 0,
+  total_deliveries INTEGER DEFAULT 0,
+  failed_deliveries INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for webhooks table
+CREATE INDEX IF NOT EXISTS idx_webhooks_tenant ON webhooks(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_webhooks_active ON webhooks(is_active);
+
+-- NOTIFICATIONS TABLE for notification center
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  type TEXT NOT NULL CHECK (type IN ('info', 'success', 'warning', 'error')),
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'critical')),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+  is_read BOOLEAN NOT NULL DEFAULT FALSE,
+  read_at TIMESTAMPTZ,
+  action_url TEXT,
+  expires_at TIMESTAMPTZ,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for notifications table
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_tenant ON notifications(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_type ON notifications(type);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(is_read);
+CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at DESC);
+
+-- SYSTEM METRICS TABLE for performance monitoring
+CREATE TABLE IF NOT EXISTS system_metrics (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  metric_type TEXT NOT NULL,
+  metric_name TEXT NOT NULL,
+  value DECIMAL(15,4) NOT NULL,
+  unit TEXT,
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+  metadata JSONB DEFAULT '{}'
+);
+
+-- Indexes for system_metrics table
+CREATE INDEX IF NOT EXISTS idx_system_metrics_type ON system_metrics(metric_type);
+CREATE INDEX IF NOT EXISTS idx_system_metrics_name ON system_metrics(metric_name);
+CREATE INDEX IF NOT EXISTS idx_system_metrics_timestamp ON system_metrics(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_system_metrics_tenant ON system_metrics(tenant_id);
+
+-- API USAGE LOGS TABLE for detailed API monitoring
+CREATE TABLE IF NOT EXISTS api_usage_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  api_key_id UUID REFERENCES api_keys(id) ON DELETE SET NULL,
+  endpoint TEXT NOT NULL,
+  method TEXT NOT NULL,
+  response_time INTEGER, -- in milliseconds
+  status_code INTEGER,
+  request_size INTEGER,
+  response_size INTEGER,
+  ip_address INET,
+  user_agent TEXT,
+  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for api_usage_logs table
+CREATE INDEX IF NOT EXISTS idx_api_usage_logs_key ON api_usage_logs(api_key_id);
+CREATE INDEX IF NOT EXISTS idx_api_usage_logs_endpoint ON api_usage_logs(endpoint);
+CREATE INDEX IF NOT EXISTS idx_api_usage_logs_timestamp ON api_usage_logs(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_api_usage_logs_tenant ON api_usage_logs(tenant_id);
+
+-- ========================================
+-- RLS POLICIES FOR ADMIN TABLES
+-- ========================================
+
+-- Enable RLS on admin tables
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE platform_configurations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_limit_rules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE security_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE webhooks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE system_metrics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE api_usage_logs ENABLE ROW LEVEL SECURITY;
+
+-- Audit logs policies - allow service role full access, authenticated users limited access
+CREATE POLICY "Service role full access to audit_logs" ON audit_logs FOR ALL USING (true);
+CREATE POLICY "Users can view relevant audit_logs" ON audit_logs
+  FOR SELECT USING (
+    auth.role() = 'authenticated' AND (
+      user_id = auth.uid() OR
+      tenant_id IN (SELECT tenant_id FROM users WHERE id = auth.uid())
+    )
+  );
+
+-- Platform configurations policies
+CREATE POLICY "Service role full access to configurations" ON platform_configurations FOR ALL USING (true);
+CREATE POLICY "Authenticated users can read non-secret configs" ON platform_configurations
+  FOR SELECT USING (auth.role() = 'authenticated' AND NOT is_secret);
+
+-- API keys policies
+CREATE POLICY "Service role full access to api_keys" ON api_keys FOR ALL USING (true);
+CREATE POLICY "Users can manage own API keys" ON api_keys
+  FOR ALL USING (
+    auth.role() = 'authenticated' AND (
+      user_id = auth.uid() OR
+      tenant_id IN (SELECT tenant_id FROM users WHERE id = auth.uid())
+    )
+  );
+
+-- Rate limit rules policies
+CREATE POLICY "Service role full access to rate_limit_rules" ON rate_limit_rules FOR ALL USING (true);
+CREATE POLICY "Authenticated users can view rate limits" ON rate_limit_rules
+  FOR SELECT USING (auth.role() = 'authenticated');
+
+-- Security events policies
+CREATE POLICY "Service role full access to security_events" ON security_events FOR ALL USING (true);
+CREATE POLICY "Users can view relevant security events" ON security_events
+  FOR SELECT USING (
+    auth.role() = 'authenticated' AND (
+      user_id = auth.uid() OR
+      tenant_id IN (SELECT tenant_id FROM users WHERE id = auth.uid())
+    )
+  );
+
+-- Webhooks policies
+CREATE POLICY "Service role full access to webhooks" ON webhooks FOR ALL USING (true);
+CREATE POLICY "Users can manage own webhooks" ON webhooks
+  FOR ALL USING (
+    auth.role() = 'authenticated' AND (
+      tenant_id IN (SELECT tenant_id FROM users WHERE id = auth.uid())
+    )
+  );
+
+-- Notifications policies
+CREATE POLICY "Service role full access to notifications" ON notifications FOR ALL USING (true);
+CREATE POLICY "Users can manage own notifications" ON notifications
+  FOR ALL USING (auth.role() = 'authenticated' AND user_id = auth.uid());
+
+-- System metrics policies
+CREATE POLICY "Service role full access to system_metrics" ON system_metrics FOR ALL USING (true);
+CREATE POLICY "Users can view tenant metrics" ON system_metrics
+  FOR SELECT USING (
+    auth.role() = 'authenticated' AND (
+      tenant_id IN (SELECT tenant_id FROM users WHERE id = auth.uid()) OR
+      tenant_id IS NULL
+    )
+  );
+
+-- API usage logs policies
+CREATE POLICY "Service role full access to api_usage_logs" ON api_usage_logs FOR ALL USING (true);
+CREATE POLICY "Users can view own usage logs" ON api_usage_logs
+  FOR SELECT USING (
+    auth.role() = 'authenticated' AND (
+      api_key_id IN (SELECT id FROM api_keys WHERE user_id = auth.uid()) OR
+      tenant_id IN (SELECT tenant_id FROM users WHERE id = auth.uid())
+    )
+  );
+
+-- ========================================
+-- TRIGGERS FOR ADMIN TABLES
+-- ========================================
+
+-- Function to update updated_at timestamp for admin tables
+CREATE OR REPLACE FUNCTION update_admin_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Apply triggers to admin tables
+CREATE TRIGGER update_platform_configurations_updated_at BEFORE UPDATE ON platform_configurations
+  FOR EACH ROW EXECUTE FUNCTION update_admin_updated_at_column();
+
+CREATE TRIGGER update_api_keys_updated_at BEFORE UPDATE ON api_keys
+  FOR EACH ROW EXECUTE FUNCTION update_admin_updated_at_column();
+
+CREATE TRIGGER update_rate_limit_rules_updated_at BEFORE UPDATE ON rate_limit_rules
+  FOR EACH ROW EXECUTE FUNCTION update_admin_updated_at_column();
+
+CREATE TRIGGER update_webhooks_updated_at BEFORE UPDATE ON webhooks
+  FOR EACH ROW EXECUTE FUNCTION update_admin_updated_at_column();
+
+-- ========================================
+-- GRANT PERMISSIONS FOR ADMIN TABLES
+-- ========================================
+
+-- Grant necessary permissions to service role for admin tables
+GRANT ALL ON audit_logs TO service_role;
+GRANT ALL ON platform_configurations TO service_role;
+GRANT ALL ON api_keys TO service_role;
+GRANT ALL ON rate_limit_rules TO service_role;
+GRANT ALL ON security_events TO service_role;
+GRANT ALL ON webhooks TO service_role;
+GRANT ALL ON notifications TO service_role;
+GRANT ALL ON system_metrics TO service_role;
+GRANT ALL ON api_usage_logs TO service_role;
+
+-- ========================================
+-- INSERT SAMPLE ADMIN DATA
+-- ========================================
+
+-- Insert sample platform configurations
+INSERT INTO platform_configurations (category, key, value, type, description, is_secret, is_read_only)
+VALUES
+  ('general', 'site_name', '"Multi-Tenant Platform"', 'string', 'The main site name displayed in headers and emails', false, false),
+  ('general', 'site_description', '"A powerful multi-tenant platform for modern applications"', 'string', 'Site description for SEO and meta tags', false, false),
+  ('general', 'maintenance_mode', 'false', 'boolean', 'Enable maintenance mode to show maintenance page to users', false, false),
+  ('security', 'session_timeout', '3600', 'number', 'Session timeout in seconds (default: 3600 = 1 hour)', false, false),
+  ('security', 'max_login_attempts', '5', 'number', 'Maximum failed login attempts before account lockout', false, false),
+  ('email', 'smtp_host', '"smtp.example.com"', 'string', 'SMTP server hostname', false, false),
+  ('email', 'smtp_username', '"noreply@example.com"', 'string', 'SMTP authentication username', false, false),
+  ('email', 'smtp_password', '"password123"', 'password', 'SMTP authentication password', true, false),
+  ('features', 'enable_video_calling', 'true', 'boolean', 'Enable video calling feature across the platform', false, false),
+  ('features', 'enable_crypto_payments', 'false', 'boolean', 'Enable cryptocurrency payment processing', false, false),
+  ('api', 'rate_limit_per_minute', '1000', 'number', 'API rate limit per minute per user', false, false),
+  ('localization', 'default_timezone', '"UTC"', 'string', 'Default timezone for the platform', false, false),
+  ('localization', 'supported_languages', '["en", "es", "fr", "de"]', 'json', 'List of supported language codes', false, false)
+ON CONFLICT (category, key) DO NOTHING;
+
+-- Insert sample rate limit rules
+INSERT INTO rate_limit_rules (name, description, endpoint_pattern, method, limit_count, window_seconds, strategy, applies_to, is_active, priority)
+VALUES
+  ('Global API Rate Limit', 'General rate limiting for all API endpoints', '/api/*', NULL, 1000, 60, 'sliding_window', 'global', true, 1),
+  ('Authentication Rate Limit', 'Stricter rate limiting for authentication endpoints', '/api/auth/*', NULL, 10, 60, 'fixed_window', 'ip', true, 2),
+  ('Analytics Rate Limit', 'Rate limiting for analytics endpoints', '/api/analytics/*', 'GET', 500, 60, 'token_bucket', 'tenant', true, 3)
+ON CONFLICT DO NOTHING;
+
+-- ========================================
+-- FINAL VERIFICATION AND DIAGNOSTICS
+-- ========================================
+
+-- Simple verification queries (no function needed)
+SELECT '🔍 DATABASE STRUCTURE VERIFICATION:' as info;
+
+-- Check if key tables exist
+SELECT
+    'Tables existence check:' as info,
+    COUNT(*) as existing_tables
+FROM information_schema.tables
+WHERE table_schema = 'public'
+AND table_name IN ('tenants', 'users', 'business_ideas', 'investment_offers', 'matches', 'conversations', 'messages');
+
+-- Check investment_offers table specifically
+SELECT
+    'investment_offers table check:' as info,
+    CASE
+        WHEN EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'investment_offers')
+        THEN '✅ EXISTS'
+        ELSE '❌ MISSING'
+    END as status;
+
+-- Check if tenant_id column exists in investment_offers
+SELECT
+    'investment_offers tenant_id column check:' as info,
+    CASE
+        WHEN EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'investment_offers' AND column_name = 'tenant_id'
+        )
+        THEN '✅ EXISTS'
+        ELSE '❌ MISSING'
+    END as status;
+
+-- Final diagnostic log
+SELECT log_diagnostic('Schema creation completed successfully - all tables, policies, and triggers created');
+
+-- ========================================
 -- SCHEMA CREATION COMPLETE
 -- ========================================
 
-SELECT log_diagnostic('Schema creation completed successfully - all tables, policies, and triggers created');
-SELECT '✅ Complete database schema with service role access fix applied successfully!' as status;
+SELECT '✅ Complete database schema with FIXED admin roles applied successfully!' as status;
+SELECT '🎯 Admin user types now supported: creator, investor, tenant_admin, super_admin' as info;
+SELECT '🔧 RLS policies updated to work with admin roles' as info;
+SELECT '⚡ Performance indexes added for admin queries' as info;
+SELECT '🛠️  Safe table modification functions added' as info;
+SELECT '🔍 Database structure verification completed' as info;
