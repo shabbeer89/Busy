@@ -96,6 +96,26 @@ Fallback Option: Provides alternative for users who prefer Google
 - **Responsive Design**: Fluid layouts that adapt to mobile, tablet, and desktop viewports
 - **Touch Interactions**: Swipe gestures, tap targets, and mobile-friendly navigation
 
+### Advanced Loading States & Skeleton Screens
+**Comprehensive Skeleton Screen System:**
+- **Admin-Specific Skeletons**: Custom skeleton screens for all admin pages that match actual layouts
+- **Dynamic Loading States**: Role-appropriate loading indicators based on user permissions
+- **Progressive Content Loading**: Skeleton screens show page structure while data loads
+- **Enhanced UX**: Users see familiar layouts during loading, reducing perceived wait times
+
+**Skeleton Screen Coverage:**
+- **Admin Dashboard**: Complete dashboard layout with stats cards, activity feeds, and overview sections
+- **Analytics Pages**: Chart placeholders, metric cards, and data table structures
+- **Management Pages**: Form layouts, table structures, and action button placements
+- **Monitoring Pages**: System status cards, resource meters, and alert placeholders
+- **Security Pages**: Threat monitoring layouts, access control structures, and audit log formats
+
+**Technical Benefits:**
+- **Improved Performance Perception**: Users see content structure immediately
+- **Reduced Loading Anxiety**: Familiar layouts provide visual continuity
+- **Professional Appearance**: Polished loading states enhance overall UX
+- **Accessibility Compliant**: Skeleton screens maintain proper semantic structure
+
 ## Core Features (Multi-Tenant Enhanced)
 
 ### Multi-Tenant Architecture
@@ -111,17 +131,97 @@ Fallback Option: Provides alternative for users who prefer Google
 ## 👥 **User Roles & Access Levels**
 
 ### **Platform Administrators**
-**Super Admin**
-- Complete platform oversight and control
-- Cross-tenant analytics and insights
-- Global configuration management
-- Emergency access and troubleshooting
 
-**Tenant Admin**
-- Regional/organizational management within their tenant
-- User administration for their specific tenant
-- Tenant-specific customization and branding
-- Local analytics and performance monitoring
+#### **🚀 Super Admin (Complete Platform Control)**
+**Core Responsibilities:**
+- **Complete platform oversight and control** across all tenants
+- **Cross-tenant analytics and insights** with system-wide visibility
+- **Global configuration management** and system settings
+- **Emergency access and troubleshooting** for all tenants
+- **Tenant lifecycle management** - create, modify, suspend, delete tenants
+- **Cross-tenant user administration** - manage users across all tenants
+- **Platform-wide security monitoring** and threat management
+- **System-wide feature flag management** and A/B testing
+- **Global billing and subscription oversight** across all tenants
+- **Complete audit trail access** for compliance and security
+
+**Complete Permission Set:**
+```typescript
+Permission.MANAGE_TENANTS,           // ✅ Can create/delete tenants
+Permission.MANAGE_SYSTEM,            // ✅ Full system control
+Permission.VIEW_SYSTEM_ANALYTICS,    // ✅ Global analytics
+Permission.MANAGE_FEATURE_FLAGS,     // ✅ Global feature toggles
+Permission.IMPERSONATE_USERS,        // ✅ Can impersonate any user
+Permission.VIEW_AUDIT_LOGS,          // ✅ All audit logs
+Permission.MANAGE_TENANT_USERS,      // ✅ Users across all tenants
+Permission.MANAGE_TENANT_SETTINGS,   // ✅ Settings for all tenants
+// ... plus all tenant admin permissions
+```
+
+**Sidebar Pages (Full Access - All 10 Admin Pages):**
+1. **🏠 Admin Dashboard** - Complete system overview with all metrics
+2. **👥 User Management** - All users across all tenants
+3. **🏢 Tenant Management** - Create, modify, delete tenants
+4. **📊 Platform Analytics** - System-wide analytics and insights
+5. **🔍 System Monitoring** - All system metrics and health monitoring
+6. **🛡️ Security Center** - Complete security management and threat monitoring
+7. **⚡ Feature Toggles** - Global feature management and A/B testing
+8. **⚙️ Configuration** - All system configurations and settings
+9. **🔔 Notifications** - All system notifications and templates
+10. **📋 Audit Logs** - Complete audit trail across all tenants
+
+#### **⚡ Tenant Admin (Tenant-Specific Management)**
+**Core Responsibilities:**
+- **Tenant-specific management** within their assigned tenant(s)
+- **User administration** for their specific tenant only
+- **Tenant-specific customization** and branding settings
+- **Local analytics and performance monitoring** for their tenant
+- **Tenant feature management** and configuration
+- **Tenant security monitoring** and access control
+- **Tenant-specific billing management** and subscription oversight
+- **Tenant audit logs** and compliance tracking
+
+**Limited Permission Set:**
+```typescript
+Permission.MANAGE_TENANT_USERS,      // ✅ Users in their tenant only
+Permission.MANAGE_TENANT_SETTINGS,   // ✅ Settings for their tenant only
+Permission.VIEW_TENANT_ANALYTICS,    // ✅ Analytics for their tenant only
+Permission.MANAGE_TENANT_FEATURES,   // ✅ Features for their tenant only
+Permission.VIEW_AUDIT_LOGS,          // ✅ Audit logs for their tenant only
+// ❌ NO system-wide permissions
+// ❌ Cannot manage other tenants
+// ❌ Cannot access global analytics
+```
+
+**Sidebar Pages (Limited Access - 6 Admin Pages):**
+1. **🏠 Admin Dashboard** - Tenant-specific overview and metrics only
+2. **👥 User Management** - Users within their tenant only
+3. **🏢 Tenant Management** - View their tenant info (read-only)
+4. **📊 Platform Analytics** - Tenant analytics and insights only
+5. **🔍 System Monitoring** - Tenant-specific monitoring only
+6. **🛡️ Security Center** - Tenant security events only
+7. **⚡ Feature Toggles** - Tenant feature management only
+8. **⚙️ Configuration** - Tenant configurations only
+9. **🔔 Notifications** - Tenant notifications only
+10. **📋 Audit Logs** - Tenant audit logs only
+
+**Key Differences Summary:**
+- **Super Admin**: Has complete system control, can manage all tenants, access global analytics, and perform cross-tenant operations
+- **Tenant Admin**: Limited to their specific tenant(s), cannot access other tenants' data, and has restricted analytics scope
+
+#### **🔐 Role-Based Access Control Implementation**
+**Technical Implementation:**
+- **Dynamic Sidebar Navigation**: Role-specific navigation arrays with different page sets
+- **Permission-Based UI**: UI elements show/hide based on user permissions
+- **Type-Safe Role Checking**: Full TypeScript support for role validation
+- **Real-Time Permission Updates**: Permissions update based on user role changes
+- **Graceful Degradation**: Users only see features they can actually use
+
+**Security Features:**
+- **Row-Level Security (RLS)**: Database-level tenant data isolation
+- **Permission Guards**: React components that conditionally render based on permissions
+- **Audit Logging**: All role-based actions are logged for compliance
+- **Impersonation Mode**: Super admins can temporarily act as tenant admins for support
 
 ### **Platform Users**
 **Business Idea Creators**

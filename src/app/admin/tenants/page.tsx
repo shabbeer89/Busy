@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/use-auth';
+import { usePermissions, UserRole, Permission } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -39,6 +41,22 @@ export default function TenantsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
+
+  // Role-based permissions
+  const { user } = useAuth();
+  const getUserRoleFromUserType = (userType: string, email?: string): UserRole => {
+    if (email === 'test@example.com') return UserRole.SUPER_ADMIN;
+    switch (userType) {
+      case 'super_admin': return UserRole.SUPER_ADMIN;
+      case 'tenant_admin': return UserRole.TENANT_ADMIN;
+      case 'creator': return UserRole.CREATOR;
+      case 'investor': return UserRole.INVESTOR;
+      default: return UserRole.USER;
+    }
+  };
+  const userRole = user ? getUserRoleFromUserType(user.userType || 'user', user.email) : UserRole.USER;
+  const permissions = usePermissions(userRole);
+  const canManageTenants = permissions.hasPermission(Permission.MANAGE_TENANTS);
 
   // Enhanced billing features
   const [subscriptions, setSubscriptions] = useState<TenantSubscription[]>([]);
@@ -153,10 +171,12 @@ export default function TenantsPage() {
               Manage tenants, their settings, and access permissions
             </p>
           </div>
-          <Button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Create Tenant
-          </Button>
+          {canManageTenants && (
+            <Button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Create Tenant
+            </Button>
+          )}
         </div>
 
         {/* Enhanced Stats with Billing Information */}
@@ -477,19 +497,23 @@ export default function TenantsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
-                            <DropdownMenuItem
-                              onClick={() => handleEditTenant(tenant)}
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteTenant(tenant.id)}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
+                            {canManageTenants && (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() => handleEditTenant(tenant)}
+                                >
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteTenant(tenant.id)}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

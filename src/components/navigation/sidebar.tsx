@@ -35,11 +35,12 @@ import {
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
-   className?: string;
-   isAdmin?: boolean;
+    className?: string;
+    isAdmin?: boolean;
+    userRole?: UserRole;
 }
 
-export function Sidebar({ className, isAdmin = false }: SidebarProps) {
+export function Sidebar({ className, isAdmin = false, userRole }: SidebarProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isProfileExpanded, setIsProfileExpanded] = useState(false);
@@ -69,12 +70,13 @@ export function Sidebar({ className, isAdmin = false }: SidebarProps) {
      }
    };
  
-   const userRole = user ? getUserRoleFromUserType(user.userType || 'user', user.email) : UserRole.USER;
-   const isSuperAdmin = userRole === UserRole.SUPER_ADMIN;
-   const isTenantAdmin = userRole === UserRole.TENANT_ADMIN;
+   const currentUserRole = user ? getUserRoleFromUserType(user.userType || 'user', user.email) : UserRole.USER;
+   const isSuperAdmin = (userRole || currentUserRole) === UserRole.SUPER_ADMIN;
+   const isTenantAdmin = (userRole || currentUserRole) === UserRole.TENANT_ADMIN;
 
-  const navigationItems = isAdmin ? [
-    // Admin Navigation Items - Complete admin panel
+  // Role-based navigation items
+  const superAdminNavigationItems = [
+    // Super Admin Navigation Items - Complete admin panel (All 10 pages)
     {
       name: "Admin Dashboard",
       href: "/admin",
@@ -135,7 +137,52 @@ export function Sidebar({ className, isAdmin = false }: SidebarProps) {
       icon: FileText,
       current: pathname === "/admin/audit-logs",
     },
-  ] : [
+  ];
+
+  const tenantAdminNavigationItems = [
+    // Tenant Admin Navigation Items - Limited admin panel (6 pages)
+    {
+      name: "Admin Dashboard",
+      href: "/admin",
+      icon: LayoutDashboard,
+      current: pathname === "/admin",
+    },
+    {
+      name: "User Management",
+      href: "/admin/users",
+      icon: Users,
+      current: pathname === "/admin/users",
+    },
+    {
+      name: "Platform Analytics",
+      href: "/admin/analytics",
+      icon: BarChart3,
+      current: pathname === "/admin/analytics",
+    },
+    {
+      name: "System Monitoring",
+      href: "/admin/monitoring",
+      icon: Activity,
+      current: pathname === "/admin/monitoring",
+    },
+    {
+      name: "Security Center",
+      href: "/admin/security",
+      icon: ShieldCheck,
+      current: pathname === "/admin/security",
+    },
+    {
+      name: "Notifications",
+      href: "/admin/notifications",
+      icon: TrendingUp,
+      current: pathname === "/admin/notifications",
+    },
+  ];
+
+  // Select navigation items based on user role
+  const navigationItems = isAdmin
+    ? (isSuperAdmin ? superAdminNavigationItems : tenantAdminNavigationItems)
+    : [
     // Regular User Navigation Items
     {
       name: "Dashboard",
@@ -326,7 +373,7 @@ export function Sidebar({ className, isAdmin = false }: SidebarProps) {
                       {user.name}
                     </p>
                     <p className="text-xs text-slate-400 capitalize">
-                      {isSuperAdmin ? 'Super Admin' : isTenantAdmin ? 'Tenant Admin' : user.userType?.replace('_', ' ') || 'user'}
+                      {isSuperAdmin ? 'Super Admin' : isTenantAdmin ? 'Tenant Admin' : currentUserRole?.replace('_', ' ') || 'user'}
                     </p>
                   </div>
                 )}
@@ -417,10 +464,10 @@ export function Sidebar({ className, isAdmin = false }: SidebarProps) {
 }
 
 // Layout wrapper component that includes the sidebar
-export function SidebarLayout({ children, isAdmin = false }: { children: React.ReactNode; isAdmin?: boolean }) {
+export function SidebarLayout({ children, isAdmin = false, userRole }: { children: React.ReactNode; isAdmin?: boolean; userRole?: UserRole }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <Sidebar isAdmin={isAdmin} />
+        <Sidebar isAdmin={isAdmin} userRole={userRole} />
         <div className={cn(
           "transition-all duration-300 relative min-h-screen"
         )}>
