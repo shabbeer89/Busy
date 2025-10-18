@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FavoritesButton } from "@/components/bookmarks/favorites-button";
 import Link from "next/link";
 import { InvestmentOffer } from "@/types";
-import { Id } from "../../../../convex/_generated/dataModel";
 
 export default function OfferDetailPage() {
   const params = useParams();
@@ -20,57 +19,41 @@ export default function OfferDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // In a real app, this would fetch from Convex
-    // For now, using mock data
     const fetchOffer = async () => {
+      if (!params.id) return;
+
       try {
-        // Mock API call - replace with actual Convex query
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading
+        setIsLoading(true);
+        setError(null);
 
-        // Mock offer data
-        const mockOffer: InvestmentOffer = {
-          id: params.id as string,
-          investorId: "investor1" as Id<"users">,
-          title: "Tech-Focused Growth Capital",
-          description: `Strategic investment fund focused on technology startups with proven market traction and scalable business models.
+        // Fetch real offer data from API
+        const response = await fetch(`/api/offers/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch offer');
+        }
 
-Investment Philosophy:
-• Partner with exceptional entrepreneurs building category-defining companies
-• Focus on product-market fit and sustainable unit economics
-• Support companies through growth challenges with strategic guidance
-• Long-term partnership approach beyond just capital
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Offer not found');
+        }
 
-Preferred sectors include SaaS, AI/ML, Fintech, Healthtech, and Enterprise Software. We look for founders with deep domain expertise and clear vision for market disruption.`,
-          amountRange: { min: 250000, max: 2000000 },
-          preferredEquity: { min: 10, max: 25 },
-          preferredStages: ["early", "growth"],
-          preferredIndustries: ["Technology", "SaaS", "AI/ML", "Fintech"],
-          investmentType: "equity",
-          timeline: "Looking to deploy capital within 6 months, flexible on timeline for exceptional opportunities",
-          isActive: true,
-          createdAt: Date.now() - 86400000 * 14, // 14 days ago
-          updatedAt: Date.now() - 86400000 * 3, // 3 days ago
-        };
-
-        setOffer(mockOffer);
+        setOffer(data.data);
       } catch (err) {
-        setError("Failed to load offer details");
+        setError(err instanceof Error ? err.message : "Failed to load offer details");
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (params.id) {
-      fetchOffer();
-    }
+    fetchOffer();
   }, [params.id]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading offer details...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-slate-300">Loading offer details...</p>
         </div>
       </div>
     );
@@ -78,11 +61,11 @@ Preferred sectors include SaaS, AI/ML, Fintech, Healthtech, and Enterprise Softw
 
   if (error || !offer) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
-          <p className="text-gray-600 mb-4">{error || "Offer not found"}</p>
-          <Button onClick={() => router.back()}>Go Back</Button>
+          <h1 className="text-2xl font-bold text-white mb-4">Error</h1>
+          <p className="text-slate-300 mb-4">{error || "Offer not found"}</p>
+          <Button onClick={() => router.back()} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Go Back</Button>
         </div>
       </div>
     );
@@ -106,15 +89,15 @@ Preferred sectors include SaaS, AI/ML, Fintech, Healthtech, and Enterprise Softw
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <Button variant="outline" onClick={() => router.back()}>
+            <Button variant="outline" onClick={() => router.back()} className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
               ← Back to Offers
             </Button>
-            <Badge variant={offer.isActive ? "default" : "secondary"}>
+            <Badge variant={offer.isActive ? "default" : "secondary"} className={offer.isActive ? "bg-green-600 hover:bg-green-700 text-white" : "bg-orange-600 hover:bg-orange-700 text-white"}>
               {offer.isActive ? "Active" : "Inactive"}
             </Badge>
           </div>
@@ -124,80 +107,88 @@ Preferred sectors include SaaS, AI/ML, Fintech, Healthtech, and Enterprise Softw
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Basic Information */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-3xl">{offer.title}</CardTitle>
-                <CardDescription className="text-lg">
-                  Investment Type: <span className="font-medium text-gray-900 capitalize">{offer.investmentType}</span>
+                <CardTitle className="text-3xl text-white">{offer.title}</CardTitle>
+                <CardDescription className="text-lg text-slate-300">
+                  Investment Type: <span className="font-medium text-white capitalize">{offer.investmentType}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 leading-relaxed mb-6">{offer.description}</p>
+                <p className="text-slate-300 leading-relaxed mb-6">{offer.description}</p>
 
                 {/* Investment Range */}
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Investment Range</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-2xl font-bold text-gray-900">
-                      {formatCurrency(offer.amountRange.min)} - {formatCurrency(offer.amountRange.max)}
+                  <h3 className="text-lg font-semibold text-white mb-3">Investment Range</h3>
+                  <div className="bg-gradient-to-r from-green-900/30 to-green-800/30 p-4 rounded-lg border border-green-500/20 hover:border-green-400/30 transition-all duration-300">
+                    <p className="text-2xl font-bold text-green-400">
+                      {offer.amountRange ? `${formatCurrency(offer.amountRange.min)} - ${formatCurrency(offer.amountRange.max)}` : "Range not specified"}
                     </p>
-                    <p className="text-gray-600">Typical investment size</p>
+                    <p className="text-green-300/80">Typical investment size</p>
                   </div>
                 </div>
 
                 {/* Equity Range */}
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Equity Range</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-2xl font-bold text-gray-900">
-                      {offer.preferredEquity.min}% - {offer.preferredEquity.max}%
+                  <h3 className="text-lg font-semibold text-white mb-3">Equity Range</h3>
+                  <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/30 p-4 rounded-lg border border-blue-500/20 hover:border-blue-400/30 transition-all duration-300">
+                    <p className="text-2xl font-bold text-blue-400">
+                      {offer.preferredEquity ? `${offer.preferredEquity.min}% - ${offer.preferredEquity.max}%` : "Equity not specified"}
                     </p>
-                    <p className="text-gray-600">Equity stake typically sought</p>
+                    <p className="text-blue-300/80">Equity stake typically sought</p>
                   </div>
                 </div>
 
                 {/* Timeline */}
                 {offer.timeline && (
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Investment Timeline</h3>
-                    <p className="text-gray-700">{offer.timeline}</p>
+                    <h3 className="text-lg font-semibold text-white mb-3">Investment Timeline</h3>
+                    <p className="text-slate-300">{offer.timeline}</p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
             {/* Investment Preferences */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle>Investment Preferences</CardTitle>
+                <CardTitle className="text-white">Investment Preferences</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Preferred Business Stages</h3>
+                  <h3 className="text-sm font-medium text-slate-300 mb-3">Preferred Business Stages</h3>
                   <div className="flex flex-wrap gap-2">
-                    {offer.preferredStages.map((stage) => (
-                      <Badge key={stage} variant="outline" className="capitalize">
-                        {stage}
-                      </Badge>
-                    ))}
+                    {offer.preferredStages && offer.preferredStages.length > 0 ? (
+                      offer.preferredStages.map((stage) => (
+                        <Badge key={stage} variant="outline" className="capitalize border-slate-500 text-slate-300 hover:bg-slate-700">
+                          {stage}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-slate-400 text-sm">No specific stages preferred</p>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Preferred Industries</h3>
+                  <h3 className="text-sm font-medium text-slate-300 mb-3">Preferred Industries</h3>
                   <div className="flex flex-wrap gap-2">
-                    {offer.preferredIndustries.map((industry) => (
-                      <Badge key={industry} variant="secondary">
-                        {industry}
-                      </Badge>
-                    ))}
+                    {offer.preferredIndustries && offer.preferredIndustries.length > 0 ? (
+                      offer.preferredIndustries.map((industry) => (
+                        <Badge key={industry} variant="secondary" className="bg-slate-700 border-slate-600 text-slate-300">
+                          {industry}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-slate-400 text-sm">No specific industries specified</p>
+                    )}
                   </div>
                 </div>
 
                 {offer.geographicPreference && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Geographic Preference</h3>
-                    <p className="text-gray-600">{offer.geographicPreference}</p>
+                    <h3 className="text-sm font-medium text-slate-300 mb-2">Geographic Preference</h3>
+                    <p className="text-slate-400">{offer.geographicPreference}</p>
                   </div>
                 )}
               </CardContent>
@@ -207,19 +198,19 @@ Preferred sectors include SaaS, AI/ML, Fintech, Healthtech, and Enterprise Softw
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Action Buttons */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle>Take Action</CardTitle>
+                <CardTitle className="text-white">Take Action</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {user?.userType === "creator" && (
                   <>
                     <FavoritesButton itemId={offer.id} itemType="offer" />
-                    <Button className="w-full">Apply for Investment</Button>
-                    <Button variant="outline" className="w-full">
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Apply for Investment</Button>
+                    <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                       Schedule Call
                     </Button>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                       View Similar Offers
                     </Button>
                   </>
@@ -228,12 +219,12 @@ Preferred sectors include SaaS, AI/ML, Fintech, Healthtech, and Enterprise Softw
                 {user?.userType === "investor" && offer.investorId === user.id && (
                   <>
                     <Link href={`/offers/${offer.id}/edit`}>
-                      <Button className="w-full">Edit Offer</Button>
+                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Edit Offer</Button>
                     </Link>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                       View Applications
                     </Button>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                       Deactivate Offer
                     </Button>
                   </>
@@ -241,78 +232,78 @@ Preferred sectors include SaaS, AI/ML, Fintech, Healthtech, and Enterprise Softw
 
                 {!user && (
                   <Link href="/auth/login">
-                    <Button className="w-full">Sign In to Connect</Button>
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Sign In to Connect</Button>
                   </Link>
                 )}
               </CardContent>
             </Card>
 
             {/* Offer Stats */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle>Offer Details</CardTitle>
+                <CardTitle className="text-white">Offer Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <Badge variant={offer.isActive ? "default" : "secondary"}>
+                  <span className="text-slate-400">Status:</span>
+                  <Badge variant={offer.isActive ? "default" : "secondary"} className={offer.isActive ? "bg-green-600 hover:bg-green-700 text-white" : "bg-orange-600 hover:bg-orange-700 text-white"}>
                     {offer.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Posted:</span>
-                  <span className="text-sm">{formatDate(offer.createdAt)}</span>
+                  <span className="text-slate-400">Posted:</span>
+                  <span className="text-sm text-slate-300">{formatDate(offer.createdAt)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Updated:</span>
-                  <span className="text-sm">{formatDate(offer.updatedAt)}</span>
+                  <span className="text-slate-400">Updated:</span>
+                  <span className="text-sm text-slate-300">{formatDate(offer.updatedAt)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Views:</span>
-                  <span className="font-medium">89</span>
+                  <span className="text-slate-400">Views:</span>
+                  <span className="font-medium text-white">89</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Applications:</span>
-                  <span className="font-medium">7</span>
+                  <span className="text-slate-400">Applications:</span>
+                  <span className="font-medium text-white">7</span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Investor's Other Offers */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle>Investor's Other Offers</CardTitle>
+                <CardTitle className="text-white">Investor's Other Offers</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <Link href="/offers/2" className="block p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                    <h4 className="font-medium text-sm">Healthcare Innovation Fund</h4>
-                    <p className="text-xs text-gray-600">$100K - $500K • Healthcare</p>
+                  <Link href="/offers/2" className="block p-3 hover:bg-slate-800/50 rounded-lg transition-colors border border-slate-700">
+                    <h4 className="font-medium text-sm text-white">Healthcare Innovation Fund</h4>
+                    <p className="text-xs text-slate-400">$100K - $500K • Healthcare</p>
                   </Link>
-                  <Link href="/offers/3" className="block p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                    <h4 className="font-medium text-sm">Sustainable Energy Investment</h4>
-                    <p className="text-xs text-gray-600">$75K - $300K • Clean Energy</p>
+                  <Link href="/offers/3" className="block p-3 hover:bg-slate-800/50 rounded-lg transition-colors border border-slate-700">
+                    <h4 className="font-medium text-sm text-white">Sustainable Energy Investment</h4>
+                    <p className="text-xs text-slate-400">$75K - $300K • Clean Energy</p>
                   </Link>
                 </div>
               </CardContent>
             </Card>
 
             {/* Contact Information */}
-            <Card>
+            <Card className="bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-all duration-300">
               <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
+                <CardTitle className="text-white">Contact Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 font-semibold">JD</span>
+                  <div className="w-10 h-10 bg-blue-900/20 rounded-full flex items-center justify-center border border-blue-500/30">
+                    <span className="text-blue-400 font-semibold">JD</span>
                   </div>
                   <div>
-                    <p className="font-medium">Jane Doe</p>
-                    <p className="text-sm text-gray-600">Investment Manager</p>
+                    <p className="font-medium text-white">Jane Doe</p>
+                    <p className="text-sm text-slate-400">Investment Manager</p>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                   Send Message
                 </Button>
               </CardContent>

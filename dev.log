@@ -1,0 +1,228 @@
+
+> business-matchmaking@0.1.0 dev
+> next dev
+
+[32m✔[0m [33mConsole Ninja[0m extension is connected to [33mNext.js[0m, see [36mhttps://tinyurl.com/2vt8jxzw[0m
+   ▲ Next.js 15.1.0
+   - Local:        http://localhost:3000
+   - Network:      http://10.216.186.235:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 3.5s
+ ✓ Compiled /src/middleware in 305ms (171 modules)
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 1503ms (635 modules)
+[next-auth][error][OAUTH_CALLBACK_ERROR] 
+https://next-auth.js.org/errors#oauth_callback_error id_token detected in the response, you must use client.callback() instead of client.oauthCallback() {
+  error: [Error [OAuthCallbackError]: id_token detected in the response, you must use client.callback() instead of client.oauthCallback()] {
+    code: undefined
+  },
+  providerId: 'google',
+  message: 'id_token detected in the response, you must use client.callback() instead of client.oauthCallback()'
+}
+ GET /api/auth/callback/google?state=3eIcXp95LQqSuATYuzvf2YDfKUA0pz1PvfM7AzMZ3NU&code=4%2F0AVGzR1B_nX3B4sd4gwXSFhOfm11gmBAffa050iv5aPtm3V0xaydTbo1NwJJt6hTGq8JLBQ&scope=openid&authuser=4&prompt=consent 302 in 3721ms
+ GET /api/auth/error?error=OAuthCallback 302 in 65ms
+ GET /api/auth/signin?error=OAuthCallback 302 in 8ms
+ ○ Compiling /auth/login ...
+ ✓ Compiled /auth/login in 3.2s (1324 modules)
+ GET /auth/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&error=OAuthCallback 200 in 3674ms
+ ✓ Compiled /favicon.ico in 294ms (846 modules)
+ GET /favicon.ico 200 in 404ms
+ GET /api/auth/session 200 in 209ms
+ GET /api/auth/session 200 in 280ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 661ms (1341 modules)
+ POST /__nextjs_original-stack-frames 404 in 1099ms
+ POST /__nextjs_original-stack-frames 404 in 1098ms
+ POST /__nextjs_original-stack-frames 404 in 1098ms
+ POST /__nextjs_original-stack-frames 404 in 1067ms
+ POST /__nextjs_original-stack-frames 404 in 1099ms
+ POST /__nextjs_original-stack-frames 404 in 1102ms
+ POST /__nextjs_original-stack-frames 404 in 1067ms
+ POST /__nextjs_original-stack-frames 404 in 1051ms
+ POST /__nextjs_original-stack-frames 404 in 1073ms
+ POST /__nextjs_original-stack-frames 404 in 1071ms
+ POST /__nextjs_original-stack-frames 404 in 1070ms
+ POST /__nextjs_original-stack-frames 404 in 1053ms
+ GET /auth/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&error=OAuthCallback 200 in 73ms
+ POST /__nextjs_original-stack-frames 404 in 140ms
+ POST /__nextjs_original-stack-frames 404 in 139ms
+ POST /__nextjs_original-stack-frames 404 in 142ms
+ POST /__nextjs_original-stack-frames 404 in 142ms
+ POST /__nextjs_original-stack-frames 404 in 142ms
+ POST /__nextjs_original-stack-frames 404 in 130ms
+ POST /__nextjs_original-stack-frames 404 in 130ms
+ POST /__nextjs_original-stack-frames 404 in 129ms
+ POST /__nextjs_original-stack-frames 404 in 826ms
+ POST /__nextjs_original-stack-frames 404 in 825ms
+ POST /__nextjs_original-stack-frames 404 in 830ms
+ POST /__nextjs_original-stack-frames 404 in 826ms
+ POST /__nextjs_original-stack-frames 404 in 829ms
+ POST /__nextjs_original-stack-frames 404 in 825ms
+ POST /__nextjs_original-stack-frames 404 in 825ms
+ POST /__nextjs_original-stack-frames 404 in 826ms
+ POST /__nextjs_original-stack-frames 404 in 828ms
+ POST /__nextjs_original-stack-frames 404 in 823ms
+ POST /__nextjs_original-stack-frames 404 in 826ms
+ POST /__nextjs_original-stack-frames 404 in 826ms
+ POST /__nextjs_original-stack-frames 404 in 827ms
+ POST /__nextjs_original-stack-frames 404 in 827ms
+ POST /__nextjs_original-stack-frames 404 in 826ms
+ POST /__nextjs_original-stack-frames 404 in 827ms
+ POST /__nextjs_original-stack-frames 404 in 837ms
+ POST /__nextjs_original-stack-frames 404 in 896ms
+ POST /__nextjs_original-stack-frames 404 in 896ms
+ POST /__nextjs_original-stack-frames 404 in 898ms
+ POST /__nextjs_original-stack-frames 404 in 900ms
+ POST /__nextjs_original-stack-frames 404 in 900ms
+ POST /__nextjs_original-stack-frames 404 in 902ms
+ POST /__nextjs_original-stack-frames 404 in 904ms
+ POST /__nextjs_original-stack-frames 404 in 908ms
+ POST /__nextjs_original-stack-frames 404 in 907ms
+ POST /__nextjs_original-stack-frames 404 in 909ms
+ POST /__nextjs_original-stack-frames 404 in 872ms
+ POST /__nextjs_original-stack-frames 404 in 875ms
+ POST /__nextjs_original-stack-frames 404 in 874ms
+ POST /__nextjs_original-stack-frames 404 in 875ms
+ POST /__nextjs_original-stack-frames 404 in 874ms
+ POST /__nextjs_original-stack-frames 404 in 565ms
+ POST /__nextjs_original-stack-frames 404 in 561ms
+ POST /__nextjs_original-stack-frames 404 in 564ms
+ POST /__nextjs_original-stack-frames 404 in 560ms
+ POST /__nextjs_original-stack-frames 404 in 559ms
+ POST /__nextjs_original-stack-frames 404 in 398ms
+ POST /__nextjs_original-stack-frames 404 in 398ms
+ POST /__nextjs_original-stack-frames 404 in 397ms
+ POST /__nextjs_original-stack-frames 404 in 399ms
+ POST /__nextjs_original-stack-frames 404 in 398ms
+ POST /__nextjs_original-stack-frames 404 in 334ms
+ POST /__nextjs_original-stack-frames 404 in 333ms
+ POST /__nextjs_original-stack-frames 404 in 331ms
+ POST /__nextjs_original-stack-frames 404 in 333ms
+ POST /__nextjs_original-stack-frames 404 in 330ms
+ POST /__nextjs_original-stack-frames 404 in 157ms
+ POST /__nextjs_original-stack-frames 404 in 156ms
+ POST /__nextjs_original-stack-frames 404 in 155ms
+ POST /__nextjs_original-stack-frames 404 in 90ms
+ POST /__nextjs_original-stack-frames 404 in 89ms
+ POST /__nextjs_original-stack-frames 404 in 89ms
+ POST /__nextjs_original-stack-frames 404 in 91ms
+ POST /__nextjs_original-stack-frames 404 in 90ms
+ POST /__nextjs_original-stack-frames 404 in 84ms
+ POST /__nextjs_original-stack-frames 404 in 86ms
+ POST /__nextjs_original-stack-frames 404 in 84ms
+ POST /__nextjs_original-stack-frames 404 in 490ms
+ POST /__nextjs_original-stack-frames 404 in 489ms
+ POST /__nextjs_original-stack-frames 404 in 490ms
+ POST /__nextjs_original-stack-frames 404 in 492ms
+ POST /__nextjs_original-stack-frames 404 in 490ms
+ POST /__nextjs_original-stack-frames 404 in 491ms
+ POST /__nextjs_original-stack-frames 404 in 490ms
+ POST /__nextjs_original-stack-frames 404 in 489ms
+ POST /__nextjs_original-stack-frames 404 in 490ms
+ POST /__nextjs_original-stack-frames 404 in 493ms
+ POST /__nextjs_original-stack-frames 404 in 490ms
+ POST /__nextjs_original-stack-frames 404 in 489ms
+ POST /__nextjs_original-stack-frames 404 in 490ms
+ POST /__nextjs_original-stack-frames 404 in 493ms
+ POST /__nextjs_original-stack-frames 404 in 490ms
+ POST /__nextjs_original-stack-frames 404 in 492ms
+ POST /__nextjs_original-stack-frames 404 in 492ms
+ POST /__nextjs_original-stack-frames 404 in 490ms
+ POST /__nextjs_original-stack-frames 404 in 491ms
+ POST /__nextjs_original-stack-frames 404 in 491ms
+ POST /__nextjs_original-stack-frames 404 in 491ms
+ POST /__nextjs_original-stack-frames 404 in 491ms
+ POST /__nextjs_original-stack-frames 404 in 490ms
+ POST /__nextjs_original-stack-frames 404 in 491ms
+ POST /__nextjs_original-stack-frames 404 in 493ms
+ POST /__nextjs_original-stack-frames 404 in 493ms
+ POST /__nextjs_original-stack-frames 404 in 496ms
+ POST /__nextjs_original-stack-frames 404 in 492ms
+ POST /__nextjs_original-stack-frames 404 in 493ms
+ POST /__nextjs_original-stack-frames 404 in 492ms
+ POST /__nextjs_original-stack-frames 404 in 506ms
+ POST /__nextjs_original-stack-frames 404 in 508ms
+ POST /__nextjs_original-stack-frames 404 in 289ms
+ POST /__nextjs_original-stack-frames 404 in 289ms
+ POST /__nextjs_original-stack-frames 404 in 289ms
+ POST /__nextjs_original-stack-frames 404 in 289ms
+ POST /__nextjs_original-stack-frames 404 in 291ms
+ POST /__nextjs_original-stack-frames 404 in 219ms
+ POST /__nextjs_original-stack-frames 404 in 219ms
+ POST /__nextjs_original-stack-frames 404 in 221ms
+ POST /__nextjs_original-stack-frames 404 in 220ms
+ POST /__nextjs_original-stack-frames 404 in 220ms
+ POST /__nextjs_original-stack-frames 404 in 165ms
+ POST /__nextjs_original-stack-frames 404 in 166ms
+ POST /__nextjs_original-stack-frames 404 in 165ms
+ POST /__nextjs_original-stack-frames 404 in 166ms
+ POST /__nextjs_original-stack-frames 404 in 166ms
+ POST /__nextjs_original-stack-frames 404 in 76ms
+ POST /__nextjs_original-stack-frames 404 in 76ms
+ POST /__nextjs_original-stack-frames 404 in 77ms
+ POST /__nextjs_original-stack-frames 404 in 42ms
+ POST /__nextjs_original-stack-frames 404 in 43ms
+ POST /__nextjs_original-stack-frames 404 in 42ms
+ POST /__nextjs_original-stack-frames 404 in 43ms
+ POST /__nextjs_original-stack-frames 404 in 43ms
+ POST /__nextjs_original-stack-frames 404 in 53ms
+ POST /__nextjs_original-stack-frames 404 in 54ms
+ POST /__nextjs_original-stack-frames 404 in 55ms
+ POST /__nextjs_original-stack-frames 404 in 56ms
+ POST /__nextjs_original-stack-frames 404 in 52ms
+ POST /__nextjs_original-stack-frames 404 in 52ms
+ POST /__nextjs_original-stack-frames 404 in 56ms
+ POST /__nextjs_original-stack-frames 404 in 56ms
+ POST /__nextjs_original-stack-frames 404 in 58ms
+ POST /__nextjs_original-stack-frames 404 in 58ms
+ POST /__nextjs_original-stack-frames 404 in 59ms
+ POST /__nextjs_original-stack-frames 404 in 55ms
+ POST /__nextjs_original-stack-frames 404 in 42ms
+ POST /__nextjs_original-stack-frames 404 in 43ms
+ POST /__nextjs_original-stack-frames 404 in 44ms
+ POST /__nextjs_original-stack-frames 404 in 44ms
+ POST /__nextjs_original-stack-frames 404 in 43ms
+ POST /__nextjs_original-stack-frames 404 in 57ms
+ POST /__nextjs_original-stack-frames 404 in 59ms
+ POST /__nextjs_original-stack-frames 404 in 59ms
+ POST /__nextjs_original-stack-frames 404 in 59ms
+ POST /__nextjs_original-stack-frames 404 in 60ms
+ POST /__nextjs_original-stack-frames 404 in 56ms
+ POST /__nextjs_original-stack-frames 404 in 46ms
+ POST /__nextjs_original-stack-frames 404 in 46ms
+ POST /__nextjs_original-stack-frames 404 in 44ms
+ POST /__nextjs_original-stack-frames 404 in 46ms
+ POST /__nextjs_original-stack-frames 404 in 46ms
+ POST /__nextjs_original-stack-frames 404 in 48ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 11ms
+ ✓ Compiled in 1887ms (491 modules)
+
+  #  Node.js[92328]: void node::ResetStdio() at ../src/node.cc:739
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0x7a99f537fc07 node::Assert(node::AssertionInfo const&) [/lib/x86_64-linux-gnu/libnode.so.115]
+ 2: 0x7a99f5328826  [/lib/x86_64-linux-gnu/libnode.so.115]
+ 3: 0x7a99f4448271  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7a99f444834e  [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0x7a99f5280c7d  [/lib/x86_64-linux-gnu/libnode.so.115]
+ 6: 0x7a99f5280ced node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [/lib/x86_64-linux-gnu/libnode.so.115]
+ 7: 0x7a99f52e6cc9 node::Environment::Exit(node::ExitCode) [/lib/x86_64-linux-gnu/libnode.so.115]
+ 8: 0x7a99f588f1c2 v8::internal::FunctionCallbackArguments::Call(v8::internal::CallHandlerInfo) [/lib/x86_64-linux-gnu/libnode.so.115]
+ 9: 0x7a99f588f778  [/lib/x86_64-linux-gnu/libnode.so.115]
+10: 0x7a99f588ff88 v8::internal::Builtin_HandleApiCall(int, unsigned long*, v8::internal::Isolate*) [/lib/x86_64-linux-gnu/libnode.so.115]
+11: 0x7a99f5703df6  [/lib/x86_64-linux-gnu/libnode.so.115]
+
+  #  Node.js[92328]: void node::ResetStdio() at ../src/node.cc:739
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0x7a99f537fc07 node::Assert(node::AssertionInfo const&) [/lib/x86_64-linux-gnu/libnode.so.115]
+ 2: 0x7a99f5328826  [/lib/x86_64-linux-gnu/libnode.so.115]
+ 3: 0x7a99f5328a04 node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [/lib/x86_64-linux-gnu/libnode.so.115]
+ 4: 0x7a99f44458d0  [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0x3aafc1a52441 

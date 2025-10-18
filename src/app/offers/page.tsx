@@ -10,91 +10,68 @@ import { Input } from "@/components/ui/input";
 import { OfferCardSkeleton } from "@/components/ui/skeleton";
 import { animations } from "@/lib/animations";
 import { SidebarLayout } from "@/components/navigation/sidebar";
-import { useQuery } from "convex/react";
-import { api } from "@/lib/convex";
+import { createClient } from "@/lib/supabase";
+import { AdvancedSearch, SearchResults } from "@/components/search/advanced-search";
+import { useAdvancedSearch } from "@/hooks/use-advanced-search";
 
-// Use Convex query to get active investment offers
+// Use Supabase to get active investment offers
 export default function OffersPage() {
   const { user } = useAuth();
-  const rawInvestmentOffers = useQuery(api.investmentOffers.getActiveOffers) || [];
   const [offers, setOffers] = useState<any[]>([]);
-  const [filteredOffers, setFilteredOffers] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [industryFilter, setIndustryFilter] = useState("all");
-  const [stageFilter, setStageFilter] = useState("all");
   const [isLoadingOffers, setIsLoadingOffers] = useState(true);
+  const supabase = createClient();
 
-  // Memoize offers to prevent unnecessary re-renders
-  const investmentOffers = useMemo(() => {
-    if (rawInvestmentOffers && rawInvestmentOffers.length > 0 && rawInvestmentOffers[0]._id) {
-      return rawInvestmentOffers.map((offer: any) => ({
-        id: offer._id,
-        title: offer.title,
-        description: offer.description,
-        amountRange: offer.amountRange,
-        preferredEquity: offer.preferredEquity,
-        preferredStages: offer.preferredStages,
-        preferredIndustries: offer.preferredIndustries,
-        investmentType: offer.investmentType,
-        isActive: offer.isActive,
-        createdAt: offer.createdAt,
-      }));
-    }
-    return [];
-  }, [rawInvestmentOffers]);
+  // Advanced search system
+  const {
+    filters,
+    setFilters,
+    results: searchResults,
+    searchStats,
+    isSearching,
+    isLoading: searchLoading,
+    clearFilters
+  } = useAdvancedSearch();
 
-  // Convert Convex data format to component format
+  // Fetch offers from Supabase
   useEffect(() => {
-    if (investmentOffers.length > 0) {
-      setOffers(investmentOffers);
-      setFilteredOffers(investmentOffers);
-      setIsLoadingOffers(false);
-    } else if (investmentOffers.length === 0 && !isLoadingOffers) {
-      // Only update if not already loading to prevent infinite loop
-      setOffers([]);
-      setFilteredOffers([]);
-      setIsLoadingOffers(false);
-    }
-  }, [investmentOffers, isLoadingOffers]);
+    const fetchOffers = async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from('investment_offers')
+          .select('*')
+          .eq('is_active', true);
 
-  // Filter offers based on search and filters
-  useEffect(() => {
-    let filtered = offers;
+        if (error) throw error;
 
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(offer =>
-        offer.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        offer.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        offer.preferredIndustries.some((industry: string) =>
-          industry.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      );
-    }
+        if (data) {
+          setOffers(data);
+        }
+      } catch (error) {
+        console.error('Error fetching offers:', error);
+      } finally {
+        setIsLoadingOffers(false);
+      }
+    };
 
-    // Industry filter
-    if (industryFilter !== "all") {
-      filtered = filtered.filter(offer =>
-        offer.preferredIndustries.some((industry: string) =>
-          industry.toLowerCase() === industryFilter.toLowerCase()
-        )
-      );
-    }
+    fetchOffers();
+  }, [supabase]);
 
-    // Stage filter
-    if (stageFilter !== "all") {
-      filtered = filtered.filter(offer =>
-        offer.preferredStages.includes(stageFilter)
-      );
-    }
-
-    setFilteredOffers(filtered);
-  }, [offers, searchQuery, industryFilter, stageFilter]);
-
-  // Get unique industries for filter
-  const industries = Array.from(
-    new Set(offers.flatMap(offer => offer.preferredIndustries))
-  );
+  // Convert offers to search results format
+  const searchFormattedOffers = offers.map(offer => ({
+    id: offer.id,
+    title: offer.title,
+    description: offer.description,
+    category: offer.investmentType || 'Investment',
+    tags: offer.preferredIndustries || [],
+    fundingGoal: offer.amountRange?.max || 0,
+    equityOffered: offer.preferredEquity?.max || 0,
+    stage: 'early', // Default stage
+    location: '',
+    isVerified: true,
+    creatorName: 'Investor',
+    createdAt: offer.createdAt || new Date().toISOString(),
+    relevanceScore: 1.0
+  }));
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -120,10 +97,10 @@ export default function OffersPage() {
       <SidebarLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-            <p className="text-gray-600 mb-4">Please sign in to view investment offers.</p>
+            <h1 className="text-2xl font-bold text-white mb-4">Access Denied</h1>
+            <p className="text-slate-300 mb-4">Please sign in to view investment offers.</p>
             <Link href="/auth/login">
-              <Button>Sign In</Button>
+              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Sign In</Button>
             </Link>
           </div>
         </div>
@@ -133,169 +110,83 @@ export default function OffersPage() {
 
   return (
     <SidebarLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-gradient-to-br from-slate-900/50 via-slate-800/30 to-slate-900/50">
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Investment Offers</h1>
-              <p className="text-gray-600 dark:text-gray-300 mt-2">
+              <h1 className="text-3xl font-bold text-white">Investment Offers</h1>
+              <p className="text-slate-300 mt-2">
                 Discover investment opportunities that match your business ideas
               </p>
             </div>
             {user.userType === "investor" && (
               <Link href="/offers/create">
-                <Button>Create Investment Offer</Button>
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Create Investment Offer</Button>
               </Link>
             )}
           </div>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-8 dark:bg-slate-800 dark:border-slate-700">
-          <CardContent className="pt-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div>
-                <label htmlFor="search" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Search Offers
-                </label>
-                <Input
-                  id="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by title, description, or industries..."
-                />
+        {/* Advanced Search */}
+        <AdvancedSearch
+          onFiltersChange={setFilters}
+          initialFilters={{
+            query: '',
+            category: [],
+            fundingRange: { min: 0, max: 10000000 },
+            stage: [],
+            location: '',
+            tags: [],
+            sortBy: 'relevance',
+            verifiedOnly: false
+          }}
+          className="mb-8"
+        />
+
+        {/* Search Statistics */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <p className="text-slate-300">
+              {isSearching ? (
+                "Searching..."
+              ) : (
+                <>
+                  Found <span className="font-semibold text-white">{searchResults.length}</span> results
+                  {searchStats.hasFilters && (
+                    <span className="text-sm text-blue-400">• Filtered</span>
+                  )}
+                </>
+              )}
+            </p>
+
+            {searchStats.avgRelevance > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-400">Avg. Relevance:</span>
+                <Badge variant={searchStats.avgRelevance > 0.7 ? "default" : "secondary"} className={searchStats.avgRelevance > 0.7 ? "bg-green-600 hover:bg-green-700 text-white" : "bg-slate-600 hover:bg-slate-500 text-slate-200"}>
+                  {Math.round(searchStats.avgRelevance * 100)}%
+                </Badge>
               </div>
-
-              <div>
-                <label htmlFor="industry" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Filter by Industry
-                </label>
-                <select
-                  id="industry"
-                  value={industryFilter}
-                  onChange={(e) => setIndustryFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                >
-                  <option value="all">All Industries</option>
-                  {industries.map(industry => (
-                    <option key={industry} value={industry}>
-                      {industry}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="stage" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Filter by Stage
-                </label>
-                <select
-                  id="stage"
-                  value={stageFilter}
-                  onChange={(e) => setStageFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white capitalize"
-                >
-                  <option value="all">All Stages</option>
-                  {["startup", "early", "growth", "mature"].map(stage => (
-                    <option key={stage} value={stage} className="capitalize">
-                      {stage}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-gray-600 dark:text-gray-300">
-            Showing {filteredOffers.length} of {offers.length} investment offers
-          </p>
-        </div>
-
-        {/* Offers Grid */}
-        {isLoadingOffers ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <OfferCardSkeleton key={index} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredOffers.length === 0 ? (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No offers found</h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  {searchQuery || industryFilter !== "all" || stageFilter !== "all"
-                    ? "Try adjusting your search criteria"
-                    : "No investment offers available at the moment"
-                  }
-                </p>
-              </div>
-            ) : (
-              filteredOffers.map((offer) => (
-                <Card key={offer.id} className="">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                          {offer.title}
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">
-                          {offer.investmentType} • {offer.preferredStages.join(", ")} stage
-                        </p>
-                      </div>
-                      <Badge variant={offer.isActive ? "default" : "secondary"}>
-                        {offer.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </div>
-
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-                      {offer.description}
-                    </p>
-
-                    <div className="mb-4">
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        {offer.preferredIndustries.slice(0, 3).map((industry: string) => (
-                          <Badge key={industry} variant="outline" className="text-xs">
-                            {industry}
-                          </Badge>
-                        ))}
-                        {offer.preferredIndustries.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{offer.preferredIndustries.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center mb-4">
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">Investment Range</p>
-                        <p className="text-lg font-semibold text-green-400">
-                          {formatCurrency(offer.amountRange.min)} - {formatCurrency(offer.amountRange.max)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600 dark:text-gray-300">Equity</p>
-                        <p className="text-lg font-semibold text-blue-400">
-                          {offer.preferredEquity.min}% - {offer.preferredEquity.max}%
-                        </p>
-                      </div>
-                    </div>
-
-                    <Link href={`/offers/${offer.id}`}>
-                      <Button className="w-full">
-                        View Details
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))
             )}
           </div>
-        )}
+
+          {searchStats.topCategories.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-400">Top categories:</span>
+              {searchStats.topCategories.slice(0, 2).map(([category, count]) => (
+                <Badge key={category} variant="outline" className="text-xs border-slate-500 text-slate-300 hover:bg-slate-700">
+                  {category} ({count})
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Search Results */}
+        <SearchResults
+          results={searchFormattedOffers}
+          isLoading={isLoadingOffers || isSearching || searchLoading}
+          totalResults={searchResults.length || searchFormattedOffers.length}
+        />
       </div>
     </SidebarLayout>
   );

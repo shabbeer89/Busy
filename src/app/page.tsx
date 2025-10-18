@@ -7,15 +7,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, AnimatedCard } from "@/components/ui/card";
-import { useQuery } from "convex/react";
-import { api } from "@/lib/convex";
 
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
-  // Fetch dynamic platform statistics
-  const realtimeStats = useQuery(api.analytics.getRealtimeStats);
+  // Static platform statistics for demo
+  const realtimeStats = { onlineUsers: 247 };
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -26,7 +24,7 @@ export default function Home() {
   // Show loading while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-white">Loading...</div>
       </div>
     );
@@ -37,12 +35,12 @@ export default function Home() {
     return null;
   }
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Navigation />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
+      <section className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 text-white relative overflow-hidden backdrop-blur-sm border-b border-white/10">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
@@ -74,13 +72,13 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-slate-800">
+      <section id="features" className="py-24 bg-slate-800/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                How BusinessMatch Works
              </h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              <p className="text-xl text-slate-300 max-w-3xl mx-auto">
                Our intelligent matching algorithm connects you with the right business partners based on compatibility and shared interests.
              </p>
           </div>
@@ -147,28 +145,28 @@ export default function Home() {
       </section>
 
       {/* Platform Features Section */}
-      <section className="py-24 bg-slate-800">
+      <section className="py-24 bg-slate-800/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                What You Can Achieve
              </h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              <p className="text-xl text-slate-300 max-w-3xl mx-auto">
                Join a community of entrepreneurs building meaningful business relationships and discovering new opportunities together.
              </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             <Link href="/matches" className="group">
-              <AnimatedCard className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+              <AnimatedCard className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group-hover:scale-105 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl text-gray-900 dark:text-white">Find Partners</CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                  <CardTitle className="text-xl text-white">Find Partners</CardTitle>
+                  <CardDescription className="text-slate-300">
                     Discover entrepreneurs looking for partnerships, investments, or mentorship opportunities in your area.
                   </CardDescription>
                 </CardHeader>
@@ -179,15 +177,15 @@ export default function Home() {
             </Link>
 
             <Link href="/messages" className="group">
-              <AnimatedCard className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+              <AnimatedCard className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group-hover:scale-105 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl text-gray-900 dark:text-white">Start Conversations</CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                  <CardTitle className="text-xl text-white">Start Conversations</CardTitle>
+                  <CardDescription className="text-slate-300">
                     Connect instantly with matched entrepreneurs who are currently available for business discussions.
                   </CardDescription>
                 </CardHeader>
@@ -198,15 +196,15 @@ export default function Home() {
             </Link>
 
             <Link href="/profile" className="group">
-              <AnimatedCard className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105 dark:bg-slate-800 dark:border-slate-700">
+              <AnimatedCard className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group-hover:scale-105 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl text-gray-900 dark:text-white">Build Your Profile</CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                  <CardTitle className="text-xl text-white">Build Your Profile</CardTitle>
+                  <CardDescription className="text-slate-300">
                     Create a comprehensive profile highlighting your business interests, goals, and what you're looking for in partnerships.
                   </CardDescription>
                 </CardHeader>
@@ -277,13 +275,13 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 bg-white dark:bg-slate-900">
+      <section id="pricing" className="py-24 bg-slate-800/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                Choose Your Plan
              </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              <p className="text-xl text-slate-300 max-w-3xl mx-auto">
                Start building valuable business relationships today with our flexible pricing options.
              </p>
           </div>
@@ -400,12 +398,12 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-slate-800">
+      <section className="py-24 bg-slate-800/50 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
              Ready to Build Strong Business Relationships?
            </h2>
-            <p className="text-xl text-gray-300 mb-8">
+            <p className="text-xl text-slate-300 mb-8">
              Join BusinessMatch today and connect with entrepreneurs who share your vision and goals.
            </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -424,11 +422,11 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-slate-900/50 backdrop-blur-sm text-white py-12 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h3 className="text-2xl font-bold mb-4">BusinessMatch</h3>
-            <p className="text-gray-400 mb-4 max-w-2xl mx-auto">
+            <p className="text-slate-400 mb-4 max-w-2xl mx-auto">
               The intelligent platform for building strong business relationships through shared goals, interests, and mutual growth opportunities.
             </p>
             <div className="flex flex-wrap justify-center gap-6 mb-6">

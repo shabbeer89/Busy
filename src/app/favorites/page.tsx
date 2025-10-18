@@ -154,19 +154,19 @@ export default function FavoritesPage() {
               ) : (
                 <div className="grid gap-6">
                   {favoritedOffers.map((offer: any) => (
-                    <Card key={offer._id} className="bg-slate-800 border-slate-700">
+                    <Card key={offer.id} className="bg-slate-800 border-slate-700">
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <CardTitle className="text-xl text-white">{offer.title}</CardTitle>
                             <CardDescription className="mt-2 text-slate-300">
-                              Added {formatTimeAgo(offer.favoritedAt)}
+                              Added {formatTimeAgo(new Date(offer.created_at).getTime())}
                             </CardDescription>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleRemoveFavorite(offer._id, "offer")}
+                            onClick={() => handleRemoveFavorite(offer.id, "offer")}
                             className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -179,13 +179,13 @@ export default function FavoritesPage() {
                           <div>
                             <p className="text-sm font-medium text-slate-400">Investment Range</p>
                             <p className="text-lg font-semibold text-white">
-                              {formatCurrency(offer.amountRange.min)} - {formatCurrency(offer.amountRange.max)}
+                              {formatCurrency(offer.amount_range.min)} - {formatCurrency(offer.amount_range.max)}
                             </p>
                           </div>
                           <div>
                             <p className="text-sm font-medium text-slate-400">Preferred Industries</p>
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {offer.preferredIndustries.slice(0, 3).map((industry: string) => (
+                              {offer.preferred_industries?.slice(0, 3).map((industry: string) => (
                                 <Badge key={industry} variant="outline" className="text-xs">
                                   {industry}
                                 </Badge>
@@ -213,19 +213,19 @@ export default function FavoritesPage() {
               ) : (
                 <div className="grid gap-6">
                   {favoritedIdeas.map((idea: any) => (
-                    <Card key={idea._id} className="bg-slate-800 border-slate-700">
+                    <Card key={idea.id} className="bg-slate-800 border-slate-700">
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <CardTitle className="text-xl text-white">{idea.title}</CardTitle>
                             <CardDescription className="mt-2 text-slate-300">
-                              Added {formatTimeAgo(idea.favoritedAt)}
+                              Added {formatTimeAgo(new Date(idea.created_at).getTime())}
                             </CardDescription>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleRemoveFavorite(idea._id, "idea")}
+                            onClick={() => handleRemoveFavorite(idea.id, "idea")}
                             className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -238,7 +238,7 @@ export default function FavoritesPage() {
                           <div>
                             <p className="text-sm font-medium text-slate-400">Funding Goal</p>
                             <p className="text-lg font-semibold text-white">
-                              {formatCurrency(idea.fundingGoal)}
+                              {formatCurrency(idea.funding_goal)}
                             </p>
                           </div>
                           <div>

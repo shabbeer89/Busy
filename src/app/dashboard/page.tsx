@@ -3,10 +3,16 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
+import { useDashboard } from "@/hooks/use-dashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { MatchStatistics } from "@/components/matching/enhanced-match-card";
+import { AIRecommendations } from "@/components/ai/recommendations";
+import { NotificationBell } from "@/components/notifications/notification-center";
+import { OfflineIndicator } from "@/components/offline/offline-indicator";
+import { useEnhancedMatching } from "@/hooks/use-enhanced-matching";
 import {
   Briefcase,
   User,
@@ -27,21 +33,17 @@ import {
   Award,
   Calendar,
   MessageSquare,
-  Eye
+  Eye,
+  RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 import { SidebarLayout } from "@/components/navigation/sidebar";
 import { animations } from "@/lib/animations";
 import { CardSkeleton, ProfileSkeleton } from "@/components/ui/skeleton";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/lib/convex";
-import { Id } from "../../../convex/_generated/dataModel";
+import { DashboardSkeleton } from "@/components/ui/loading-state";
+import { LoadingSpinner } from "@/components/ui/error-boundary";
 
-// Helper function to properly convert string to Convex ID
-const stringToConvexId = (id: string): Id<"users"> => {
-  return id as Id<"users">;
-};
-
+// Dashboard statistics interface
 interface DashboardStats {
   totalMatches: number;
   activeOffers: number;
@@ -60,73 +62,49 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const { user, hasValidConvexId } = useAuth();
+  const { user } = useAuth();
   const { profileStatus } = useProfile();
-  const [convexUserId, setConvexUserId] = useState<Id<"users"> | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // For OAuth users, we need to ensure they have a Convex user record first
-  const findOrCreateUserMutation = useMutation(api.users.findOrCreateUserByOAuth);
+  // Real-time dashboard data integration
+  const {
+    dashboardStats,
+    platformStats,
+    isLoading: dashboardLoading,
+    error: dashboardError,
+    lastUpdated,
+    refreshDashboard
+  } = useDashboard();
 
-  // Handle user creation and get Convex user ID
+  // Enhanced matching system integration
+  const {
+    matches: enhancedMatches,
+    isLoading: enhancedLoading,
+    error: enhancedError,
+  } = useEnhancedMatching();
+
+  // Set loading states
   useEffect(() => {
-    const setupUser = async () => {
-      if (!user) {
-        setConvexUserId(null);
-        return;
-      }
+    if (user !== undefined) {
+      setAuthLoading(false);
+    }
+  }, [user]);
 
-      console.log("Setting up user:", user.id, "hasValidConvexId:", hasValidConvexId(user.id));
-      console.log("User provider:", (user as any).provider);
+  const isLoading = dashboardLoading || enhancedLoading;
 
-      // Always use findOrCreateUserMutation for all users to ensure proper Convex ID
-      if (user.email) {
-        try {
-          console.log("Creating/finding Convex user:", user.id);
-          const convexId = await findOrCreateUserMutation({
-            oauthId: user.id,
-            email: user.email,
-            name: user.name || user.email.split('@')[0],
-            provider: (user as any).provider || "auth",
-          });
-
-          if (convexId) {
-            console.log("Got Convex user ID:", convexId);
-            setConvexUserId(stringToConvexId(convexId));
-          } else {
-            console.error("No Convex ID returned from findOrCreateUserByOAuth");
-          }
-        } catch (error) {
-          console.error("Error setting up user:", error);
-        }
-      }
-    };
-
-    setupUser();
-  }, [user, findOrCreateUserMutation]);
-
-  // Fetch dynamic dashboard data
-  const dashboardStats = useQuery(
-    api.analytics.getUserDashboardStats,
-    convexUserId ? { userId: convexUserId } : "skip"
-  );
-
-  // Fetch platform-wide stats to sync with analytics page
-  const platformStats = useQuery(api.analytics.getPlatformStats);
-
-  const stats = dashboardStats || null;
-  const isLoading = dashboardStats === undefined && user !== undefined;
-
-  // Debug logging
-  useEffect(() => {
-    console.log("Dashboard Debug:", {
-      user: user?.id,
-      convexUserId,
-      dashboardStats,
-      platformStats,
-      isLoading,
-      hasValidConvexId: user ? hasValidConvexId(user.id) : false
-    });
-  }, [user, convexUserId, dashboardStats, platformStats, isLoading, hasValidConvexId]);
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+          </div>
+        </div>
+      </SidebarLayout>
+    );
+  }
 
   if (!user) {
     return (
@@ -149,7 +127,56 @@ export default function DashboardPage() {
       <SidebarLayout>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <ProfileSkeleton />
+            <DashboardSkeleton />
+          </div>
+        </div>
+      </SidebarLayout>
+    );
+  }
+
+  // Handle dashboard errors
+  if (dashboardError) {
+    return (
+      <SidebarLayout>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex items-center justify-center">
+              <div className="max-w-md w-full">
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h1 className="text-2xl font-bold text-white mb-2">Dashboard Unavailable</h1>
+                  <p className="text-gray-300">{dashboardError}</p>
+                </div>
+
+                <div className="space-y-3">
+                  <Button
+                    onClick={refreshDashboard}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Retry Loading
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => window.location.reload()}
+                    className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+                  >
+                    Refresh Page
+                  </Button>
+                </div>
+
+                {lastUpdated && (
+                  <p className="text-xs text-slate-400 mt-4 text-center">
+                    Last successful update: {lastUpdated.toLocaleTimeString()}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </SidebarLayout>
@@ -176,7 +203,7 @@ export default function DashboardPage() {
       case 'investment':
         return <DollarSign className="w-4 h-4 text-yellow-400" />;
       default:
-        return <Activity className="w-4 h-4 text-gray-400" />;
+        return <Activity className="w-4 h-4 text-slate-400" />;
     }
   };
 
@@ -191,7 +218,7 @@ export default function DashboardPage() {
       case 'investment':
         return 'bg-yellow-900/20 border-yellow-800 text-yellow-400';
       default:
-        return 'bg-gray-900/20 border-gray-800 text-gray-400';
+        return 'bg-slate-900/20 border-slate-800 text-slate-400';
     }
   };
 
@@ -200,7 +227,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           {/* Personalized Welcome Section */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-white/10 backdrop-blur-sm">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-white/20 backdrop-blur-sm">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5" />
             <div className="relative p-8">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -218,19 +245,19 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">
+                    <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-sm">
                       Welcome back, {user.name}!
                     </h1>
-                    <p className="text-slate-300 text-lg mb-3">
+                    <p className="text-slate-200 text-lg mb-3">
                       Ready to {user.userType === 'creator' ? 'pitch your next big idea' : 'discover amazing opportunities'}?
                     </p>
                     <div className="flex items-center gap-4">
                       <Badge variant="outline" className="bg-white/10 text-white border-white/20 capitalize">
                         {user.userType}
                       </Badge>
-                      <div className="flex items-center gap-2 text-sm text-slate-300">
+                      <div className="flex items-center gap-2 text-sm text-slate-200">
                         <Star className="w-4 h-4 text-yellow-400" />
-                        <span>{stats?.successRate}% Success Rate</span>
+                        <span>{dashboardStats?.successRate}% Success Rate</span>
                       </div>
                     </div>
                   </div>
@@ -238,13 +265,13 @@ export default function DashboardPage() {
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
-                    <div className="text-2xl font-bold text-white mb-1">{stats?.totalMatches || 0}</div>
-                    <div className="text-sm text-slate-300">Total Matches</div>
+                  <div className="text-center p-4 bg-white/10 rounded-lg border border-white/20">
+                    <div className="text-2xl font-bold text-white mb-1">{dashboardStats?.totalMatches || 0}</div>
+                    <div className="text-sm text-slate-200">Total Matches</div>
                   </div>
-                  <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
-                    <div className="text-2xl font-bold text-white mb-1">{stats?.profileViews || 0}</div>
-                    <div className="text-sm text-slate-300">Profile Views</div>
+                  <div className="text-center p-4 bg-white/10 rounded-lg border border-white/20">
+                    <div className="text-2xl font-bold text-white mb-1">{dashboardStats?.profileViews || 0}</div>
+                    <div className="text-sm text-slate-200">Profile Views</div>
                   </div>
                 </div>
               </div>
@@ -253,7 +280,7 @@ export default function DashboardPage() {
 
           {/* Key Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/80 border-slate-600 backdrop-blur-sm shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-blue-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -262,17 +289,25 @@ export default function DashboardPage() {
                   <ArrowUpRight className="w-4 h-4 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-400 mb-1">Total Matches</p>
-                  <p className="text-3xl font-bold text-white mb-2">{stats?.totalMatches || 0}</p>
+                  <p className="text-sm font-medium text-slate-300 mb-1">Total Matches</p>
+                  <div className="text-3xl font-bold text-white mb-2">
+                    {dashboardStats?.totalMatches || 0}
+                    {enhancedMatches.length > 0 && (
+                      <span className="text-sm text-blue-400"> +{enhancedMatches.length} AI</span>
+                    )}
+                  </div>
                   <p className="text-xs text-green-400 flex items-center gap-1">
                     <ArrowUpRight className="w-3 h-3" />
                     +12% from last month
+                    {enhancedMatches.length > 0 && (
+                      <span className="text-blue-400">• AI-powered</span>
+                    )}
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/80 border-slate-600 backdrop-blur-sm shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-green-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -281,8 +316,8 @@ export default function DashboardPage() {
                   <ArrowUpRight className="w-4 h-4 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-400 mb-1">Total Earnings</p>
-                  <p className="text-3xl font-bold text-white mb-2">{formatCurrency(stats?.totalEarnings || 0)}</p>
+                  <p className="text-sm font-medium text-slate-300 mb-1">Total Earnings</p>
+                  <p className="text-3xl font-bold text-white mb-2">{formatCurrency(dashboardStats?.totalEarnings || 0)}</p>
                   <p className="text-xs text-green-400 flex items-center gap-1">
                     <ArrowUpRight className="w-3 h-3" />
                     +8% from last month
@@ -291,7 +326,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/80 border-slate-600 backdrop-blur-sm shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-purple-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -300,8 +335,8 @@ export default function DashboardPage() {
                   <ArrowDownRight className="w-4 h-4 text-red-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-400 mb-1">Response Rate</p>
-                  <p className="text-3xl font-bold text-white mb-2">{stats?.responseRate || 0}%</p>
+                  <p className="text-sm font-medium text-slate-300 mb-1">Response Rate</p>
+                  <p className="text-3xl font-bold text-white mb-2">{dashboardStats?.responseRate || 0}%</p>
                   <p className="text-xs text-red-400 flex items-center gap-1">
                     <ArrowDownRight className="w-3 h-3" />
                     -3% from last month
@@ -310,7 +345,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-slate-800/80 border-slate-600 backdrop-blur-sm shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -319,8 +354,8 @@ export default function DashboardPage() {
                   <ArrowUpRight className="w-4 h-4 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-400 mb-1">Profile Views</p>
-                  <p className="text-3xl font-bold text-white mb-2">{stats?.profileViews || 0}</p>
+                  <p className="text-sm font-medium text-slate-300 mb-1">Profile Views</p>
+                  <p className="text-3xl font-bold text-white mb-2">{dashboardStats?.profileViews || 0}</p>
                   <p className="text-xs text-green-400 flex items-center gap-1">
                     <ArrowUpRight className="w-3 h-3" />
                     +24% from last month
@@ -330,9 +365,119 @@ export default function DashboardPage() {
             </Card>
           </div>
 
+          {/* AI Recommendations Section */}
+          <AIRecommendations
+            userId={user?.id}
+            userType={(user as any)?.userType || 'creator'}
+            maxRecommendations={6}
+          />
+
+          {/* Enhanced Matching Analytics Section */}
+          {enhancedMatches.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Enhanced Matching Analytics</h2>
+                  <p className="text-slate-300 mt-1">
+                    AI-powered insights from your intelligent matching performance
+                  </p>
+                </div>
+                {lastUpdated && (
+                  <div className="text-sm text-slate-300">
+                    Updated: {lastUpdated.toLocaleTimeString()}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {/* Enhanced Match Statistics */}
+                <MatchStatistics
+                  statistics={{
+                    totalMatches: enhancedMatches.length,
+                    highConfidenceMatches: enhancedMatches.filter(m => m.confidence === 'high').length,
+                    mediumConfidenceMatches: enhancedMatches.filter(m => m.confidence === 'medium').length,
+                    averageScore: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.match_score, 0) / enhancedMatches.length : 0,
+                    topFactors: [
+                      { factor: 'industryAlignment', average: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.factors.industryAlignment, 0) / enhancedMatches.length : 0 },
+                      { factor: 'amountCompatibility', average: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.factors.amountCompatibility, 0) / enhancedMatches.length : 0 },
+                      { factor: 'stagePreference', average: enhancedMatches.length > 0 ? enhancedMatches.reduce((sum, m) => sum + m.factors.stagePreference, 0) / enhancedMatches.length : 0 },
+                    ],
+                    improvementSuggestions: enhancedMatches.length < 5 ? ["Complete your profile to get better matches", "Add more detailed preferences"] : [],
+                  }}
+                />
+
+                {/* Enhanced Matching Insights */}
+                <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/80 border-slate-600 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-white drop-shadow-sm">Matching Insights</CardTitle>
+                    <CardDescription className="text-slate-300">
+                      Performance analysis from your AI-powered matches
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Top Match Scores */}
+                    <div>
+                      <h4 className="font-medium text-white mb-3">Top Match Scores</h4>
+                      <div className="space-y-2">
+                        {enhancedMatches.slice(0, 3).map((match, index) => (
+                          <div key={match.idea_id} className="flex items-center justify-between p-3 bg-slate-700/70 rounded-lg border border-slate-600">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                                {index + 1}
+                              </div>
+                              <span className="text-sm text-slate-200">Match #{match.idea_id.slice(-6)}</span>
+                            </div>
+                            <Badge className={`${
+                              match.match_score >= 0.8 ? 'bg-green-900/20 text-green-400' :
+                              match.match_score >= 0.6 ? 'bg-blue-900/20 text-blue-400' :
+                              'bg-orange-900/20 text-orange-400'
+                            }`}>
+                              {Math.round(match.match_score * 100)}%
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Confidence Distribution */}
+                    <div>
+                      <h4 className="font-medium text-white mb-3">Confidence Levels</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="text-center p-3 bg-slate-700/70 rounded-lg border border-slate-600">
+                          <div className="text-lg font-bold text-green-400">
+                            {enhancedMatches.filter(m => m.confidence === 'high').length}
+                          </div>
+                          <div className="text-xs text-slate-300">High</div>
+                        </div>
+                        <div className="text-center p-3 bg-slate-700/70 rounded-lg border border-slate-600">
+                          <div className="text-lg font-bold text-blue-400">
+                            {enhancedMatches.filter(m => m.confidence === 'medium').length}
+                          </div>
+                          <div className="text-xs text-slate-300">Medium</div>
+                        </div>
+                        <div className="text-center p-3 bg-slate-700/70 rounded-lg border border-slate-600">
+                          <div className="text-lg font-bold text-orange-400">
+                            {enhancedMatches.filter(m => m.confidence === 'low').length}
+                          </div>
+                          <div className="text-xs text-slate-300">Low</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Link href="/matches">
+                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                        View All Enhanced Matches
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Quick Actions */}
-            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/80 border-slate-600 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Zap className="w-5 h-5 text-yellow-400" />
@@ -349,13 +494,13 @@ export default function DashboardPage() {
                       </Button>
                     </Link>
                     <Link href="/ideas">
-                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white py-3">
                         <Lightbulb className="w-4 h-4 mr-2" />
                         Browse All Ideas
                       </Button>
                     </Link>
                     <Link href="/matches">
-                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white py-3">
                         <Target className="w-4 h-4 mr-2" />
                         My Matches
                       </Button>
@@ -370,13 +515,13 @@ export default function DashboardPage() {
                       </Button>
                     </Link>
                     <Link href="/offers/create">
-                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white py-3">
                         <Plus className="w-4 h-4 mr-2" />
                         Create Investment Offer
                       </Button>
                     </Link>
                     <Link href="/matches">
-                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-3">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white py-3">
                         <Target className="w-4 h-4 mr-2" />
                         My Matches
                       </Button>
@@ -387,7 +532,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Profile Completion */}
-            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/80 border-slate-600 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Award className="w-5 h-5 text-purple-400" />
@@ -399,14 +544,14 @@ export default function DashboardPage() {
                   <>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-slate-300">Completion</span>
-                        <span className="text-sm text-slate-400">{profileStatus.percentage}%</span>
+                        <span className="text-sm font-medium text-slate-200">Completion</span>
+                        <span className="text-sm text-slate-300">{profileStatus.percentage}%</span>
                       </div>
                       <Progress value={profileStatus.percentage} className="h-2 bg-slate-700" />
                     </div>
 
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/70 border border-slate-600">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${user.isVerified ? 'bg-green-900/20' : 'bg-amber-900/20'}`}>
                           <Clock className={`w-4 h-4 ${user.isVerified ? 'text-green-400' : 'text-amber-400'}`} />
                         </div>
@@ -418,13 +563,13 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/70 border border-slate-600">
                         <div className="w-8 h-8 rounded-full bg-blue-900/20 flex items-center justify-center">
                           <User className="w-4 h-4 text-blue-400" />
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium text-white">Profile Info</p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-slate-300">
                             {user.bio || user.location ? "Complete" : "Incomplete"}
                           </p>
                         </div>
@@ -432,7 +577,7 @@ export default function DashboardPage() {
                     </div>
 
                     <Link href="/profile">
-                      <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
+                      <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white">
                         {user.bio || user.location ? "Edit Profile" : "Complete Profile"}
                       </Button>
                     </Link>
@@ -442,7 +587,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Recent Activity */}
-            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/80 border-slate-600 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Activity className="w-5 h-5 text-green-400" />
@@ -451,7 +596,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {stats?.recentActivity.slice(0, 4).map((activity) => (
+                  {dashboardStats?.recentActivity.slice(0, 4).map((activity) => (
                     <div key={activity.id} className={`p-3 rounded-lg border ${getActivityColor(activity.type)}`}>
                       <div className="flex items-start gap-3">
                         <div className="mt-0.5">
@@ -459,9 +604,9 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-white truncate">{activity.title}</p>
-                          <p className="text-xs text-slate-300 truncate">{activity.description}</p>
+                          <p className="text-xs text-slate-200 truncate">{activity.description}</p>
                           <div className="flex items-center justify-between mt-2">
-                            <span className="text-xs text-slate-400">{activity.timestamp}</span>
+                            <span className="text-xs text-slate-300">{activity.timestamp}</span>
                             {activity.amount && (
                               <span className="text-xs font-medium text-green-400">
                                 {formatCurrency(activity.amount)}
@@ -474,7 +619,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
                 <Link href="/matches">
-                  <Button variant="outline" className="w-full mt-4 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
+                  <Button variant="outline" className="w-full mt-4 border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white">
                     View All Activity
                   </Button>
                 </Link>
@@ -483,33 +628,33 @@ export default function DashboardPage() {
           </div>
 
           {/* Platform Overview */}
-          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-slate-800/80 border-slate-600 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <TrendingUp className="w-5 h-5 text-blue-400" />
                 Platform Overview
               </CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardDescription className="text-slate-300">
                 Current platform statistics and your performance
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-center p-4 bg-slate-700/70 rounded-lg border border-slate-600">
                   <div className="text-2xl font-bold text-blue-400 mb-1">{platformStats?.totalIdeas || 0}</div>
-                  <div className="text-sm text-slate-400">Total Ideas</div>
+                  <div className="text-sm text-slate-300">Total Ideas</div>
                 </div>
-                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-center p-4 bg-slate-700/70 rounded-lg border border-slate-600">
                   <div className="text-2xl font-bold text-green-400 mb-1">{platformStats?.totalOffers || 0}</div>
-                  <div className="text-sm text-slate-400">Active Offers</div>
+                  <div className="text-sm text-slate-300">Active Offers</div>
                 </div>
-                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-center p-4 bg-slate-700/70 rounded-lg border border-slate-600">
                   <div className="text-2xl font-bold text-purple-400 mb-1">{platformStats?.totalMatches || 0}</div>
-                  <div className="text-sm text-slate-400">Total Matches</div>
+                  <div className="text-sm text-slate-300">Total Matches</div>
                 </div>
-                <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="text-center p-4 bg-slate-700/70 rounded-lg border border-slate-600">
                   <div className="text-2xl font-bold text-yellow-400 mb-1">${((platformStats?.totalFunding || 0) / 1000000).toFixed(1)}M</div>
-                  <div className="text-sm text-slate-400">Total Funding</div>
+                  <div className="text-sm text-slate-300">Total Funding</div>
                 </div>
               </div>
 
@@ -519,17 +664,17 @@ export default function DashboardPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-slate-300">Success Rate</span>
-                        <span className="text-sm text-slate-400">{stats?.successRate}%</span>
+                        <span className="text-sm text-slate-200">Success Rate</span>
+                        <span className="text-sm text-slate-300">{dashboardStats?.successRate}%</span>
                       </div>
-                      <Progress value={stats?.successRate} className="h-2 bg-slate-700" />
+                      <Progress value={dashboardStats?.successRate} className="h-2 bg-slate-700" />
                     </div>
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-slate-300">Response Rate</span>
-                        <span className="text-sm text-slate-400">{stats?.responseRate}%</span>
-                      </div>
-                      <Progress value={stats?.responseRate} className="h-2 bg-slate-700" />
+                        <span className="text-sm text-slate-200">Response Rate</span>
+                        <span className="text-sm text-slate-300">{dashboardStats?.responseRate}%</span>
+                       </div>
+                       <Progress value={dashboardStats?.responseRate} className="h-2 bg-slate-700" />
                     </div>
                   </div>
                 </div>
@@ -538,9 +683,9 @@ export default function DashboardPage() {
                   <h4 className="font-medium text-white">Top Industries</h4>
                   <div className="space-y-2">
                     {platformStats?.topIndustries?.slice(0, 4).map((industry, index) => (
-                      <div key={industry} className="flex items-center justify-between p-2 bg-slate-700/50 rounded border border-slate-600">
-                        <span className="text-sm text-slate-300">{industry}</span>
-                        <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
+                      <div key={industry} className="flex items-center justify-between p-2 bg-slate-700/70 rounded border border-slate-600">
+                        <span className="text-sm text-slate-200">{industry}</span>
+                        <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">
                           #{index + 1}
                         </Badge>
                       </div>

@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { User } from "@/types";
-import { Id } from "../../convex/_generated/dataModel";
 
 interface AuthState {
   user: User | null;
@@ -42,8 +41,13 @@ export const useAuthStore = create<AuthState>()(
       syncWithNextAuth: (sessionUser) => {
         if (sessionUser && sessionUser.email) {
           // Create a User object from NextAuth session
+          const sessionUserId = sessionUser.id;
+          // Use existing user ID if available, otherwise use session ID
+          const existingUserId = get().user?.id;
+          const finalUserId = existingUserId || sessionUserId || `store_${Date.now()}`;
+
           const user: User = {
-            id: sessionUser.id || `oauth_${Date.now()}`,
+            id: finalUserId,
             email: sessionUser.email,
             name: sessionUser.name || sessionUser.email?.split('@')[0] || 'User',
             userType: get().user?.userType || 'creator', // Default to creator, should be updated via profile
